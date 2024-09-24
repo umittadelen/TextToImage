@@ -1,21 +1,4 @@
-#*  ╔════════════════════════════════════════════════════════════════════════════╗
-#*  ║                    Download And Install Required Libraries                 ║
-#*  ╚════════════════════════════════════════════════════════════════════════════╝
-
-import subprocess
-import sys
-
-# List of required packages and their import names
-required_packages = {"flask": "flask","torch": "torch","transformers": "transformers","diffusers": "diffusers"}
-
-# Install missing packages
-for package, import_name in required_packages.items():
-    try:
-        __import__(import_name)
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-# Now import the required libraries
+# import the required libraries
 from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
@@ -28,24 +11,34 @@ from diffusers import (
     AutoencoderKL
 )
 
-#*  ╔════════════════════════════════════════════════════════════════════════════╗
-#*  ║                                Main code                                   ║
-#*  ╚════════════════════════════════════════════════════════════════════════════╝
+#!  ╔════════════════════════════════════════════════════════════════════════════╗
+#!  ║                        Load the required models                            ║
+#!  ╚════════════════════════════════════════════════════════════════════════════╝
+
+# Load the tokenizer
+TOKENIZER = "openai/clip-vit-base-patch16"
+VAE = "madebyollin/sdxl-vae-fp16-fix"
+PIPE = "Linaqruf/animagine-xl-3.0"
+
+
+#!  ╔════════════════════════════════════════════════════════════════════════════╗
+#!  ║                                Main code                                   ║
+#!  ╚════════════════════════════════════════════════════════════════════════════╝
 
 app = Flask(__name__)
 
 #load tokenizer
-tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch16")
+tokenizer = CLIPTokenizer.from_pretrained(TOKENIZER)
 
 # Load VAE component
 vae = AutoencoderKL.from_pretrained(
-    "madebyollin/sdxl-vae-fp16-fix",
+    VAE,
     torch_dtype=torch.float16
 )
 
 # Configure the pipeline
 pipe = StableDiffusionXLPipeline.from_pretrained(
-    "Linaqruf/animagine-xl-3.0",
+    PIPE,
     vae=vae,
     torch_dtype=torch.float16,
     use_safetensors=True,
