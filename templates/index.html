@@ -26,6 +26,7 @@
             --shadow-color: rgba(0, 0, 0, 0);
             --card-shadow: 0px 0px 30px 0px var(--shadow-color);
             --container-shadow: 0px 0px 30px 0px var(--shadow-color);
+            --bg-degree: 0deg;
         }
     
         html, body {
@@ -39,7 +40,8 @@
     
         body {
             font-family: var(--font-family);
-            background: linear-gradient(to bottom right, var(--bg-gradient-start), var(--bg-gradient-end));
+            transition: background 1s ease;
+            background: linear-gradient(0deg, var(--bg-gradient-start), var(--bg-gradient-end));
             background-attachment: fixed;
             color: var(--text-color);
             text-align: center;
@@ -209,38 +211,47 @@
             })
         })
         .then(response => response.json())
-        .then(data => {
-            const imageContainer = document.getElementById('imageResults');
-            imageContainer.innerHTML = '';  // Clear any previous images
-            loadingText.style.display = 'none'; // Hide loading text
+            .then(data => {
+                const imageContainer = document.getElementById('imageResults');
+                imageContainer.innerHTML = '';  // Clear any previous images
+                loadingText.style.display = 'none'; // Hide loading text
 
-            data.images.forEach(imageData => {
-                const imageCard = document.createElement('div');
-                imageCard.classList.add('image-card');
-                
-                const img = document.createElement('img');
-                img.src = imageData.img;
-                imageCard.appendChild(img);
-                
-                const seedText = document.createElement('p');
-                seedText.innerText = 'Seed: ' + imageData.seed;
-                imageCard.appendChild(seedText);
-                
-                const downloadLink = document.createElement('a');
-                downloadLink.href = `/download/${imageData.seed}?prompt=${encodeURIComponent(prompt)}&negative_prompt=${encodeURIComponent(negativePrompt)}`; 
-                downloadLink.innerText = 'Download';
-                downloadLink.classList.add('download-link');
-                downloadLink.download = `image_${imageData.seed}.png`;  // Set download attribute
-                imageCard.appendChild(downloadLink);
-                
-                imageContainer.appendChild(imageCard);
+                data.images.forEach(imageData => {
+                    const imageCard = document.createElement('div');
+                    imageCard.classList.add('image-card');
+                    
+                    const img = document.createElement('img');
+                    img.src = imageData.img;
+                    imageCard.appendChild(img);
+                    
+                    const seedText = document.createElement('p');
+                    seedText.innerText = 'Seed: ' + imageData.seed;
+                    imageCard.appendChild(seedText);
+                    
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `/download/${imageData.seed}?prompt=${encodeURIComponent(prompt)}&negative_prompt=${encodeURIComponent(negativePrompt)}`; 
+                    downloadLink.innerText = 'Download';
+                    downloadLink.classList.add('download-link');
+                    downloadLink.download = `image_${imageData.seed}.png`;  // Set download attribute
+                    imageCard.appendChild(downloadLink);
+                    
+                    imageContainer.appendChild(imageCard);
+                });
+            })
+            .catch(error => {
+                console.error('Error generating images:', error);
+                loadingText.style.display = 'none'; // Hide loading text in case of error
             });
-        })
-        .catch(error => {
-            console.error('Error generating images:', error);
-            loadingText.style.display = 'none'; // Hide loading text in case of error
         });
-    });
+
+        let degree = 0; // Initialize degree
+
+        function rotateGradient() {
+            degree = (degree + 1) % 360; // Increment by 360 degrees
+            document.body.style.background = `linear-gradient(${degree}deg, var(--bg-gradient-start), var(--bg-gradient-end))`;
+        }
+
+        setInterval(rotateGradient, 250); // Rotate every 1000 milliseconds (1 second)
     </script>
 </body>
 </html>
