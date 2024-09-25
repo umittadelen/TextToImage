@@ -3,8 +3,6 @@ from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
 import os
-import tempfile
-from transformers import AutoTokenizer
 from diffusers import (
     StableDiffusionXLPipeline,
     EulerAncestralDiscreteScheduler,
@@ -15,10 +13,7 @@ from diffusers import (
 #!  ║                        Load the required models                            ║
 #!  ╚════════════════════════════════════════════════════════════════════════════╝
 
-# Load the tokenizer
-MODEL_NAME = "Linaqruf/animagine-xl-3.0"
-VAE_NAME = "madebyollin/sdxl-vae-fp16-fix"
-TOKENIZER_NAME = "openai/clip-vit-base-patch16"
+
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 
@@ -27,18 +22,18 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 #!  ╚════════════════════════════════════════════════════════════════════════════╝
 
 
-def load_pipeline(model_name, vae_name, tokenizer_name, use_safetensors=True):
+def load_pipeline(model_name):
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
-        vae_name,
+        "madebyollin/sdxl-vae-fp16-fix",
         torch_dtype=torch.float16,
     )
 
-    # Decide the pipeline loading method based on the model type
-    if model_name.endswith(".safetensors"):
-        pipeline = StableDiffusionXLPipeline.from_single_file
-    else:
-        pipeline = StableDiffusionXLPipeline.from_pretrained
+    pipeline = (
+        StableDiffusionXLPipeline.from_single_file
+        if model_name.endswith(".safetensors")
+        else StableDiffusionXLPipeline.from_pretrained
+    )
 
     # Load the pipeline
     pipe = pipeline(
@@ -46,13 +41,10 @@ def load_pipeline(model_name, vae_name, tokenizer_name, use_safetensors=True):
         vae=vae,
         torch_dtype=torch.float16,
         custom_pipeline="lpw_stable_diffusion_xl",
-        use_safetensors=use_safetensors,
+        use_safetensors=True,
         add_watermarker=False,
         use_auth_token=HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
     )
-
-    # Load the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
     # Set the scheduler
     pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
@@ -60,38 +52,40 @@ def load_pipeline(model_name, vae_name, tokenizer_name, use_safetensors=True):
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
 
-    return pipe, tokenizer
+    return pipe
 
 
 #!  ╔════════════════════════════════════════════════════════════════════════════╗
 #!  ║                                Main code                                   ║
 #!  ╚════════════════════════════════════════════════════════════════════════════╝
 
-pipe, tokenizer = load_pipeline(MODEL_NAME, VAE_NAME, TOKENIZER_NAME)
-
 app = Flask(__name__)
 
 # Create a temporary directory for images
-temp_dir = tempfile.mkdtemp()
+generated_dir = './generated/'
+os.makedirs(generated_dir, exist_ok=True)
 
 # Dictionary to store generated images
 generated_images = {}
 
 def preprocess_prompt(prompt):
-    # Tokenize the prompt
-    tokens = tokenizer(prompt)["input_ids"]
-    if len(tokens) > 77:
-        # Truncate to the first 77 tokens
-        prompt = tokenizer.decode(tokens[:77])
     return prompt
 
 # Route for generating images
 @app.route('/generate', methods=['POST'])
 def generate():
+    global pipe
 
-    global pipe, tokenizer
-    pipe, tokenizer = load_pipeline(MODEL_NAME, VAE_NAME, TOKENIZER_NAME)
+    # Get the selected model from the form
+    model_name = request.form['model']
+
+    MODEL = os.getenv(
+        "MODEL",
+        model_name,
+    )
     
+    pipe = load_pipeline(MODEL)  # Load the pipeline with the selected model
+
     prompt = request.form['prompt']
     negative_prompt = request.form['negative_prompt']
     width = int(request.form.get('width', 832))  # Default width
@@ -114,6 +108,7 @@ def generate():
 
     return jsonify(images=images)
 
+
 # Modify the image generation function to accept width and height
 def generate_image_with_seed(prompt, negative_prompt, seed, width, height):
     generator = torch.manual_seed(seed)
@@ -128,7 +123,7 @@ def generate_image_with_seed(prompt, negative_prompt, seed, width, height):
     ).images[0]
     
     # Save the image to the temporary directory
-    image_path = os.path.join(temp_dir, f'image_{seed}.png')
+    image_path = os.path.join(generated_dir, f'image_{seed}.png')
     image.save(image_path, 'PNG')
     
     return image_path, seed
@@ -151,7 +146,7 @@ def download(seed):
 # Serve the temporary images
 @app.route('/temp/<filename>', methods=['GET'])
 def serve_temp_image(filename):
-    return send_file(os.path.join(temp_dir, filename), mimetype='image/png')
+    return send_file(os.path.join(generated_dir, filename), mimetype='image/png')
 
 # Serve the HTML page
 @app.route('/')
