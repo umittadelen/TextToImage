@@ -3,11 +3,13 @@ from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
 import os
+import utils
+import json
 from diffusers import (
     StableDiffusionXLPipeline,
-    EulerAncestralDiscreteScheduler,
     AutoencoderKL
 )
+import threading
 
 #!  ╔════════════════════════════════════════════════════════════════════════════╗
 #!  ║                        Load the required models                            ║
@@ -16,11 +18,13 @@ from diffusers import (
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 
+# Define model options from models.json
+with open('models.json', 'r') as f:
+    model_options = json.load(f)
 
 #!  ╔════════════════════════════════════════════════════════════════════════════╗
 #!  ║                              Load Pipeline                                 ║
 #!  ╚════════════════════════════════════════════════════════════════════════════╝
-
 
 def load_pipeline(model_name):
     # Load the VAE model
@@ -29,6 +33,7 @@ def load_pipeline(model_name):
         torch_dtype=torch.float16,
     )
 
+    # Set the pipepline
     pipeline = (
         StableDiffusionXLPipeline.from_single_file
         if model_name.endswith(".safetensors")
@@ -46,17 +51,13 @@ def load_pipeline(model_name):
         use_auth_token=HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
     )
 
-    # Set the scheduler
-    pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
-    
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
 
     return pipe
 
-
 #!  ╔════════════════════════════════════════════════════════════════════════════╗
-#!  ║                                Main code                                   ║
+#!  ║                               Flask App                                    ║
 #!  ╚════════════════════════════════════════════════════════════════════════════╝
 
 app = Flask(__name__)
@@ -66,53 +67,42 @@ generated_dir = './generated/'
 os.makedirs(generated_dir, exist_ok=True)
 
 # Dictionary to store generated images
-generated_images = {}
+generated_image = {}
 
-def preprocess_prompt(prompt):
-    return prompt
-
-# Route for generating images
 @app.route('/generate', methods=['POST'])
 def generate():
     global pipe
+    pipe = load_pipeline(request.form['model'])
 
-    # Get the selected model from the form
-    model_name = request.form['model']
+    prompt = utils.preprocess_prompt(request.form['prompt'])
+    negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
+    width = int(request.form.get('width', 832))
+    height = int(request.form.get('height', 1216))
+    IMAGE_COUNT = int(request.form.get('image_count', 4))
 
-    MODEL = os.getenv(
-        "MODEL",
-        model_name,
-    )
-    
-    pipe = load_pipeline(MODEL)  # Load the pipeline with the selected model
+    # Function to generate images
+    def generate_images():
+        for _ in range(IMAGE_COUNT):
+            seed = random.randint(0, 100000000000)
+            image_path = generateImage(prompt, negative_prompt, seed, width, height)
+            generated_image[seed] = image_path
+            
+            # Here you might want to store the URLs directly if needed
+            print(f"Generated image: {image_path}")
 
-    prompt = request.form['prompt']
-    negative_prompt = request.form['negative_prompt']
-    width = int(request.form.get('width', 832))  # Default width
-    height = int(request.form.get('height', 1216))  # Default height
-    
-    # Preprocess prompts
-    prompt = preprocess_prompt(prompt)
-    negative_prompt = preprocess_prompt(negative_prompt)
+    # Start a new thread for image generation
+    threading.Thread(target=generate_images).start()
 
-    # Generate images with seeds
-    seeds = [random.randint(0, 100000000000) for _ in range(4)]
-    images = []
-    for seed in seeds:
-        image_path, seed = generate_image_with_seed(prompt, negative_prompt, seed, width, height)
-        generated_images[seed] = image_path
-        images.append({
-            'img': f"/temp/{os.path.basename(image_path)}",
-            'seed': seed
-        })
+    return jsonify(status='Image generation started', count=IMAGE_COUNT)
 
-    print(images)
+@app.route('/status', methods=['GET'])
+def status():
+    # Convert the generated images to a list to send to the client
+    images = [{'img': f"/generated/{os.path.basename(path)}", 'seed': seed} for seed, path in generated_image.items()]
     return jsonify(images=images)
 
-
-# Modify the image generation function to accept width and height
-def generate_image_with_seed(prompt, negative_prompt, seed, width, height):
-    generator = torch.manual_seed(seed)
+def generateImage(prompt, negative_prompt, seed, width, height):
+    # Generate image
     image = pipe(
         prompt,
         negative_prompt=negative_prompt,
@@ -120,21 +110,19 @@ def generate_image_with_seed(prompt, negative_prompt, seed, width, height):
         height=height,
         guidance_scale=7,
         num_inference_steps=28,
-        generator=generator
+        generator=torch.manual_seed(seed)
     ).images[0]
-    
+
     # Save the image to the temporary directory
     image_path = os.path.join(generated_dir, f'image_{seed}.png')
     image.save(image_path, 'PNG')
-    
-    return image_path, seed
+
+    return image_path
 
 # Route for downloading an image
-@app.route('/download/<int:seed>', methods=['GET'])
-def download(seed):
-    # Get the stored image path
-    image_path = generated_images.get(seed)
-    
+@app.route('/generated/<int:seed>', methods=['GET'])
+def download_image(seed):
+    image_path = generated_image.get(seed)
     if image_path and os.path.exists(image_path):
         return send_file(
             image_path, 
@@ -144,15 +132,15 @@ def download(seed):
         )
     return jsonify(error="Image not found"), 404
 
-# Serve the temporary images
-@app.route('/temp/<filename>', methods=['GET'])
+# Serve the temp images
+@app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
     return send_file(os.path.join(generated_dir, filename), mimetype='image/png')
 
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index3.html', model_options=model_options)
 
 if __name__ == '__main__':
     app.run(debug=True, host='192.168.0.2', port=5000)

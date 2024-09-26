@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #images {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stable Diffusion Image Generator</h1>
+    <form id="generateForm">
+        <label for="model">Select Model:</label>
+        <select id="model" name="model" required>
+            {% for model_name, model_url in model_options.items() %}
+                <option value="{{ model_url }}">{{ model_name }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="prompt">Prompt:</label>
+        <input type="text" id="prompt" name="prompt" required><br>
+
+        <label for="negative_prompt">Negative Prompt:</label>
+        <input type="text" id="negative_prompt" name="negative_prompt"><br>
+
+        <label for="width">Width:</label>
+        <input type="number" id="width" name="width" value="832"><br>
+
+        <label for="height">Height:</label>
+        <input type="number" id="height" name="height" value="1216"><br>
+
+        <label for="image_count">Number of Images:</label>
+        <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
+
+        <button type="submit">Generate Images</button>
+    </form>
+
+    <div id="images"></div>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            const formData = new FormData(this);
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Check if generation started
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Use a polling mechanism to check for newly generated images
+        setInterval(() => {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const imagesDiv = document.getElementById('images');
+                    imagesDiv.innerHTML = ''; // Clear previous images
+                    data.images.forEach(imgData => {
+                        const img = document.createElement('img');
+                        img.src = imgData.img; // The image URL
+                        imagesDiv.appendChild(img);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }, 2000); // Check every 2 seconds
+    </script>
+    
+</body>
+</html>

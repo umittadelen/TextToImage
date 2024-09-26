@@ -15,6 +15,7 @@ from diffusers import (
 
 
 HF_TOKEN = os.getenv("HF_TOKEN")
+IMAGE_COUNT = 4
 
 
 #!  ╔════════════════════════════════════════════════════════════════════════════╗
@@ -66,7 +67,7 @@ generated_dir = './generated/'
 os.makedirs(generated_dir, exist_ok=True)
 
 # Dictionary to store generated images
-generated_images = {}
+generated_image = {}
 
 def preprocess_prompt(prompt):
     return prompt
@@ -76,15 +77,8 @@ def preprocess_prompt(prompt):
 def generate():
     global pipe
 
-    # Get the selected model from the form
-    model_name = request.form['model']
-
-    MODEL = os.getenv(
-        "MODEL",
-        model_name,
-    )
-    
-    pipe = load_pipeline(MODEL)  # Load the pipeline with the selected model
+    # Get the selected model from the form    
+    pipe = load_pipeline(request.form['model'])  # Load the pipeline with the selected model
 
     prompt = request.form['prompt']
     negative_prompt = request.form['negative_prompt']
@@ -96,18 +90,18 @@ def generate():
     negative_prompt = preprocess_prompt(negative_prompt)
 
     # Generate images with seeds
-    seeds = [random.randint(0, 100000000000) for _ in range(4)]
-    images = []
+    seeds = [random.randint(0, 100000000000) for _ in range(IMAGE_COUNT)]
+
     for seed in seeds:
+        image = []
         image_path, seed = generate_image_with_seed(prompt, negative_prompt, seed, width, height)
-        generated_images[seed] = image_path
-        images.append({
-            'img': f"/temp/{os.path.basename(image_path)}",
+        generated_image[seed] = image_path
+        image.append({
+            'img': f"{generated_dir}{os.path.basename(image_path)}",
             'seed': seed
         })
 
-    print(images)
-    return jsonify(images=images)
+        return jsonify(image=image)
 
 
 # Modify the image generation function to accept width and height
@@ -130,10 +124,10 @@ def generate_image_with_seed(prompt, negative_prompt, seed, width, height):
     return image_path, seed
 
 # Route for downloading an image
-@app.route('/download/<int:seed>', methods=['GET'])
+@app.route('/temp/<int:seed>', methods=['GET'])
 def download(seed):
     # Get the stored image path
-    image_path = generated_images.get(seed)
+    image_path = generated_image.get(seed)
     
     if image_path and os.path.exists(image_path):
         return send_file(
@@ -152,7 +146,7 @@ def serve_temp_image(filename):
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index2.html')
 
 if __name__ == '__main__':
     app.run(debug=True, host='192.168.0.2', port=5000)
