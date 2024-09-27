@@ -4,50 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #images {
-            margin-top: 20px;
-        }
-        img {
-            max-width: 100%;
-            margin-top: 10px;
-        }
-    </style>
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles4.css') }}">
+
 </head>
 <body>
-    <h1>Stable Diffusion Image Generator</h1>
-    <form id="generateForm">
-        <label for="model">Select Model:</label>
-        <select id="model" name="model" required>
-            {% for model_name, model_url in model_options.items() %}
-                <option value="{{ model_url }}">{{ model_name }}</option>
-            {% endfor %}
-        </select><br>
+    
+    <div id="all">
+        <h1>Stable Diffusion Image Generator</h1>
+        <form id="generateForm">
+            <label for="model">Select Model:</label>
+            <select id="model" name="model" required>
+                {% for model_name, model_url in model_options.items() %}
+                    <option value="{{ model_url }}">{{ model_name }}</option>
+                {% endfor %}
+            </select><br>
 
-        <label for="prompt">Prompt:</label>
-        <input type="text" id="prompt" name="prompt" required><br>
+            <div id="prompt-div">
+                <label for="prompt">Prompt:</label>
+                <textarea id="prompt" name="prompt" required></textarea><br>
+            </div>
 
-        <label for="negative_prompt">Negative Prompt:</label>
-        <input type="text" id="negative_prompt" name="negative_prompt"><br>
+            <div id="negative-div">
+                <label for="negative_prompt">Negative Prompt:</label>
+                <textarea id="negative_prompt" name="negative_prompt" required>(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts,  watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
+            </div>
 
-        <label for="width">Width:</label>
-        <input type="number" id="width" name="width" value="832"><br>
+            <div id="size-select">
+                <label for="width">Width:</label>
+                <input type="number" id="width" name="width" value="832" min="800"><br>
 
-        <label for="height">Height:</label>
-        <input type="number" id="height" name="height" value="1216"><br>
+                <label for="height">Height:</label>
+                <input type="number" id="height" name="height" value="1216" min="800"><br>
+            </div>
 
-        <label for="image_count">Number of Images:</label>
-        <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
+            <div id="image-count">
+                <label for="image_count">Number of Images:</label>
+                <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
+            </div>
 
-        <button type="submit">Generate Images</button>
-    </form>
+            <div id="buttons">
+                <button type="submit">Generate Images</button>
+                <button type="button" id="stopButton">Stop Generation</button>
+            </div>
 
-    <div id="status"></div>
-    <div id="images"></div>
+            <div id="status">
+                <p id="progress">Nothing Generating Yet</p>
+            </div>
+        </form>
+        <div id="images"></div>
+    </div>
 
     <script>
         document.getElementById('generateForm').addEventListener('submit', function(event) {
@@ -71,34 +79,39 @@
         setInterval(() => {
             fetch('/status')
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
                     return response.json();
                 })
                 .then(data => {
                     const imagesDiv = document.getElementById('images');
                     imagesDiv.innerHTML = ''; // Clear previous images
-                    console.log(data);
+
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
+
                     // Check if images are available
                     if (data.images.length > 0) {
                         data.images.forEach(imgData => {
                             const img = document.createElement('img');
                             img.src = imgData.img; // The image URL
                             imagesDiv.appendChild(img);
-                        });
-                        const statusDiv = document.getElementById('status');
-                        statusDiv.innerHTML = '<p id="status-text">GENERATING...</p>';
-                        
+                        });                        
                     } else {
-                        const statusDiv = document.getElementById('status');
-                        statusDiv.innerHTML = '';
-                        console.log("No images generated yet."); // Log when no images are available
+                        console.log("No images generated yet.");
                     }
                 })
                 .catch(error => console.error('Error fetching status:', error));
         }, 2000); // Check every 2 seconds
 
+        document.getElementById('stopButton').addEventListener('click', function() {
+            fetch('/stop', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.status);
+            })
+            .catch(error => console.error('Error stopping generation:', error));
+        });
     </script>
 </body>
 </html>

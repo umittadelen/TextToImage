@@ -1,0 +1,100 @@
+:root {
+    --bg-color: #2c2c2c; /* Dark background color */
+    --text-color: #ffffff; /* White text color */
+    --border-color: #ff77a0; /* Pink border color */
+    --highlight-color: #ff4d94; /* Highlight color for buttons */
+    --font-family: 'Quicksand', sans-serif; /* Quicksand font */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#all {
+    display: flex;
+    flex-direction: column; /* Change to column for vertical stacking */
+    align-items: center; /* Center align items */
+}
+
+form {
+    border: 2px solid var(--border-color);
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #3a3a3a; /* Slightly lighter background for form */
+    width: 100%; /* Adjust width as needed */
+    max-width: 600px; /* Max width for the form */
+}
+
+#generateForm > div {
+    display: flex;
+    flex-direction: column; /* Stack labels and inputs vertically */
+    margin-bottom: 10px;
+}
+
+label {
+    margin-bottom: 5px; /* Space between label and input */
+}
+
+textarea {
+    width: 100%;
+    height: 6em; /* Fixed height of 6em */
+    resize: none; /* Prevent resizing */
+    overflow-y: auto; /* Add scroll if needed */
+    line-height: 1.2em; /* Set line height */
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #4d4d4d; /* Darker background for text area */
+    color: var(--text-color);
+}
+
+input[type="number"],
+select {
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #4d4d4d; /* Darker background for input */
+    color: var(--text-color);
+}
+
+button {
+    background-color: var(--highlight-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-family: var(--font-family);
+}
+
+button:hover {
+    background-color: #ff1f7d; /* Darker shade on hover */
+}
+
+#images {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of images */
+    justify-content: center; /* Center align images */
+    margin-top: 20px;
+}
+
+#images img {
+    margin: 5px; /* Space between images */
+    border: 2px solid var(--border-color); /* Pink border around images */
+    border-radius: 5px; /* Rounded corners for images */
+    max-width: 200px; /* Adjust max width as needed */
+    height: auto; /* Maintain aspect ratio */
+}
+
+#status {
+    margin-top: 20px;
+    text-align: center;
+}
