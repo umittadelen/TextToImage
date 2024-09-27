@@ -11,6 +11,10 @@ from diffusers import (
 )
 import threading
 
+# Add a lock for image generation
+generation_lock = threading.Lock()
+generation_active = False  # Flag to track active generation
+
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 # Define model options from models.json
@@ -55,56 +59,75 @@ os.makedirs(generated_dir, exist_ok=True)
 
 # Dictionary to store generated images
 generated_image = {}
-imgstatus = 'idle'
+image_progress = {"step":0,"timestep":0,"latents":0}
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    global pipe
-    pipe = load_pipeline(request.form['model'])
+    
+    # Acquire the lock to ensure only one image generation request is processed at a time
+    if not generation_lock.acquire(blocking=False):  # Non-blocking attempt to acquire the lock
+        return jsonify(status='Image generation already in progress. Please wait.'), 429
 
-    generated_image.clear()
+    try:
+        if generation_active:
+            return jsonify(status='Image generation already in progress.'), 429
+        
+        global pipe
+        pipe = load_pipeline(request.form['model'])
 
-    prompt = utils.preprocess_prompt(request.form['prompt'])
-    negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
-    width = int(request.form.get('width', 832))
-    height = int(request.form.get('height', 1216))
-    IMAGE_COUNT = int(request.form.get('image_count', 4))
+        generated_image.clear()
 
-    global imgstatus
-    imgstatus = 'idle'
+        prompt = utils.preprocess_prompt(request.form['prompt'])
+        negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
+        width = int(request.form.get('width', 832))
+        height = int(request.form.get('height', 1216))
+        IMAGE_COUNT = int(request.form.get('image_count', 4))
 
-    # Function to generate images
-    def generate_images():
-        total_images = IMAGE_COUNT
+        # Function to generate images
+        def generate_images():
+            global image_progress
+            total_images = IMAGE_COUNT
 
-        for i in range(total_images):
-            global seed
-            seed = random.randint(0, 100000000000)
-            # Modify the generateImage function to include a callback
-            image_path = generateImage(prompt, negative_prompt, seed, width, height)
-            generated_image[seed] = image_path
-            
-            # You can still update the progress here if needed
-            print(f"Generated image: {image_path}")
+            for i in range(total_images):
+                global seed
+                seed = random.randint(0, 100000000000)
+                # Modify the generateImage function to include a callback
+                image_path = generateImage(prompt, negative_prompt, seed, width, height, progress)
+                generated_image[seed] = image_path
+                
+                # You can still update the progress here if needed
+                print(f"Generated image: {image_path}")
 
-    # Start a new thread for image generation
-    threading.Thread(target=generate_images).start()
 
-    return jsonify(status='Image generation started', count=IMAGE_COUNT)
+        def progress(step, timestep, latents):
+            global image_progress
+            image_progress['step'] = step
+            image_progress['timestep'] = timestep
+            image_progress['latents'] = latents[0][0][0][0]
+            print(image_progress)
+
+
+        # Start a new thread for image generation
+        threading.Thread(target=generate_images).start()
+
+        return jsonify(status='Image generation started', count=IMAGE_COUNT)
+    
+    except Exception as e:
+        # If an error occurs, release the lock
+        generation_active = False
+        generation_lock.release()
+        return jsonify(status='Error during image generation', error=str(e)), 500
 
 @app.route('/status', methods=['GET'])
 def status():
     # Convert the generated images to a list to send to the client
-    global imgstatus
     images = [{'img': f"/generated/{os.path.basename(path)}", 'seed': seed} for seed, path in generated_image.items()]
-    return jsonify(images=images)
+    
+    global image_progress
+    return jsonify(images=images, progress=image_progress)
 
-def generateImage(prompt, negative_prompt, seed, width, height):
+def generateImage(prompt, negative_prompt, seed, width, height, callback):
     # Generate image with progress tracking
-
-    global status
-    status = 'generating'
-
     image = pipe(
         prompt,
         negative_prompt=negative_prompt,
@@ -113,6 +136,8 @@ def generateImage(prompt, negative_prompt, seed, width, height):
         guidance_scale=7,
         num_inference_steps=28,
         generator=torch.manual_seed(seed),
+        callback=callback,
+        callback_steps=1
     ).images[0]
 
     # Save the image to the temporary directory
@@ -142,7 +167,7 @@ def serve_temp_image(filename):
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index4.html', model_options=model_options)
+    return render_template('index3.html', model_options=model_options)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000)
+    app.run(debug=True, host='192.168.0.2', port=5000)
