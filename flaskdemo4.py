@@ -158,7 +158,7 @@ def stop_generation():
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index4.html', model_options=model_options)
+    return render_template('index.html', model_options=model_options)
 
 if __name__ == '__main__':
     app.run(host='192.168.0.2', port=5000)
