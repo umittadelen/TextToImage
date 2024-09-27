@@ -46,7 +46,7 @@
         <button type="submit">Generate Images</button>
     </form>
 
-    <div id="progress"></div>
+    <div id="status"></div>
     <div id="images"></div>
 
     <script>
@@ -60,10 +60,8 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); // Check if generation started
                 if (data.seed) {
-                    globalSeed = data.seed; // Store the seed for later use
-                    console.log(`Generated seed: ${globalSeed}`);
+                    globalSeed = data.seed;
                 }
             })
             .catch(error => console.error('Error:', error));
@@ -81,9 +79,7 @@
                 .then(data => {
                     const imagesDiv = document.getElementById('images');
                     imagesDiv.innerHTML = ''; // Clear previous images
-                    
-                    console.log("Progress data:", data.progress); // Log the progress data
-
+                    console.log(data);
                     // Check if images are available
                     if (data.images.length > 0) {
                         data.images.forEach(imgData => {
@@ -91,7 +87,12 @@
                             img.src = imgData.img; // The image URL
                             imagesDiv.appendChild(img);
                         });
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.innerHTML = '<p id="status-text">GENERATING...</p>';
+                        
                     } else {
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.innerHTML = '';
                         console.log("No images generated yet."); // Log when no images are available
                     }
                 })
@@ -99,6 +100,5 @@
         }, 2000); // Check every 2 seconds
 
     </script>
-    
 </body>
 </html>
