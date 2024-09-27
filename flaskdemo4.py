@@ -161,4 +161,4 @@ def index():
     return render_template('index4.html', model_options=model_options)
 
 if __name__ == '__main__':
-    app.run( debug=True, host='192.168.0.2', port=5000)
+    app.run(host='192.168.0.2', port=5000)
