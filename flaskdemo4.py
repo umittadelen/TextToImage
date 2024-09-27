@@ -62,6 +62,8 @@ def generate():
     global pipe
     pipe = load_pipeline(request.form['model'])
 
+    generated_image.clear()
+
     prompt = utils.preprocess_prompt(request.form['prompt'])
     negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
