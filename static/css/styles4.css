@@ -10,8 +10,10 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: var(--font-family);
-    margin: 0;
+    margin: 10px;
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 h1 {
@@ -24,6 +26,8 @@ h1 {
     display: flex;
     flex-direction: column; /* Change to column for vertical stacking */
     align-items: center; /* Center align items */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 form {
@@ -104,6 +108,7 @@ button:hover {
 }
 
 #images img {
+    width: 100%;
     margin: 5px; /* Space between images */
     border: 2px solid var(--border-color); /* Pink border around images */
     border-radius: 5px; /* Rounded corners for images */

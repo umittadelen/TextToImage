@@ -85,8 +85,13 @@
                     const imagesDiv = document.getElementById('images');
                     imagesDiv.innerHTML = ''; // Clear previous images
 
-                    const statusDiv = document.getElementById('status');
-                    statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
+                    if (data.imgprogress > 0){
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.innerHTML = '<p id="progress">Progress: nothing in progress</p>';
+                    } else {
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
+                    }
 
                     // Check if images are available
                     if (data.images.length > 0) {
