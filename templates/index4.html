@@ -24,7 +24,7 @@
 
             <div id="prompt-div">
                 <label for="prompt">Prompt:</label>
-                <textarea id="prompt" name="prompt" required>1girl, withered cat girl, withered hat, dark forest, glowing tree, glowing eyes, glowing grass, dark withered maid dress, white skin, smile, cute, illustration, open mouth, vibrant colors, light particles, night, furry, fluffy, kemono</textarea><br>
+                <textarea id="prompt" name="prompt" required>1girl, cat girl, witch hat, forest, midnight, glowing tree, glowing eyes, glowing grass, dark maid dress, vampire teeth, white skin, smile, cute, illustration, open mouth, vibrant colors, light particles, night, furry, fluffy, kemono</textarea><br>
             </div>
 
             <div id="negative-div">
@@ -85,13 +85,8 @@
                     const imagesDiv = document.getElementById('images');
                     imagesDiv.innerHTML = ''; // Clear previous images
 
-                    if (data.imgprogress > 0){
-                        const statusDiv = document.getElementById('status');
-                        statusDiv.innerHTML = '<p id="progress">Progress: nothing in progress</p>';
-                    } else {
-                        const statusDiv = document.getElementById('status');
-                        statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
-                    }
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
 
                     // Check if images are available
                     if (data.images.length > 0) {

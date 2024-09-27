@@ -111,7 +111,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
 
     def progress(step, timestep, latents):
         global imgprogress
-        imgprogress = math.floor(step / (28-1) * 100)
+        imgprogress = math.floor(step / 28 * 100)
 
     image = pipe(
         prompt,
