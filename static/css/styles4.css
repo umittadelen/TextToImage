@@ -90,7 +90,7 @@ button:hover {
     margin: 5px; /* Space between images */
     border: 2px solid var(--border-color); /* Pink border around images */
     border-radius: 5px; /* Rounded corners for images */
-    max-width: 200px; /* Adjust max width as needed */
+    max-width: 400px; /* Adjust max width as needed */
     height: auto; /* Maintain aspect ratio */
 }
 
