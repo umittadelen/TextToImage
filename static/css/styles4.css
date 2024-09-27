@@ -15,10 +15,12 @@ body {
 }
 
 h1 {
+    font-family: var(--font-family);
     text-align: center;
 }
 
 #all {
+    font-family: var(--font-family);
     display: flex;
     flex-direction: column; /* Change to column for vertical stacking */
     align-items: center; /* Center align items */
@@ -34,6 +36,7 @@ form {
 }
 
 #generateForm > div {
+    font-family: var(--font-family);
     display: flex;
     flex-direction: column; /* Stack labels and inputs vertically */
     margin-bottom: 10px;
@@ -44,7 +47,8 @@ label {
 }
 
 textarea {
-    width: 100%;
+    font-family: var(--font-family);
+    font-size: 1em;
     height: 6em; /* Fixed height of 6em */
     resize: none; /* Prevent resizing */
     overflow-y: auto; /* Add scroll if needed */
@@ -56,8 +60,14 @@ textarea {
     color: var(--text-color);
 }
 
+textarea:focus {
+    outline: none;
+}
+
 input[type="number"],
 select {
+    font-size: 1em;
+    font-family: var(--font-family);
     border: 2px solid var(--border-color);
     border-radius: 5px;
     padding: 5px;
@@ -65,7 +75,14 @@ select {
     color: var(--text-color);
 }
 
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+}
+
 button {
+    font-size: 1em;
+    font-family: var(--font-family);
     background-color: var(--highlight-color);
     color: var(--text-color);
     border: none;
@@ -95,6 +112,7 @@ button:hover {
 }
 
 #status {
+    font-family: var(--font-family);
     margin-top: 20px;
     text-align: center;
 }
