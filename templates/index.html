@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Image Generator</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
@@ -22,14 +22,25 @@
                 {% endfor %}
             </select><br>
 
+            <div>
+                <label for="model">Select Lora:</label>
+                <select id="lora_model" name="lora_model" multiple>
+                    {% for lora_name, lora_url in lora_options.items() %}
+                        <option value="{{ lora_url[0] }}" title="{{ lora_url[1] }}">{{ lora_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="lora_weights_container"></div>
+
             <div id="prompt-div">
                 <label for="prompt">Prompt:</label>
-                <textarea id="prompt" name="prompt" required>1girl, cat girl, witch hat, forest, midnight, glowing tree, glowing eyes, glowing grass, dark maid dress, vampire teeth, white skin, smile, cute, illustration, open mouth, vibrant colors, light particles, night, furry, fluffy, kemono</textarea><br>
+                <textarea id="prompt" name="prompt" required>1girl, cat girl, witch hat, forest, midnight, glowing tree, glowing eyes, glowing grass, dark maid dress, long vampire teeth, white skin, red hair, smile, cute, illustration, open mouth, vibrant colors, night, furry, fluffy, kemono</textarea><br>
             </div>
 
             <div id="negative-div">
                 <label for="negative_prompt">Negative Prompt:</label>
-                <textarea id="negative_prompt" name="negative_prompt" required>(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts,  watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
+                <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts,  watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
             </div>
 
             <div id="size-select">
@@ -52,6 +63,7 @@
 
             <div id="status">
                 <p id="progress">Nothing Generating Yet</p>
+                <progress id="file" value="32" max="100"> 32% </progress>
             </div>
         </form>
         <div id="images"></div>
@@ -62,6 +74,15 @@
             event.preventDefault();
 
             const formData = new FormData(this);
+
+            // Append slider values for each selected LoRA
+            const selectedOptions = Array.from(document.getElementById('lora_model').selectedOptions);
+            selectedOptions.forEach(option => {
+                const loraName = option.text; // Get the name of the LoRA
+                const sliderValue = document.getElementById(`slider_${loraName}`).value; // Get the slider value
+                formData.append(`lora_weight_${loraName}`, sliderValue); // Append to form data
+            });
+
             fetch('/generate', {
                 method: 'POST',
                 body: formData
@@ -75,6 +96,7 @@
             .catch(error => console.error('Error:', error));
         });
 
+
         // Use a polling mechanism to check for newly generated images
         setInterval(() => {
             fetch('/status')
@@ -86,7 +108,15 @@
                     imagesDiv.innerHTML = ''; // Clear previous images
 
                     const statusDiv = document.getElementById('status');
-                    statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+"%</p>";
+                    if (data.imgprogress == "") {
+                        statusDiv.innerHTML = '<p id="progress">Progress: Nothing In Progress</p><progress id="progress-bar" value="0" max="100">0%</progress>';
+                    } else if (data.imgprogress == "done") {
+                        statusDiv.innerHTML = '<p id="progress">Progress: Finished</p><progress id="progress-bar" value="100" max="100">100%</progress>';
+                    }
+                    else {
+                        statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+'%</p><progress id="progress-bar" value="'+data.imgprogress+'" max="100">0%</progress>';
+                    }
+                    
 
                     // Check if images are available
                     if (data.images.length > 0) {
@@ -111,6 +141,80 @@
                 console.log(data.status);
             })
             .catch(error => console.error('Error stopping generation:', error));
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const loraModelSelect = document.getElementById('lora_model');
+
+            loraModelSelect.addEventListener('click', function (event) {
+                const option = event.target;
+
+                if (option.tagName === 'OPTION') {
+                    // Toggle selected class for the clicked option
+                    option.classList.toggle('selected');
+
+                    // Toggle the selected state of the option
+                    option.selected = !option.selected;
+                }
+            });
+        });
+
+        document.getElementById('lora_model').addEventListener('change', function () {
+            const selectedOptions = Array.from(this.selectedOptions);
+            const loraWeightsContainer = document.getElementById('lora_weights_container');
+
+            // Create a set of currently selected LoRA names for easy lookup
+            const selectedLoraNames = new Set(selectedOptions.map(option => option.text));
+
+            // Iterate through the container's children to update visibility of sliders
+            const allSliders = Array.from(loraWeightsContainer.children);
+            allSliders.forEach((child, index) => {
+                if (child.tagName === 'LABEL') {
+                    const associatedSliderId = child.htmlFor;
+                    const loraName = associatedSliderId.replace('slider_', ''); // Extract the LoRA name from the ID
+
+                    // Update visibility based on whether the LoRA is selected
+                    if (selectedLoraNames.has(loraName)) {
+                        child.style.display = 'block'; // Show the label
+                        child.nextSibling.style.display = 'block'; // Show the slider
+                        child.nextSibling.nextSibling.style.display = 'block'; // Show the <br> after the slider
+                    } else {
+                        child.style.display = 'none'; // Hide the label
+                        child.nextSibling.style.display = 'none'; // Hide the slider
+                        child.nextSibling.nextSibling.style.display = 'none'; // Hide the <br>
+                    }
+                }
+            });
+
+            // Add sliders for any new selections
+            selectedOptions.forEach(option => {
+                const loraName = option.text; // Get the name of the LoRA
+                let slider = document.getElementById(`slider_${loraName}`);
+                
+                // If the slider doesn't exist, create it
+                if (!slider) {
+                    slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.min = '0';
+                    slider.max = '2';
+                    slider.step = '0.1';
+                    slider.value = '0.7'; // Default value for the slider
+                    slider.id = `slider_${loraName}`;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = slider.id;
+                    label.innerText = `${loraName} Weight: ${slider.value}`;
+                    
+                    slider.addEventListener('input', function () {
+                        label.innerText = `${loraName} Weight: ${this.value}`; // Update label as slider moves
+                    });
+
+                    // Append the label and slider to the container
+                    loraWeightsContainer.appendChild(label);
+                    loraWeightsContainer.appendChild(slider);
+                    loraWeightsContainer.appendChild(document.createElement('br'));
+                }
+            });
         });
     </script>
 </body>

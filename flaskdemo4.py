@@ -11,6 +11,7 @@ from diffusers import (
 )
 import threading
 import math
+import logging
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 
@@ -20,7 +21,10 @@ generation_stopped = False
 with open('models.json', 'r') as f:
     model_options = json.load(f)
 
-def load_pipeline(model_name):
+with open('loras.json', 'r') as f:
+    lora_options = json.load(f)
+
+def load_pipeline(model_name, lora_names=[], lora_weights={}):
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
         "madebyollin/sdxl-vae-fp16-fix",
@@ -45,12 +49,27 @@ def load_pipeline(model_name):
         use_auth_token=HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
     )
 
+    # Apply LoRA models if provided
+    if lora_names:
+        for lora_name in lora_names:
+            if lora_name.endswith(".safetensors") or os.path.isfile(lora_name):
+                pipe.unet.load_attn_procs(lora_name)
+            else:
+                # Load LoRA from HuggingFace or other sources
+                pipe.load_lora_weights(lora_name)
+
+            # Set the weight for each LoRA
+            if lora_name in lora_weights:
+                pipe.unet.set_lora_weight(lora_name, lora_weights[lora_name])
+
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
 
     return pipe
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # Create a temporary directory for images
 generated_dir = './generated/'
@@ -58,12 +77,18 @@ os.makedirs(generated_dir, exist_ok=True)
 
 # Dictionary to store generated images
 generated_image = {}
-imgprogress = 0
+imgprogress = ""
 
 @app.route('/generate', methods=['POST'])
 def generate():
+
+    model_name = request.form['model']
+
+    lora_names = request.form.getlist('lora_model')
+    lora_weights = {name: float(request.form.get(f'lora_weight_{name}')) for name in lora_names}
+
     global pipe
-    pipe = load_pipeline(request.form['model'])
+    pipe = load_pipeline(model_name, lora_names, lora_weights)
 
     generated_image.clear()
 
@@ -88,6 +113,9 @@ def generate():
             image_path = generateImage(prompt, negative_prompt, seed, width, height)
             generated_image[seed] = image_path
 
+            global imgprogress
+            imgprogress = "done"
+
             print(f"Generated image: {image_path}")
 
 
@@ -111,7 +139,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
 
     def progress(step, timestep, latents):
         global imgprogress
-        imgprogress = math.floor(step / 28 * 100)
+        imgprogress = str(math.floor(step / 28 * 100))
 
     image = pipe(
         prompt,
@@ -158,7 +186,7 @@ def stop_generation():
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html', model_options=model_options)
+    return render_template('index.html', model_options=model_options, lora_options=lora_options)
 
 if __name__ == '__main__':
     app.run(host='192.168.0.2', port=5000)

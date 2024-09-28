@@ -1,8 +1,0 @@
-{
-    "Wai Chibi Furry V1 SDXL":"https://huggingface.co/John6666/wai-chibi-furry-v1-sdxl/blob/main/unet/diffusion_pytorch_model.safetensors",
-    "Pixel Art XL":"https://huggingface.co/nerijs/pixel-art-xl/blob/main/pixel-art-xl.safetensors",
-    "LiDAR Vision":"https://huggingface.co/glif/LiDAR-Vision/blob/main/Lidar.safetensors",
-    "90s Anime Style":"https://huggingface.co/glif/90s-anime-art/blob/main/flux_dev_anime.safetensors",
-    "Dithering":"https://huggingface.co/glif/dithering/blob/main/flux_dev_Dither_Atkinson_Coarse_captions.safetensors",
-    "Furry Toon Mix":"https://huggingface.co/GraydientPlatformAPI/furrytoonmix/blob/main/unet/diffusion_pytorch_model.safetensors"
-}
