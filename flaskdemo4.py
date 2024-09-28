@@ -81,6 +81,8 @@ imgprogress = ""
 
 @app.route('/generate', methods=['POST'])
 def generate():
+    global imgprogress
+    imgprogress = "starting"
 
     model_name = request.form['model']
 

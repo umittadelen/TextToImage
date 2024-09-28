@@ -112,6 +112,8 @@
                         statusDiv.innerHTML = '<p id="progress">Progress: Nothing In Progress</p><progress id="progress-bar" value="0" max="100">0%</progress>';
                     } else if (data.imgprogress == "done") {
                         statusDiv.innerHTML = '<p id="progress">Progress: Finished</p><progress id="progress-bar" value="100" max="100">100%</progress>';
+                    } else if (data.imgprogress == "starting") {
+                        statusDiv.innerHTML = '<p id="progress">Progress: Starting</p><progress id="progress-bar" value="0" max="100">100%</progress>';
                     }
                     else {
                         statusDiv.innerHTML = '<p id="progress">Progress: '+data.imgprogress+'%</p><progress id="progress-bar" value="'+data.imgprogress+'" max="100">0%</progress>';
