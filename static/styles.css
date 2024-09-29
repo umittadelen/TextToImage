@@ -147,40 +147,17 @@ button:hover {
     border-radius: 10px; /* Rounded corners */
 }
 
-select#lora_model {
-    margin-bottom: 10px;
-    font-size: 1em;
-    font-family: var(--font-family);
-    border: 2px solid var(--border-color);
-    border-radius: 5px;
-    padding: 5px;
-    background-color: var(--bg-light-color); /* Darker background for the multi-select */
-    color: var(--text-color);
-    height: 120px; /* Set a fixed height to accommodate multiple selections */
-    overflow-y: auto; /* Allow scrolling for overflowed items */
+select#example_prompt {
+    overflow: auto;
+    width: 100%;
 }
 
-select#lora_model option {
+select#example_prompt option {
     background-color: var(--bg-light-color); /* Background color for options */
     color: var(--text-color); /* Text color for options */
     border-radius: 5px;
     border: 2px solid var(--bg-light-color);
-}
-
-select#lora_model option:hover {
-    background-color: var(--highlight-color); /* Highlight color on hover */
-    border-radius: 5px;
-    border: 2px solid var(--highlight-color);
-}
-
-select#lora_model:focus {
-    outline: none; /* Remove default outline */
-    border-color: var(--highlight-color); /* Change border color on focus */
-}
-
-select#lora_model option.selected {
-    background-color: var(--highlight-color); /* Highlight color for selected options */
-    color: var(--text-color); /* Keep text color consistent */
+    width: 100%;
 }
 
 ::-webkit-scrollbar {

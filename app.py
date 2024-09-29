@@ -2,29 +2,29 @@
 from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
-import os
 import utils
 import json
 from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
 )
-import threading
+import os
 import math
 import logging
+import time
+import threading
+from config import Config
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-generation_stopped = False
+config = Config()
 
 # Define model options from models.json
 with open('models.json', 'r') as f:
     model_options = json.load(f)
 
-with open('loras.json', 'r') as f:
-    lora_options = json.load(f)
+with open('examplePrompts.json', 'r') as f:
+    prompt_examples = json.load(f)
 
-def load_pipeline(model_name, lora_names=[], lora_weights={}):
+def load_pipeline(model_name):
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
         "madebyollin/sdxl-vae-fp16-fix",
@@ -46,21 +46,8 @@ def load_pipeline(model_name, lora_names=[], lora_weights={}):
         custom_pipeline="lpw_stable_diffusion_xl",
         use_safetensors=True,
         add_watermarker=False,
-        use_auth_token=HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
+        use_auth_token=config.HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
     )
-
-    # Apply LoRA models if provided
-    if lora_names:
-        for lora_name in lora_names:
-            if lora_name.endswith(".safetensors") or os.path.isfile(lora_name):
-                pipe.unet.load_attn_procs(lora_name)
-            else:
-                # Load LoRA from HuggingFace or other sources
-                pipe.load_lora_weights(lora_name)
-
-            # Set the weight for each LoRA
-            if lora_name in lora_weights:
-                pipe.unet.set_lora_weight(lora_name, lora_weights[lora_name])
 
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
@@ -71,77 +58,72 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-# Create a temporary directory for images
-generated_dir = './generated/'
-os.makedirs(generated_dir, exist_ok=True)
-
-# Dictionary to store generated images
-generated_image = {}
-imgprogress = ""
-
 @app.route('/generate', methods=['POST'])
 def generate():
-    global imgprogress
-    imgprogress = "starting"
+    # Initialize global state
+    global pipe, seed
 
+    # Check if generation is already in progress
+    if config.generating:
+        return jsonify(status='Image generation already in progress'), 400
+
+    config.generating = True
+    config.generated_image.clear()
+    config.imgprogress = "Starting image generation..."
+
+    # Get parameters from the request
     model_name = request.form['model']
-
-    lora_names = request.form.getlist('lora_model')
-    lora_weights = {name: float(request.form.get(f'lora_weight_{name}')) for name in lora_names}
-
-    global pipe
-    pipe = load_pipeline(model_name, lora_names, lora_weights)
-
-    generated_image.clear()
-
     prompt = utils.preprocess_prompt(request.form['prompt'])
     negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
-    IMAGE_COUNT = int(request.form.get('image_count', 4))
+    config.IMAGE_COUNT = int(request.form.get('image_count', 4))
+
+    # Load the model pipeline
+    try:
+        pipe = load_pipeline(model_name)
+    except Exception as e:
+        config.generating = False
+        return jsonify(status=f"Error loading model: {str(e)}"), 500
 
     # Function to generate images
     def generate_images():
-        total_images = IMAGE_COUNT
-
-        for i in range(total_images):
-            global seed
-            seed = random.randint(0, 100000000000)
-
-            if generation_stopped:
+        for i in range(config.IMAGE_COUNT):
+            if config.generation_stopped:
+                config.imgprogress = "Generation stopped"
                 print("Generation stopped.")
-                break  # Exit the loop if generation is stopped
-                
+                break
+
+            # Update the progress message
+            config.imgprogress = f"Generating {config.IMAGE_COUNT - i} images..."
+
+            # Generate a new seed for each image
+            seed = random.randint(0, 100000000000)
             image_path = generateImage(prompt, negative_prompt, seed, width, height)
-            generated_image[seed] = image_path
 
-            global imgprogress
-            imgprogress = "done"
-
+            # Store the generated image path
+            config.generated_image[seed] = image_path
             print(f"Generated image: {image_path}")
 
+        config.imgprogress = "Generation complete"
+        config.generating = False
 
-    # Start a new thread for image generation
+    # Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
 
-    global generation_stopped
-    generation_stopped = False
-
-    return jsonify(status='Image generation started', count=IMAGE_COUNT)
+    return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
 
 @app.route('/status', methods=['GET'])
 def status():
     # Convert the generated images to a list to send to the client
-    global imgprogress
-    images = [{'img': f"/generated/{os.path.basename(path)}", 'seed': seed} for seed, path in generated_image.items()]
-    return jsonify(images=images, imgprogress=imgprogress)
+    images = [{'img': f"/generated/{os.path.basename(path)}", 'seed': seed} for seed, path in config.generated_image.items()]
+    return jsonify(images=images, imgprogress=config.imgprogress)
 
 def generateImage(prompt, negative_prompt, seed, width, height):
     # Generate image with progress tracking
 
     def progress(step, timestep, latents):
-        global imgprogress
-        imgprogress = str(math.floor(step / 28 * 100))
+        config.imgprogress = int(math.floor(step / 28 * 100))
 
     image = pipe(
         prompt,
@@ -156,15 +138,17 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     ).images[0]
 
     # Save the image to the temporary directory
-    image_path = os.path.join(generated_dir, f'image_{seed}.png')
+    image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
     image.save(image_path, 'PNG')
+
+    config.imgprogress = "done"
 
     return image_path
 
 # Route for downloading an image
 @app.route('/generated/<int:seed>', methods=['GET'])
 def download_image(seed):
-    image_path = generated_image.get(seed)
+    image_path = config.generated_image.get(seed)
     if image_path and os.path.exists(image_path):
         return send_file(
             image_path, 
@@ -177,18 +161,17 @@ def download_image(seed):
 # Serve the temp images
 @app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
-    return send_file(os.path.join(generated_dir, filename), mimetype='image/png')
+    return send_file(os.path.join(config.generated_dir, filename), mimetype='image/png')
 
 @app.route('/stop', methods=['POST'])
 def stop_generation():
-    global generation_stopped
-    generation_stopped = True
+    config.generation_stopped = True
     return jsonify(status='Image generation stopped')
 
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html', model_options=model_options, lora_options=lora_options)
+    return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000)
+    app.run(host='192.168.0.2', port=5000, debug=True)
