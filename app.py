@@ -91,6 +91,8 @@ def generate():
         for i in range(config.IMAGE_COUNT):
             if config.generation_stopped:
                 config.imgprogress = "Generation stopped"
+                config.generating = False
+                config.generation_stopped = False
                 print("Generation stopped.")
                 break
 
