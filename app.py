@@ -14,6 +14,7 @@ import logging
 import time
 import threading
 from config import Config
+from nudenet import NudeDetector
 
 config = Config()
 
@@ -93,7 +94,6 @@ def generate():
                 config.imgprogress = "Generation stopped"
                 config.generating = False
                 config.generation_stopped = False
-                print("Generation stopped.")
                 break
 
             # Update the progress message
@@ -101,11 +101,10 @@ def generate():
 
             # Generate a new seed for each image
             seed = random.randint(0, 100000000000)
-            image_path = generateImage(prompt, negative_prompt, seed, width, height)
+            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height)
 
             # Store the generated image path
-            config.generated_image[seed] = image_path
-            print(f"Generated image: {image_path}")
+            config.generated_image[seed] = [image_path, sensitive]
 
         config.imgprogress = "Generation complete"
         config.generating = False
@@ -118,11 +117,19 @@ def generate():
 @app.route('/status', methods=['GET'])
 def status():
     # Convert the generated images to a list to send to the client
-    images = [{'img': f"/generated/{os.path.basename(path)}", 'seed': seed} for seed, path in config.generated_image.items()]
+    images =[
+        {
+            'img': path[0],
+            'seed': seed,
+            'sensitive': path[1]
+        } for seed, path in config.generated_image.items()]
+    
     return jsonify(images=images, imgprogress=config.imgprogress)
 
 def generateImage(prompt, negative_prompt, seed, width, height):
     # Generate image with progress tracking
+
+    detector = NudeDetector()
 
     def progress(step, timestep, latents):
         config.imgprogress = int(math.floor(step / 28 * 100))
@@ -143,22 +150,27 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
     image.save(image_path, 'PNG')
 
+    detection_results = detector.detect(image_path)
     config.imgprogress = "done"
 
-    return image_path
+    # Define sensitive classes
+    sensitive_classes = {
+        "FEMALE_GENITALIA_COVERED",
+        "BUTTOCKS_EXPOSED",
+        "FEMALE_BREAST_EXPOSED",
+        "FEMALE_GENITALIA_EXPOSED",
+        "MALE_BREAST_EXPOSED",
+        "ANUS_EXPOSED",
+        "BELLY_COVERED",
+        "ARMPITS_COVERED",
+        "ARMPITS_EXPOSED",
+        "BELLY_EXPOSED",
+        "MALE_GENITALIA_EXPOSED",
+        "ANUS_COVERED",
+        "BUTTOCKS_COVERED"
+    }
 
-# Route for downloading an image
-@app.route('/generated/<int:seed>', methods=['GET'])
-def download_image(seed):
-    image_path = config.generated_image.get(seed)
-    if image_path and os.path.exists(image_path):
-        return send_file(
-            image_path, 
-            mimetype='image/png', 
-            as_attachment=True, 
-            download_name=f"image_{seed}.png"
-        )
-    return jsonify(error="Image not found"), 404
+    return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
 
 # Serve the temp images
 @app.route('/generated/<filename>', methods=['GET'])

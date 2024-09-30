@@ -3,25 +3,33 @@
     --bg-light-color: #3a3a3a; /* Dark background color */
     --text-color: #ffffff; /* White text color */
     --border-color: #ff77a0; /* Pink border color */
-    --highlight-color: #ff4d94; /* Highlight color for buttons */
+    --highlight-color: #e63b7f; /* Highlight color for buttons */
     --font-family: 'Quicksand', sans-serif; /* Quicksand font */
+    --border: 2px solid var(--border-color);
+    --border-highlighted: 2px solid var(--highlight-color);
+    --transition:all 0.5s ease;
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: var(--font-family);
-    margin: 10px;
+    margin: 0px;
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
     scroll-behavior: smooth;
     overflow-x: hidden;
+    user-select: none;
 }
 
 h1 {
     font-family: var(--font-family);
     text-align: center;
+    font-weight: 600;
+    margin-bottom: 30px;
+    display: block;
+    overflow: auto;
 }
 
 #all {
@@ -30,95 +38,127 @@ h1 {
     flex-direction: column; /* Change to column for vertical stacking */
     align-items: center; /* Center align items */
     box-sizing: border-box;
+    width: 100%;
+    transition: var(--transition);
 }
 
 form {
-    border: 2px solid var(--border-color);
+    box-sizing: border-box;
+    border: var(--border);
     padding: 20px;
     border-radius: 10px;
     background-color: var(--bg-light-color); /* Slightly lighter background for form */
-    width: 80%; /* Adjust width as needed */
-    max-width: 100%; /* Max width for the form */
+    width: 90%;
+    max-width: 100%; /* Ensure form isn't too wide */
+    margin: 0 auto; /* Center the form */
 }
 
 #generateForm > div {
     font-family: var(--font-family);
     display: flex;
     flex-direction: column; /* Stack labels and inputs vertically */
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 label {
     margin-bottom: 5px; /* Space between label and input */
+    font-weight: 500;
+    font-size: 1.25em;
+}
+
+textarea, 
+input[type="number"], 
+select {
+    font-family: var(--font-family);
+    font-size: 1em;
+    padding: 10px;
+    border: var(--border);
+    border-radius: 5px;
+    background-color: var(--bg-light-color); /* Darker background for text area */
+    color: var(--text-color);
+    transition: var(--transition);
 }
 
 textarea {
-    font-family: var(--font-family);
-    font-size: 1em;
     height: 6em; /* Fixed height of 6em */
     resize: none; /* Prevent resizing */
     overflow-y: auto; /* Add scroll if needed */
-    line-height: 1.2em; /* Set line height */
-    border: 2px solid var(--border-color);
-    border-radius: 5px;
-    padding: 5px;
-    background-color: var(--bg-light-color); /* Darker background for text area */
-    color: var(--text-color);
+    line-height: 1.4em; /* Set line height */
 }
 
-textarea:focus {
-    outline: none;
-    border: 2px solid var(--highlight-color);
-}
-
-input[type="number"],
-select {
-    font-size: 1em;
-    font-family: var(--font-family);
-    border: 2px solid var(--border-color);
-    border-radius: 5px;
-    padding: 5px;
-    background-color: var(--bg-light-color); /* Darker background for input */
-    color: var(--text-color);
-}
-
-input[type="number"]:focus,
+textarea:focus, 
+input[type="number"]:focus, 
 select:focus {
     outline: none;
-    border: 2px solid var(--highlight-color);
+    border: var(--border-highlighted);
+    background-color: var(--bg-color); /* Darken background on focus */
 }
 
 button {
-    font-size: 1em;
+    margin-bottom: 15px;
+    font-size: 1.25em;
     font-family: var(--font-family);
     background-color: var(--border-color);
     color: var(--text-color);
-    border: none;
+    border: var(--border);
     border-radius: 5px;
     padding: 10px 15px;
     cursor: pointer;
-    font-family: var(--font-family);
+    transition: var(--transition);
 }
 
 button:hover {
-    background-color: var(--highlight-color); /* Darker shade on hover */
+    border: var(--border-highlighted);
+    background-color: var(--highlight-color);
+    transition: var(--transition);
 }
 
 #images {
+    user-select: auto;
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping of images */
-    justify-content: center; /* Center align images */
+    flex-wrap: wrap;
+    justify-content: center;
     margin-top: 20px;
+    gap: 15px;
     max-width: 100%;
 }
 
-#images img {
+#images .image-wrapper img {
     width: 100%;
-    margin: 5px; /* Space between images */
-    border: 2px solid var(--border-color); /* Pink border around images */
-    border-radius: 5px; /* Rounded corners for images */
+    height: 100%;
+    border-radius: 10px; /* Rounded corners for images */
     max-width: 400px; /* Adjust max width as needed */
-    height: auto; /* Maintain aspect ratio */
+    overflow: hidden; /* Hide overflow */
+    padding: 0px;
+    margin: 0px;
+}
+
+.image-wrapper {
+    position: relative;
+    overflow: hidden; /* Hide overflow */
+    border: var(--border); /* Optional: Add border */
+    border-radius: 10px; /* Optional: Rounded corners */
+    padding: 0px;
+    margin: 0px;
+}
+
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    z-index: 10;
+    text-align: center;
+    font-size: 14px;
+}
+
+.blurred {
+    filter: blur(30px); /* Adjust blur level */
+    transition: var(--transition);
 }
 
 #status {
@@ -131,35 +171,112 @@ button:hover {
     width: 100%;
     height: 1em;
     font-family: var(--font-family);
-    margin-top: 20px;
-    text-align: center;
     border-radius: 10px;
+    margin-top: 10px;
 }
 
 #status progress::-webkit-progress-bar {
     background-color: var(--bg-color);
-    border: 2px solid var(--border-color);
     border-radius: 10px;
 }
 
 #status progress::-webkit-progress-value {
     background-color: var(--border-color);
-    border-radius: 10px; /* Rounded corners */
+    border-radius: 10px;
+    transition: var(--transition);
+}
+
+#status progress::-webkit-progress-value:hover {
+    background-color: var(--highlight-color);
+    border-radius: 10px;
+    transition: var(--transition);
 }
 
 select#example_prompt {
-    overflow: auto;
     width: 100%;
+    font-size: 1em;
 }
 
 select#example_prompt option {
     background-color: var(--bg-light-color); /* Background color for options */
     color: var(--text-color); /* Text color for options */
-    border-radius: 5px;
-    border: 2px solid var(--bg-light-color);
-    width: 100%;
 }
 
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-left: 10px; /* Optional: Adds space between label and switch */
+}
+
+.switch input {
+    opacity: 0;
+    width: 60px; /* Ensure it covers the entire switch */
+    height: 34px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2; /* Ensure the input is on top for clicking */
+    cursor: pointer;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-light-color);
+    border: var(--border);
+    transition: var(--transition);
+    border-radius: 34px;
+    z-index: 1;
+}
+
+.slider:before {
+    position: absolute;
+    content: "OFF";
+    text-align: center;
+    display: flex; /* Enable flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    font-size: 10px;
+    height: 26px;
+    width: 26px;
+    top: 2px;
+    left: 2px;
+    bottom: 4px;
+    background-color: var(--border-color);
+    transition: var(--transition);
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--bg-light-color);
+}
+
+input:checked + .slider:before {
+    content: "ON";
+    transform: translateX(26px);
+    background-color: var(--highlight-color);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--highlight-color);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Custom scrollbar styling */
 ::-webkit-scrollbar {
     width: 12px; /* Width of the scrollbar */
     background-color: var(--bg-light-color); /* Background color of the scrollbar */
@@ -169,8 +286,10 @@ select#example_prompt option {
 ::-webkit-scrollbar-thumb {
     background-color: var(--border-color); /* Color of the scrollbar handle */
     border-radius: 10px; /* Rounded corners */
+    transition: var(--transition);
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--highlight-color); /* Color on hover */
+    transition: var(--transition);
 }
