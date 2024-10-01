@@ -1,5 +1,6 @@
 {
     "Animagine XL 3.1":"https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors",
     "SeaArt Furry XL 4.0":"https://huggingface.co/SeaArtLab/SeaArt-Furry-XL-1.0/blob/main/furry-xl-4.0.safetensors",
-    "Wai Chibi Furry V1 SDXL":"John6666/wai-chibi-furry-v1-sdxl"
+    "Wai Chibi Furry V1 SDXL":"John6666/wai-chibi-furry-v1-sdxl",
+    "SDXL base 1.0":"stabilityai/stable-diffusion-xl-base-1.0"
 }

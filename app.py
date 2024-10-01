@@ -188,4 +188,4 @@ def index():
     return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000, debug=True)
+    app.run(host='192.168.0.2', port=5000)
