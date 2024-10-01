@@ -26,6 +26,7 @@ with open('examplePrompts.json', 'r') as f:
     prompt_examples = json.load(f)
 
 def load_pipeline(model_name):
+    config.imgprogress = "Loading Pipeline..."
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
         "madebyollin/sdxl-vae-fp16-fix",
@@ -52,7 +53,7 @@ def load_pipeline(model_name):
 
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
-
+    config.imgprogress = "Pipeline Loadded..."
     return pipe
 
 app = Flask(__name__)
@@ -85,6 +86,7 @@ def generate():
         pipe = load_pipeline(model_name)
     except Exception as e:
         config.generating = False
+        config.imgprogress = "Error Loading Model..."
         return jsonify(status=f"Error loading model: {str(e)}"), 500
 
     # Function to generate images
@@ -134,6 +136,8 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     def progress(step, timestep, latents):
         config.imgprogress = int(math.floor(step / 28 * 100))
 
+    config.imgprogress = "Generating image..."
+
     image = pipe(
         prompt,
         negative_prompt=negative_prompt,
@@ -162,11 +166,11 @@ def generateImage(prompt, negative_prompt, seed, width, height):
         "MALE_BREAST_EXPOSED",
         "ANUS_EXPOSED",
         "BELLY_COVERED",
-        "ARMPITS_COVERED",
-        "ARMPITS_EXPOSED",
+        "FEET_COVERED",
         "BELLY_EXPOSED",
         "MALE_GENITALIA_EXPOSED",
         "ANUS_COVERED",
+        "FEMALE_BREAST_COVERED",
         "BUTTOCKS_COVERED"
     }
 
