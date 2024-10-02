@@ -3,7 +3,7 @@
     --bg-light-color: #3a3a3a; /* Dark background color */
     --text-color: #ffffff; /* White text color */
     --border-color: #ff77a0; /* Pink border color */
-    --highlight-color: #e63b7f; /* Highlight color for buttons */
+    --highlight-color: #ff588a; /* Highlight color for buttons */
     --font-family: 'Quicksand', sans-serif; /* Quicksand font */
     --border: 2px solid var(--border-color);
     --border-highlighted: 2px solid var(--highlight-color);

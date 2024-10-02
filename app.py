@@ -15,6 +15,8 @@ import time
 import threading
 from config import Config
 from nudenet import NudeDetector
+import sys
+import subprocess
 
 config = Config()
 
@@ -40,7 +42,7 @@ def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
 
     if model_name in config.model_cache:
-        config.imgprogress = "Using cached pipeline..."
+        config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
     # Load the VAE model
@@ -88,7 +90,7 @@ def generate():
 
     config.generating = True
     config.generated_image.clear()
-    config.imgprogress = "Starting image generation..."
+    config.imgprogress = "Starting Image Generation..."
 
     # Get parameters from the request
     model_name = request.form['model']
@@ -110,14 +112,14 @@ def generate():
     def generate_images():
         for i in range(config.IMAGE_COUNT):
             if config.generation_stopped:
-                config.imgprogress = "Generation stopped"
+                config.imgprogress = "Generation Stopped"
                 config.generating = False
                 config.generation_stopped = False
                 break
 
             # Update the progress message
             config.remainingImages = config.IMAGE_COUNT - i
-            config.imgprogress = f"Generating {config.remainingImages} images..."
+            config.imgprogress = f"Generating {config.remainingImages} Images..."
 
             # Generate a new seed for each image
             seed = random.randint(0, 100000000000)
@@ -126,7 +128,7 @@ def generate():
             # Store the generated image path
             config.generated_image[seed] = [image_path, sensitive]
 
-        config.imgprogress = "Generation complete"
+        config.imgprogress = "Generation Complete"
         config.generating = False
 
     # Start image generation in a separate thread to avoid blocking
@@ -154,7 +156,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     def progress(step, timestep, latents):
         config.imgprogress = int(math.floor(step / 28 * 100))
 
-    config.imgprogress = "Generating image..."
+    config.imgprogress = "Generating Image..."
 
     image = pipe(
         prompt,
@@ -173,7 +175,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     image.save(image_path, 'PNG')
 
     detection_results = detector.detect(image_path)
-    config.imgprogress = "done"
+    config.imgprogress = "DONE"
 
     # Define sensitive classes
     sensitive_classes = {
@@ -187,7 +189,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
         "BELLY_EXPOSED",
         "MALE_GENITALIA_EXPOSED",
         "ANUS_COVERED",
-        "FEMALE_BREAST_COVERED",
+        #"FEMALE_BREAST_COVERED",
         "BUTTOCKS_COVERED"
     }
 
@@ -203,10 +205,19 @@ def stop_generation():
     config.generation_stopped = True
     return jsonify(status='Image generation stopped')
 
+@app.route('/restart', methods=['POST'])
+def restart_app():
+    # Spawn a new process of the current script
+    subprocess.Popen([sys.executable] + sys.argv)
+    
+    # Exit the current process
+    os._exit(0)
+
 # Serve the HTML page
 @app.route('/')
 def index():
     return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000, debug=True)
+    app.run(host='192.168.0.2', port=5000, debug=False)
+    config.imgprogress = "Server Started"
