@@ -1,0 +1,18 @@
+button {
+    margin-bottom: 15px;
+    font-size: 1.25em;
+    font-family: var(--font-family);
+    background-color: var(--border-color);
+    color: var(--text-color);
+    border: var(--border);
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+button:hover {
+    border: var(--border-highlighted);
+    background-color: var(--highlight-color);
+    transition: var(--transition);
+}

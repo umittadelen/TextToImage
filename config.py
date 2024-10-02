@@ -15,3 +15,7 @@ class Config():
         self.generated_image = {}
         self.imgprogress = ""
         self.IMAGE_COUNT = 0
+
+        self.model_cache = {}
+
+        self.remainingImages = 0

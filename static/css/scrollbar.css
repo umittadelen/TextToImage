@@ -1,0 +1,17 @@
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+    background-color: var(--bg-light-color); /* Background color of the scrollbar */
+    border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); /* Color of the scrollbar handle */
+    border-radius: 10px; /* Rounded corners */
+    transition: var(--transition);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--highlight-color); /* Color on hover */
+    transition: var(--transition);
+}

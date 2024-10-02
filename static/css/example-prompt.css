@@ -1,0 +1,10 @@
+select#example_prompt {
+    appearance:none;
+    width: 100%;
+    font-size: 1em;
+}
+
+select#example_prompt option {
+    background-color: var(--bg-light-color); /* Background color for options */
+    color: var(--text-color); /* Text color for options */
+}

@@ -18,15 +18,31 @@ from nudenet import NudeDetector
 
 config = Config()
 
-# Define model options from models.json
-with open('models.json', 'r') as f:
-    model_options = json.load(f)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
-with open('examplePrompts.json', 'r') as f:
-    prompt_examples = json.load(f)
+# Load model options and prompt examples
+try:
+    with open('models.json', 'r') as f:
+        model_options = json.load(f)
+except Exception as e:
+    log.error(f"Error loading models.json: {e}")
+    model_options = {"Animagine XL 3.1":"https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors"}
+
+try:
+    with open('examplePrompts.json', 'r') as f:
+        prompt_examples = json.load(f)
+except Exception as e:
+    log.error(f"Error loading examplePrompts.json: {e}")
+    prompt_examples = {"examples":["a short and cute mushroom girl, walking in the forest, smile, cute, illustration, open mouth, vibrant colors"]}
 
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
+
+    if model_name in config.model_cache:
+        config.imgprogress = "Using cached pipeline..."
+        return config.model_cache[model_name]
+
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
         "madebyollin/sdxl-vae-fp16-fix",
@@ -48,17 +64,18 @@ def load_pipeline(model_name):
         custom_pipeline="lpw_stable_diffusion_xl",
         use_safetensors=True,
         add_watermarker=False,
-        use_auth_token=config.HF_TOKEN,  # Assuming HF_TOKEN is set elsewhere
+        use_auth_token=config.HF_TOKEN
     )
 
     # Move the pipeline to the appropriate device
     pipe.to('cuda')  # or 'cpu' if needed
+
+    config.model_cache[model_name] = pipe
+
     config.imgprogress = "Pipeline Loadded..."
     return pipe
 
 app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -99,7 +116,8 @@ def generate():
                 break
 
             # Update the progress message
-            config.imgprogress = f"Generating {config.IMAGE_COUNT - i} images..."
+            config.remainingImages = config.IMAGE_COUNT - i
+            config.imgprogress = f"Generating {config.remainingImages} images..."
 
             # Generate a new seed for each image
             seed = random.randint(0, 100000000000)
@@ -166,7 +184,6 @@ def generateImage(prompt, negative_prompt, seed, width, height):
         "MALE_BREAST_EXPOSED",
         "ANUS_EXPOSED",
         "BELLY_COVERED",
-        "FEET_COVERED",
         "BELLY_EXPOSED",
         "MALE_GENITALIA_EXPOSED",
         "ANUS_COVERED",
@@ -192,4 +209,4 @@ def index():
     return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000)
+    app.run(host='192.168.0.2', port=5000, debug=True)
