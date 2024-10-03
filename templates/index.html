@@ -166,8 +166,9 @@
                                 // Apply initial blur effect
                                 updateBlurEffect(img, imgData.sensitive);
 
+                                //img.onclick = () => {location.href = imgData.img;};
                                 img.onclick = () => {
-                                    location.href = imgData.img;
+                                    openLink(imgData.img);
                                 };
 
                                 wrapper.appendChild(img); // Add image to wrapper
@@ -211,6 +212,10 @@
             } else {
                 img.classList.remove('blurred'); // Remove blur class if toggle is on or not sensitive
             }
+        }
+
+        function openLink(link) {
+            window.location.href = link;
         }
     
         sensitiveToggle.addEventListener('change', () => {

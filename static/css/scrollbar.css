@@ -2,12 +2,12 @@
 ::-webkit-scrollbar {
     width: 12px; /* Width of the scrollbar */
     background-color: var(--bg-light-color); /* Background color of the scrollbar */
-    border-radius: 10px; /* Rounded corners */
+    border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb {
     background-color: var(--border-color); /* Color of the scrollbar handle */
-    border-radius: 10px; /* Rounded corners */
+    border-radius: 6px 0px 0px 6px;
     transition: var(--transition);
 }
 
