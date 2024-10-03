@@ -26,3 +26,12 @@ select:focus {
     border: var(--border-highlighted);
     background-color: var(--bg-color); /* Darken background on focus */
 }
+
+select#model {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+select#example_prompt {
+    margin-bottom: 15px;
+}

@@ -18,7 +18,7 @@
 
 </head>
 <body>
-    
+    <div class="gradient-background"></div>
     <div id="all">
         <h1>Stable Diffusion Image Generator</h1>
         <form id="generateForm">
@@ -247,6 +247,7 @@
         // Set the initial value of the textarea to the first option's value
         SwitchTextareaElement.value = selectElement.value;
     </script>
-    
+
+    <script src="{{url_for('static', filename='js/background.js')}}"></script>
 </body>
 </html>

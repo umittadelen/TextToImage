@@ -35,5 +35,6 @@
 
 #progress-bar-container:hover {
     border: var(--border-highlighted);
+    background-color: var(--bg-light-color);
     transition: var(--transition);
 }

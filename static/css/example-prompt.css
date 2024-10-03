@@ -5,6 +5,6 @@ select#example_prompt {
 }
 
 select#example_prompt option {
-    background-color: var(--bg-light-color); /* Background color for options */
+    background-color: var(--bg-color); /* Background color for options */
     color: var(--text-color); /* Text color for options */
 }

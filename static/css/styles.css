@@ -1,25 +1,30 @@
 :root {
-    --bg-color: #2c2c2c; /* Darker background color */
-    --bg-light-color: #3a3a3a; /* Dark background color */
+    --bg-color: #0005; /* Darker background color */
+    --bg-light-color: #fff4; /* Dark background color */
     --text-color: #ffffff; /* White text color */
-    --border-color: #ff77a0; /* Pink border color */
-    --highlight-color: #ff588a; /* Highlight color for buttons */
+    --border-color: #fff4; /* Pink border color */
+    --highlight-color: #0005; /* Highlight color for buttons */
     --font-family: 'Quicksand', sans-serif; /* Quicksand font */
     --border: 2px solid var(--border-color);
     --border-highlighted: 2px solid var(--highlight-color);
     --transition:all 0.5s ease;
+
+    --bg-gradient-start: rgba(0, 0, 0);
+    --bg-gradient-end: rgba(0, 0, 0);
+    --bg-degree: 0deg;
 }
 
 body {
-    background-color: var(--bg-color);
     color: var(--text-color);
+    transition: all 1s ease;
+    background: linear-gradient(0deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    background-attachment: fixed;
     font-family: var(--font-family);
     margin: 0px;
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
     scroll-behavior: smooth;
-    overflow-x: hidden;
     user-select: none;
 }
 
@@ -72,7 +77,6 @@ label {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    background-color: rgba(0, 0, 0, 0.7);
     padding: 5px 10px;
     border-radius: 8px;
     z-index: 10;
