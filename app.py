@@ -44,6 +44,9 @@ def load_pipeline(model_name):
     if model_name in config.model_cache:
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
+    else:
+        config.model_cache.clear()
+        config.imgprogress = "Loading New Pipeline..."
 
     # Load the VAE model
     vae = AutoencoderKL.from_pretrained(
@@ -126,7 +129,8 @@ def generate():
             image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height)
 
             # Store the generated image path
-            config.generated_image[seed] = [image_path, sensitive]
+            if image_path:
+                config.generated_image[seed] = [image_path, sensitive]
 
         config.imgprogress = "Generation Complete"
         config.generating = False
@@ -156,44 +160,54 @@ def generateImage(prompt, negative_prompt, seed, width, height):
     def progress(step, timestep, latents):
         config.imgprogress = int(math.floor(step / 28 * 100))
 
+        if config.generation_stopped:
+            config.imgprogress = "Generation Stopped"
+            raise StopIteration
+
     config.imgprogress = "Generating Image..."
 
-    image = pipe(
-        prompt,
-        negative_prompt=negative_prompt,
-        width=width,
-        height=height,
-        guidance_scale=7,
-        num_inference_steps=28,
-        generator=torch.manual_seed(seed),
-        callback=progress,
-        callback_steps=1,
-    ).images[0]
+    try:
+        image = pipe(
+            prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            guidance_scale=7,
+            num_inference_steps=28,
+            generator=torch.manual_seed(seed),
+            callback=progress,
+            callback_steps=1,
+        ).images[0]
 
-    # Save the image to the temporary directory
-    image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
-    image.save(image_path, 'PNG')
+        # Save the image to the temporary directory
+        image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
+        image.save(image_path, 'PNG')
 
-    detection_results = detector.detect(image_path)
-    config.imgprogress = "DONE"
+        detection_results = detector.detect(image_path)
+        config.imgprogress = "DONE"
 
-    # Define sensitive classes
-    sensitive_classes = {
-        "FEMALE_GENITALIA_COVERED",
-        "BUTTOCKS_EXPOSED",
-        "FEMALE_BREAST_EXPOSED",
-        "FEMALE_GENITALIA_EXPOSED",
-        "MALE_BREAST_EXPOSED",
-        "ANUS_EXPOSED",
-        "BELLY_COVERED",
-        "BELLY_EXPOSED",
-        "MALE_GENITALIA_EXPOSED",
-        "ANUS_COVERED",
-        #"FEMALE_BREAST_COVERED",
-        "BUTTOCKS_COVERED"
-    }
+        # Define sensitive classes
+        sensitive_classes = {
+            "FEMALE_GENITALIA_COVERED",
+            "BUTTOCKS_EXPOSED",
+            "FEMALE_BREAST_EXPOSED",
+            "FEMALE_GENITALIA_EXPOSED",
+            "MALE_BREAST_EXPOSED",
+            "ANUS_EXPOSED",
+            "BELLY_COVERED",
+            "BELLY_EXPOSED",
+            "MALE_GENITALIA_EXPOSED",
+            "ANUS_COVERED",
+            #"FEMALE_BREAST_COVERED",
+            "BUTTOCKS_COVERED"
+        }
 
-    return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
+        return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
+    
+    except StopIteration:
+        # If generation was stopped, handle it gracefully
+        config.imgprogress = "Generation Manually Stopped"
+        return False, False
 
 # Serve the temp images
 @app.route('/generated/<filename>', methods=['GET'])
@@ -219,5 +233,5 @@ def index():
     return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.2', port=5000, debug=False)
+    app.run(host='192.168.0.4', port=5000, debug=False)
     config.imgprogress = "Server Started"
