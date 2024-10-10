@@ -3,6 +3,7 @@ let currentColorIndexStart = 0;
 let currentColorIndexEnd = 1;
 let transitionProgress = 0; // For color interpolation progress
 const transitionSpeed = 0.005; // Adjust this for slower/faster color transition
+const bodyStyle = document.body.style;
 
 let colors = [
     [81,19,19],
@@ -51,8 +52,8 @@ function updateGradientColors() {
     const interpolatedEndColor = interpolateColor(prevEndColor, nextEndColor, transitionProgress);
 
     // Update CSS variables with interpolated colors
-    document.body.style.setProperty('--bg-gradient-start', rgbToCss(interpolatedStartColor));
-    document.body.style.setProperty('--bg-gradient-end', rgbToCss(interpolatedEndColor));
+    bodyStyle.setProperty('--bg-gradient-start', rgbToCss(interpolatedStartColor));
+    bodyStyle.setProperty('--bg-gradient-end', rgbToCss(interpolatedEndColor));
 
     // Increment transition progress
     transitionProgress += transitionSpeed;
@@ -66,7 +67,7 @@ function updateGradientColors() {
 
 // Function to rotate the gradient
 function rotateGradient() {
-    degree = (degree + 1) % 360; // Increment by 1 degree
+    degree = (degree + 4) % 360; // Increment by 1 degree
     document.body.style.background = `linear-gradient(${degree}deg, var(--bg-gradient-start), var(--bg-gradient-end))`;
 }
 
@@ -74,7 +75,7 @@ function rotateGradient() {
 setInterval(() => {
     rotateGradient();
     updateGradientColors();
-}, 50); // Adjust this for smoother or slower effects
+}, 100); // Adjust this for smoother or slower effects
 
 // Initial random colors
 pickNewRandomColors();

@@ -233,5 +233,5 @@ def index():
     return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.4', port=5000, debug=False)
+    app.run(host='192.168.0.4', port=8080, debug=False)
     config.imgprogress = "Server Started"
