@@ -212,10 +212,13 @@ def restart_app():
     # Exit the current process
     os._exit(0)
 
-# Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', use_hidden=False)
+
+@app.route('/hidden')
+def hidden_index():
+    return render_template('index.html', use_hidden=True)
 
 if __name__ == '__main__':
     app.run(host='192.168.0.4', port=8080, debug=False)

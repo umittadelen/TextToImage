@@ -1,47 +1,41 @@
-// ------------------- MODELS ------------------------
+// Reusable function to load JSON and populate a select element
+function loadJsonAndPopulateSelect(location, selectId, dataHandler) {
+    fetch(location)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error loading ${location}`);
+            }
+            return response.json();
+        })
+        .then(data => dataHandler(data, document.getElementById(selectId)))
+        .catch(error => console.error('Error:', error));
+}
 
-fetch('/static/json/models.json')
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Error loading models.json');
-    }
-    return response.json();
-})
-.then(data => {
-    const select = document.getElementById('model');
-
-    // Iterate over the items in models.json and create option elements
-    for (const [modelName, modelUrl] of Object.entries(data)) {
+// Handler to populate the model select element
+function populateModels(data, select) {
+    Object.entries(data).forEach(([modelName, modelUrl]) => {
         const option = document.createElement('option');
         option.value = modelUrl;
         option.textContent = modelName;
         select.appendChild(option);
-    }
-})
-.catch(error => {
-    console.error('Error:', error);
-});
+    });
+}
 
-// ---------------- EXAMPLE PROMPTS --------------------
-
-fetch('/static/json/examplePrompts.json')
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Error loading examplePrompts.json');
-    }
-    return response.json();
-})
-.then(data => {
-    const select = document.getElementById('example_prompt');
-
-    // Iterate over the examples and create option elements
+// Handler to populate the example prompts select element
+function populateExamplePrompts(data, select) {
     data.examples.forEach(prompt => {
         const option = document.createElement('option');
         option.value = prompt;
         option.textContent = prompt;
         select.appendChild(option);
     });
-})
-.catch(error => {
-    console.error('Error:', error);
-});
+}
+
+// Determine which prompts file to load based on the URL
+const promptsFile = window.location.pathname.includes('/hidden') 
+    ? '/static/json/prompts-hidden.json' 
+    : '/static/json/examplePrompts.json';
+
+// Load and populate both selects
+loadJsonAndPopulateSelect('/static/json/models.json', 'model', populateModels);
+loadJsonAndPopulateSelect(promptsFile, 'example_prompt', populateExamplePrompts);
