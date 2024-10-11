@@ -23,21 +23,6 @@ config = Config()
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-# Load model options and prompt examples
-try:
-    with open('models.json', 'r') as f:
-        model_options = json.load(f)
-except Exception as e:
-    log.error(f"Error loading models.json: {e}")
-    model_options = {"Animagine XL 3.1":"https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors"}
-
-try:
-    with open('examplePrompts.json', 'r') as f:
-        prompt_examples = json.load(f)
-except Exception as e:
-    log.error(f"Error loading examplePrompts.json: {e}")
-    prompt_examples = {"examples":["a short and cute mushroom girl, walking in the forest, smile, cute, illustration, open mouth, vibrant colors"]}
-
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
 
@@ -230,7 +215,7 @@ def restart_app():
 # Serve the HTML page
 @app.route('/')
 def index():
-    return render_template('index.html', model_options=model_options, prompt_examples=prompt_examples)
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='192.168.0.4', port=8080, debug=False)

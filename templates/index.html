@@ -1,87 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Image Generator</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Image Generator</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sensitive-toggle.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/example-prompt.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/progress-bar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/image.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/sensitive-toggle.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/example-prompt.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/progress-bar.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/image.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
 
-</head>
-<body>
-    <div class="gradient-background"></div>
-    <div id="all">
-        <h1>Stable Diffusion Image Generator</h1>
-        <form id="generateForm">
-            <label for="model">Select Model:</label>
-            <select id="model" name="model" required>
-                {% for model_name, model_url in model_options.items() %}
-                    <option value="{{ model_url }}">{{ model_name }}</option>
-                {% endfor %}
-            </select><br>
+    </head>
+    <body>
+        <div class="gradient-background"></div>
+        <div id="all">
+            <h1>Stable Diffusion Image Generator</h1>
+            <form id="generateForm">
+                <label for="model">Choose a model:</label>
+                <select id="model" name="model" required>
+                    <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
+                </select><br>
 
-            <label for="example_prompt">Example Prompts:</label>
-            <select id="example_prompt" name="example_prompt">
-                {% for prompt in prompt_examples.examples %}
-                    <option value="{{ prompt }}">{{ prompt }}</option>
-                {% endfor %}
-            </select><br>
+                <label for="example_prompt">Example Prompts:</label>
+                <select id="example_prompt" name="example_prompt">
+                        <option value=""></option>
+                </select><br>
 
-            <div id="prompt-div">
-                <label for="prompt">Prompt:</label>
-                <textarea id="prompt" name="prompt" required></textarea><br>
-            </div>
-
-            <div id="negative-div">
-                <label for="negative_prompt">Negative Prompt:</label>
-                <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts,  watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
-            </div>
-
-            <div id="size-select">
-                <label for="width">Width:</label>
-                <input type="number" id="width" name="width" value="832" min="800"><br>
-
-                <label for="height">Height:</label>
-                <input type="number" id="height" name="height" value="1216" min="800"><br>
-            </div>
-
-            <div id="image-count">
-                <label for="image_count">Number of Images:</label>
-                <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
-            </div>
-
-            <div id="buttons">
-                <button type="submit">Generate Images</button>
-                <button type="button" id="stopButton">Stop Generation</button>
-                <button type="button" id="restartButton">Restart Server</button>
-            </div>
-
-            <div id="status">
-                <p id="progress">Nothing Generating Yet</p>
-                <div id="progress-bar-container">
-                    <span class="progress-bar" id="dynamic-progress-bar"></span>
+                <div id="prompt-div">
+                    <label for="prompt">Prompt:</label>
+                    <textarea id="prompt" name="prompt" required></textarea><br>
                 </div>
-            </div>
-        </form>
-        <label for="sensitive-toggle">Show Sensitive Images:</label>
-        <div id="toggle-container" class="switch">
-            <input type="checkbox" id="sensitive-toggle">
-            <span class="slider"></span>
-        </div>
-        <div id="images"></div>
-    </div>
 
-    <script src="{{url_for('static', filename='js/main.js')}}" defer></script>
-    <script src="{{url_for('static', filename='js/background.js')}}" defer></script>
-</body>
+                <div id="negative-div">
+                    <label for="negative_prompt">Negative Prompt:</label>
+                    <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts,  watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
+                </div>
+
+                <div id="size-select">
+                    <label for="width">Width:</label>
+                    <input type="number" id="width" name="width" value="832" min="800"><br>
+
+                    <label for="height">Height:</label>
+                    <input type="number" id="height" name="height" value="1216" min="800"><br>
+                </div>
+
+                <div id="image-count">
+                    <label for="image_count">Number of Images:</label>
+                    <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
+                </div>
+
+                <div id="buttons">
+                    <button type="submit">Generate Images</button>
+                    <button type="button" id="stopButton">Stop Generation</button>
+                    <button type="button" id="restartButton">Restart Server</button>
+                </div>
+
+                <div id="status">
+                    <p id="progress">Nothing Generating Yet</p>
+                    <div id="progress-bar-container">
+                        <span class="progress-bar" id="dynamic-progress-bar"></span>
+                    </div>
+                </div>
+            </form>
+            <label for="sensitive-toggle">Show Sensitive Images:</label>
+            <div id="toggle-container" class="switch">
+                <input type="checkbox" id="sensitive-toggle">
+                <span class="slider"></span>
+            </div>
+            <div id="images"></div>
+        </div>
+
+        <script src="{{url_for('static', filename='js/loadJson.js')}}" defer></script>
+        <script src="{{url_for('static', filename='js/main.js')}}" defer></script>
+        <script src="{{url_for('static', filename='js/background.js')}}" defer></script>
+    </body>
 </html>
