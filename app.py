@@ -86,6 +86,7 @@ def generate():
     negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
+    cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
 
     # Load the model pipeline
@@ -111,7 +112,7 @@ def generate():
 
             # Generate a new seed for each image
             seed = random.randint(0, 100000000000)
-            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height)
+            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale)
 
             # Store the generated image path
             if image_path:
@@ -137,7 +138,7 @@ def status():
     
     return jsonify(images=images, imgprogress=config.imgprogress)
 
-def generateImage(prompt, negative_prompt, seed, width, height):
+def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
     # Generate image with progress tracking
 
     detector = NudeDetector()
@@ -157,7 +158,7 @@ def generateImage(prompt, negative_prompt, seed, width, height):
             negative_prompt=negative_prompt,
             width=width,
             height=height,
-            guidance_scale=7,
+            guidance_scale=cfg_scale,
             num_inference_steps=28,
             generator=torch.manual_seed(seed),
             callback=progress,

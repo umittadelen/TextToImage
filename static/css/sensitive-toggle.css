@@ -44,13 +44,14 @@
     top: 1px;
     left: 1px;
     bottom: 4px;
-    background-color: var(--border-color);
+    background-color: var(--bg-light-color);
     transition: var(--transition);
     border-radius: 50%;
 }
 
 input:checked#sensitive-toggle + .slider {
-    background-color: var(--bg-light-color);
+    background-color: var(--bg-color);
+    border: var(--border-highlighted);
 }
 
 input:checked#sensitive-toggle + .slider:before {
