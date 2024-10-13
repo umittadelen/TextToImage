@@ -8,6 +8,7 @@ from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
 )
+from PIL import PngImagePlugin
 import os
 import math
 import logging
@@ -17,6 +18,7 @@ from config import Config
 from nudenet import NudeDetector
 import sys
 import subprocess
+import glob
 
 config = Config()
 
@@ -165,9 +167,17 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
             callback_steps=1,
         ).images[0]
 
+        metadata = PngImagePlugin.PngInfo()
+        metadata.add_text("Prompt", prompt)
+        metadata.add_text("Negative Prompt", negative_prompt)
+        metadata.add_text("Width", str(width))
+        metadata.add_text("Height", str(height))
+        metadata.add_text("CFG Scale", str(cfg_scale))
+        metadata.add_text("Seed", str(seed))
+
         # Save the image to the temporary directory
         image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
-        image.save(image_path, 'PNG')
+        image.save(image_path, 'PNG', pnginfo=metadata)
 
         detection_results = detector.detect(image_path)
         config.imgprogress = "DONE"
@@ -204,6 +214,17 @@ def serve_temp_image(filename):
 def stop_generation():
     config.generation_stopped = True
     return jsonify(status='Image generation stopped')
+
+@app.route('/clear', methods=['POST'])
+def clear_images():
+    config.generated_image.clear()
+    files = glob.glob(os.path.join(config.generated_dir, '*'))
+    for file in files:
+        try:
+            os.remove(file)
+        except Exception as e:
+            config.imgprogress = f"Error Deleteing File... {e}"
+    return jsonify(status='Images cleared')
 
 @app.route('/restart', methods=['POST'])
 def restart_app():

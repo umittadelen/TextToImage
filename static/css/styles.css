@@ -40,7 +40,7 @@ h1 {
 
 #all {
     font-family: var(--font-family);
-    display: flex;
+    display: none;
     flex-direction: column; /* Change to column for vertical stacking */
     align-items: center; /* Center align items */
     box-sizing: border-box;

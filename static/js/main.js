@@ -37,6 +37,8 @@ setInterval(() => {
     fetch('/status')
         .then(response => response.json())
         .then(data => {
+            document.getElementById('all').style.display = 'flex';
+
             const imagesDiv = document.getElementById('images');
             const progressText = document.getElementById('progress');
             const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
@@ -65,8 +67,8 @@ setInterval(() => {
                         updateBlurEffect(existingImg, imgData.sensitive);
                     } else {
                         // Create new image element if it doesn't exist
-                        const wrapper = document.createElement('div'); // Create a wrapper div
-                        wrapper.className = 'image-wrapper'; // Add a class for styling
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'image-wrapper';
 
                         const img = document.createElement('img');
                         img.src = imgData.img;
@@ -116,9 +118,21 @@ document.getElementById('restartButton').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data.status);
+        document.getElementById('all').style.display = 'none';
     })
     .catch(error => console.error('Error stopping generation:', error));
+});
+
+document.getElementById('clearButton').addEventListener('click', function() {
+    fetch('/clear', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        existingImages.clear();
+        document.getElementById('images').innerHTML = '';
+    })
+    .catch(error => console.error('Error Clearing Images:', error));
 });
 
 function updateBlurEffect(img, isSensitive) {
