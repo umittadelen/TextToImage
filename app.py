@@ -145,12 +145,14 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
 
     detector = NudeDetector()
 
-    def progress(step, timestep, latents):
-        config.imgprogress = int(math.floor(step / 28 * 100))
+    def progress(pipe, step_index, timestep, callback_kwargs):
+        config.imgprogress = int(math.floor(step_index / 28 * 100))
 
         if config.generation_stopped:
             config.imgprogress = "Generation Stopped"
             raise StopIteration
+        
+        return callback_kwargs
 
     config.imgprogress = "Generating Image..."
 
@@ -163,8 +165,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
             guidance_scale=cfg_scale,
             num_inference_steps=28,
             generator=torch.manual_seed(seed),
-            callback=progress,
-            callback_steps=1,
+            callback_on_step_end=progress
         ).images[0]
 
         metadata = PngImagePlugin.PngInfo()
