@@ -8,7 +8,7 @@ from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
 )
-from PIL import PngImagePlugin
+from PIL import PngImagePlugin, Image
 import os
 import math
 import logging
@@ -133,7 +133,7 @@ def status():
     # Convert the generated images to a list to send to the client
     images =[
         {
-            'img': path[0],
+            'img': path[0]+"?size=small",
             'seed': seed,
             'sensitive': path[1]
         } for seed, path in config.generated_image.items()]
@@ -207,10 +207,20 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
         config.imgprogress = "Generation Manually Stopped"
         return False, False
 
-# Serve the temp images
 @app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
-    return send_file(os.path.join(config.generated_dir, filename), mimetype='image/png')
+    size = request.args.get('size')
+    image_path = os.path.join(config.generated_dir, filename)
+
+    if size == 'small':
+        with Image.open(image_path) as img:
+            new_size = (img.width // 3, img.height // 3)
+            img = img.resize(new_size, Image.LANCZOS)
+            temp_image_path = os.path.join(config.generated_dir, 'temp_' + filename)
+            img.save(temp_image_path, format='PNG')
+            return send_file(temp_image_path, mimetype='image/png')
+    
+    return send_file(image_path, mimetype='image/png')
 
 @app.route('/stop', methods=['POST'])
 def stop_generation():

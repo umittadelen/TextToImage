@@ -47,12 +47,17 @@ setInterval(() => {
             // Update progress value smoothly
             if (Number.isInteger(data.imgprogress)) {
                 dynamicProgressBar.style.width = `${data.imgprogress}%`;
-                alldynamicProgressBar.style.width = `${data.allPercentage}%`;
                 progressText.innerHTML = `Progress: ${data.imgprogress}%`;
             } else {
                 dynamicProgressBar.style.width = `0%`;
                 alldynamicProgressBar.style.width = `0%`;
                 progressText.innerHTML = `Progress: ${data.imgprogress}`;
+            }
+
+            if (Number.isInteger(data.allpercentage)) {
+                alldynamicProgressBar.style.width = `${data.allpercentage}%`;
+            } else {
+                alldynamicProgressBar.style.width = `0%`;
             }
 
             // Only process images if not currently generating new ones
@@ -88,7 +93,6 @@ setInterval(() => {
                         // Apply initial blur effect
                         updateBlurEffect(img, imgData.sensitive);
 
-                        //img.onclick = () => {location.href = imgData.img;};
                         img.onclick = () => {
                             openLink(imgData.img);
                         };
@@ -102,15 +106,11 @@ setInterval(() => {
             }
         })
         .catch(error => console.error('Error fetching status:', error));
-}, 1000); // Check every 1 second
+}, 1500); // Check every 1.5 second
 
 document.getElementById('stopButton').addEventListener('click', function() {
     fetch('/stop', {
         method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.status);
     })
     .catch(error => console.error('Error stopping generation:', error));
 });
@@ -147,7 +147,7 @@ function updateBlurEffect(img, isSensitive) {
 }
 
 function openLink(link) {
-    window.location.href = link;
+    window.location.href = link.replace("?size=small", "");
 }
 
 sensitiveToggle.addEventListener('change', () => {

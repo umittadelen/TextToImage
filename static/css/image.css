@@ -13,14 +13,20 @@
     max-width: 100%;
 }
 
+#images .image-wrapper {
+    /* Set a width for the wrapper to maintain uniformity */
+    width: 400px; /* Fixed width */
+}
+
 #images .image-wrapper img {
-    width: 100%;
-    height: 100%;
+    width: 100%; /* Makes image fill the wrapper */
+    height: 100%; /* Makes image fill the wrapper */
     border-radius: 10px; /* Rounded corners for images */
-    max-width: 400px; /* Adjust max width as needed */
+    object-fit: cover; /* Ensures images maintain aspect ratio */
     overflow: hidden; /* Hide overflow */
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
+    image-rendering: crisp-edges;
 }
 
 .image-wrapper {
@@ -28,6 +34,6 @@
     overflow: hidden; /* Hide overflow */
     border: var(--border); /* Optional: Add border */
     border-radius: 10px; /* Optional: Rounded corners */
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }

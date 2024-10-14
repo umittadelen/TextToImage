@@ -28,6 +28,17 @@
     transition: var(--transition);
 }
 
+#progress-bar-container .all-progress-bar {
+    background-color: var(--border-color);
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    height: calc(100% - 2px);
+    border-radius: 10px;
+    width: 0%;
+    transition: var(--transition);
+}
+
 #progress-bar-container:hover .progress-bar {
     background-color: var(--highlight-color);
     transition: var(--transition);
