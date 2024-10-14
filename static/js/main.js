@@ -42,13 +42,16 @@ setInterval(() => {
             const imagesDiv = document.getElementById('images');
             const progressText = document.getElementById('progress');
             const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
+            const alldynamicProgressBar = document.getElementById('all-dynamic-progress-bar');
 
             // Update progress value smoothly
             if (Number.isInteger(data.imgprogress)) {
                 dynamicProgressBar.style.width = `${data.imgprogress}%`;
+                alldynamicProgressBar.style.width = `${data.allPercentage}%`;
                 progressText.innerHTML = `Progress: ${data.imgprogress}%`;
             } else {
                 dynamicProgressBar.style.width = `0%`;
+                alldynamicProgressBar.style.width = `0%`;
                 progressText.innerHTML = `Progress: ${data.imgprogress}`;
             }
 

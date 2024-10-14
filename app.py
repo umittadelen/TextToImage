@@ -138,7 +138,7 @@ def status():
             'sensitive': path[1]
         } for seed, path in config.generated_image.items()]
     
-    return jsonify(images=images, imgprogress=config.imgprogress)
+    return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage)
 
 def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
     # Generate image with progress tracking
@@ -146,7 +146,8 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
     detector = NudeDetector()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
-        config.imgprogress = int(math.floor(step_index / 28 * 100))
+        config.imgprogress = int(math.floor(step_index / 28 * 100)) # config.IMAGE_COUNT config.remainingImages
+        config.allPercentage = int(math.floor((config.IMAGE_COUNT - config.remainingImages + (step_index / 28)) / config.IMAGE_COUNT * 100))
 
         if config.generation_stopped:
             config.imgprogress = "Generation Stopped"

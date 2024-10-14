@@ -14,6 +14,7 @@ class Config():
         # Dictionary to store generated images
         self.generated_image = {}
         self.imgprogress = ""
+        self.allPercentage = 0
         self.IMAGE_COUNT = 0
 
         self.model_cache = {}
