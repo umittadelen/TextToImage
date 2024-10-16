@@ -69,7 +69,7 @@ setInterval(() => {
                         // Update existing image
                         const existingWrapper = existingImages.get(key);
                         const existingImg = existingWrapper.querySelector('img');
-                        existingImg.src = imgData.img;
+                        existingImg.src = imgData.img+"?size=small";
 
                         // Update the blur effect based on the toggle
                         updateBlurEffect(existingImg, imgData.sensitive);
@@ -79,7 +79,7 @@ setInterval(() => {
                         wrapper.className = 'image-wrapper';
 
                         const img = document.createElement('img');
-                        img.src = imgData.img;
+                        img.src = imgData.img+"?size=small";
                         img.loading = "lazy";
 
                         // Create sensitive text if necessary

@@ -32,7 +32,7 @@ def load_pipeline(model_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
     else:
-        config.model_cache.clear()
+        config.model_cache = {}
         config.imgprogress = "Loading New Pipeline..."
 
     # Load the VAE model
@@ -79,7 +79,7 @@ def generate():
         return jsonify(status='Image generation already in progress'), 400
 
     config.generating = True
-    config.generated_image.clear()
+    config.generated_image = {}
     config.imgprogress = "Starting Image Generation..."
 
     # Get parameters from the request
@@ -133,7 +133,7 @@ def status():
     # Convert the generated images to a list to send to the client
     images =[
         {
-            'img': path[0]+"?size=small",
+            'img': path[0],
             'seed': seed,
             'sensitive': path[1]
         } for seed, path in config.generated_image.items()]
@@ -176,6 +176,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
         metadata.add_text("Height", str(height))
         metadata.add_text("CFG Scale", str(cfg_scale))
         metadata.add_text("Seed", str(seed))
+        metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
 
         # Save the image to the temporary directory
         image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
@@ -229,7 +230,7 @@ def stop_generation():
 
 @app.route('/clear', methods=['POST'])
 def clear_images():
-    config.generated_image.clear()
+    config.generated_image = {}
     files = glob.glob(os.path.join(config.generated_dir, '*'))
     for file in files:
         try:
