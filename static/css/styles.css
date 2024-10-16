@@ -20,10 +20,13 @@ body {
     transition: all 1s ease;
     background: linear-gradient(0deg, var(--bg-gradient-start), var(--bg-gradient-end));
     background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
     font-family: var(--font-family);
-    margin: 0px;
+    margin: 0;
     padding: 20px;
     width: 100%;
+    min-height: 100vh;
     box-sizing: border-box;
     scroll-behavior: smooth;
     user-select: none;

@@ -27,6 +27,7 @@
     padding: 0;
     margin: 0;
     image-rendering: crisp-edges;
+    user-select: none;
 }
 
 .image-wrapper {

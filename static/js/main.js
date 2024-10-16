@@ -34,7 +34,7 @@ document.getElementById('generateForm').addEventListener('submit', function(even
 });
 
 setInterval(() => {
-    fetch('/status')
+    fetch('/status', { cache: 'no-store' })
         .then(response => response.json())
         .then(data => {
             document.getElementById('all').style.display = 'flex';
@@ -105,7 +105,10 @@ setInterval(() => {
                 });
             }
         })
-        .catch(error => console.error('Error fetching status:', error));
+        .catch(error => {
+            console.error('Error fetching status:', error);
+            document.getElementById('all').style.display = 'none';
+        });
 }, 1500); // Check every 1.5 second
 
 document.getElementById('stopButton').addEventListener('click', function() {
