@@ -90,6 +90,10 @@ def generate():
     height = int(request.form.get('height', 1216))
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
+    config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
+
+    if config.CUSTOM_SEED != 0:
+        config.IMAGE_COUNT = 1
 
     # Load the model pipeline
     try:
@@ -113,7 +117,11 @@ def generate():
             config.imgprogress = f"Generating {config.remainingImages} Images..."
 
             # Generate a new seed for each image
-            seed = random.randint(0, 100000000000)
+            if config.CUSTOM_SEED == 0:
+                seed = random.randint(0, 100000000000)
+            else:
+                seed = config.CUSTOM_SEED
+                
             image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale)
 
             # Store the generated image path

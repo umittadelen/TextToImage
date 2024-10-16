@@ -16,6 +16,7 @@ class Config():
         self.imgprogress = ""
         self.allPercentage = 0
         self.IMAGE_COUNT = 0
+        self.CUSTOM_SEED = 0
 
         self.model_cache = {}
 
