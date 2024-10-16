@@ -27,45 +27,46 @@ log.setLevel(logging.ERROR)
 
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
+    
+    # Explicitly clear cache before loading new model
+    torch.cuda.empty_cache()
 
-    if model_name in config.model_cache:
+    if model_name not in config.model_cache:
+        config.imgprogress = "Loading New Pipeline..."
+        config.model_cache = {}
+        
+        # Load the VAE model
+        vae = AutoencoderKL.from_pretrained(
+            "madebyollin/sdxl-vae-fp16-fix",
+            torch_dtype=torch.float16,
+        )
+
+        # Set the pipeline
+        pipeline = (
+            StableDiffusionXLPipeline.from_single_file
+            if model_name.endswith(".safetensors")
+            else StableDiffusionXLPipeline.from_pretrained
+        )
+
+        # Load the pipeline
+        pipe = pipeline(
+            model_name,
+            vae=vae,
+            torch_dtype=torch.float16,
+            custom_pipeline="lpw_stable_diffusion_xl",
+            use_safetensors=True,
+            add_watermarker=False,
+            use_auth_token=config.HF_TOKEN
+        )
+
+        pipe.to('cuda' if torch.cuda.is_available() else 'cpu')
+
+        config.model_cache[model_name] = pipe
+        config.imgprogress = "Pipeline Loaded..."
+        return pipe
+    else:
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
-    else:
-        config.model_cache = {}
-        config.imgprogress = "Loading New Pipeline..."
-
-    # Load the VAE model
-    vae = AutoencoderKL.from_pretrained(
-        "madebyollin/sdxl-vae-fp16-fix",
-        torch_dtype=torch.float16,
-    )
-
-    # Set the pipepline
-    pipeline = (
-        StableDiffusionXLPipeline.from_single_file
-        if model_name.endswith(".safetensors")
-        else StableDiffusionXLPipeline.from_pretrained
-    )
-
-    # Load the pipeline
-    pipe = pipeline(
-        model_name,
-        vae=vae,
-        torch_dtype=torch.float16,
-        custom_pipeline="lpw_stable_diffusion_xl",
-        use_safetensors=True,
-        add_watermarker=False,
-        use_auth_token=config.HF_TOKEN
-    )
-
-    # Move the pipeline to the appropriate device
-    pipe.to('cuda')  # or 'cpu' if needed
-
-    config.model_cache[model_name] = pipe
-
-    config.imgprogress = "Pipeline Loadded..."
-    return pipe
 
 app = Flask(__name__)
 
