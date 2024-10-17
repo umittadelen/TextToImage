@@ -7,6 +7,8 @@
 
         <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+        <script src="https://cdn.jsdelivr.net/gh/seikichi/tiff.js@master/tiff.min.js"></script>
         
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
@@ -21,69 +23,71 @@
     <body>
         <div id="all">
             <h1>Stable Diffusion Image Generator</h1>
-            <form id="generateForm">
-                <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
-                <select id="model" name="model" required>
-                    <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
-                </select><br>
-            
-                <label for="example_prompt" title="Choose from a list of example prompts.">Example Prompts:</label>
-                <select id="example_prompt" name="example_prompt">
-                    <option value=""></option>
-                </select><br>
-            
-                <div id="prompt-div" class="input-div">
-                    <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt:</label>
-                    <textarea id="prompt" name="prompt" required></textarea><br>
-                </div>
-            
-                <div id="negative-div">
-                    <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
-                    <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
-                </div>
-            
-                <div id="size-select">
-                    <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
-                    <input type="number" id="width" name="width" value="832" min="800"><br>
-            
-                    <label for="height" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
-                    <input type="number" id="height" name="height" value="1216" min="800"><br>
-                </div>
-
-                <div id="custom-seed">
-                    <label for="custom_seed" title="Enter a custom seed. If you want it to be random enter 0">Custom Seed:</label>
-                    <input type="number" id="custom_seed" name="custom_seed" value="0" min="0" required><br>
-                </div>
-            
-                <div id="image-count">
-                    <label for="image_count" title="Specify the number of images you want to generate. Minimum is 1.">Number of Images:</label>
-                    <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
-                </div>
-            
-                <div id="cfg-scale">
-                    <label for="cfg_scale" title="The scale value decides how closely the AI follows your prompts. When the scale is low, AI tends to produce softer, painterly pictures. We recommend keeping the scale below 7.">CFG Scale:</label>
-                    <input type="number" id="cfg_scale" name="cfg_scale" value="7" min="1" max="20" step="0.1" required><br>
-                </div>
+            <div class="form">
+                <form id="generateForm">
+                    <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
+                    <select id="model" name="model" required>
+                        <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
+                    </select><br>
                 
-                <div id="form-separator"></div>
-            
-                <div id="buttons">
-                    <button type="submit">Generate Images</button>
-                    <button type="button" id="stopButton">Stop Generation</button>
-                    <button type="button" id="restartButton">Restart Server</button>
-                    <button type="button" id="clearButton">Clear Images</button>
-                </div>
-
-                <div id="form-separator"></div>
-            
-                <div id="status">
-                    <p id="progress">Nothing Generating Yet</p>
-                    <div id="progress-bar-container">
-                        <span class="progress-bar" id="dynamic-progress-bar"></span>
-                        <span class="all-progress-bar" id="all-dynamic-progress-bar"></span>
+                    <label for="example_prompt" title="Choose from a list of example prompts.">Example Prompts:</label>
+                    <select id="example_prompt" name="example_prompt">
+                        <option value=""></option>
+                    </select><br>
+                
+                    <div id="prompt-div" class="input-div">
+                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt:</label>
+                        <textarea id="prompt" name="prompt" required></textarea><br>
                     </div>
-                </div>
-            </form>
+                
+                    <div id="negative-div">
+                        <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
+                        <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
+                    </div>
+                
+                    <div id="size-select">
+                        <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
+                        <input type="number" id="width" name="width" value="832" min="800"><br>
+                
+                        <label for="height" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
+                        <input type="number" id="height" name="height" value="1216" min="800"><br>
+                    </div>
+
+                    <div id="custom-seed">
+                        <label for="custom_seed" title="Enter a custom seed. If you want it to be random enter 0">Custom Seed:</label>
+                        <input type="number" id="custom_seed" name="custom_seed" value="0" min="0" required><br>
+                    </div>
+                
+                    <div id="image-count">
+                        <label for="image_count" title="Specify the number of images you want to generate. Minimum is 1.">Number of Images:</label>
+                        <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
+                    </div>
+                
+                    <div id="cfg-scale">
+                        <label for="cfg_scale" title="The scale value decides how closely the AI follows your prompts. When the scale is low, AI tends to produce softer, painterly pictures. We recommend keeping the scale below 7.">CFG Scale:</label>
+                        <input type="number" id="cfg_scale" name="cfg_scale" value="7" min="1" max="20" step="0.1" required><br>
+                    </div>
+                    
+                    <div id="form-separator"></div>
+                
+                    <div id="buttons">
+                        <button type="submit">Generate Images</button>
+                        <button type="button" id="stopButton">Stop Generation</button>
+                        <button type="button" id="restartButton">Restart Server</button>
+                        <button type="button" id="clearButton">Clear Images</button>
+                    </div>
+
+                    <div id="form-separator"></div>
+                
+                    <div id="status">
+                        <p id="progress">Nothing Generating Yet</p>
+                        <div id="progress-bar-container">
+                            <span class="progress-bar" id="dynamic-progress-bar"></span>
+                            <span class="all-progress-bar" id="all-dynamic-progress-bar"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
             
             <label for="sensitive-toggle">Show Sensitive Images:</label>
             <div id="toggle-container" class="switch">

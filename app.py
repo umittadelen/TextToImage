@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
 import utils
-import json
 from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
@@ -180,10 +179,10 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
-        metadata.add_text("Negative Prompt", negative_prompt)
+        metadata.add_text("NegativePrompt", negative_prompt)
         metadata.add_text("Width", str(width))
         metadata.add_text("Height", str(height))
-        metadata.add_text("CFG Scale", str(cfg_scale))
+        metadata.add_text("CFGScale", str(cfg_scale))
         metadata.add_text("Seed", str(seed))
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
 

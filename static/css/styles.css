@@ -51,7 +51,7 @@ h1 {
     transition: var(--transition);
 }
 
-form {
+.form {
     box-sizing: border-box;
     border: var(--border);
     padding: 20px;
@@ -60,6 +60,11 @@ form {
     width: 90%;
     max-width: 100%; /* Ensure form isn't too wide */
     margin: 0 auto; /* Center the form */
+}
+
+.form form {
+    width: 100%;
+    height: 100%;
 }
 
 #generateForm > div {
