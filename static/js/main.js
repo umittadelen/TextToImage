@@ -34,82 +34,85 @@ document.getElementById('generateForm').addEventListener('submit', function(even
 });
 
 setInterval(() => {
-    fetch('/status', { cache: 'no-store' })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('all').style.display = 'flex';
+    // Check if the document is visible before fetching the status
+    if (document.visibilityState === 'visible') {
+        fetch('/status', { cache: 'no-store' })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('all').style.display = 'flex';
 
-            const imagesDiv = document.getElementById('images');
-            const progressText = document.getElementById('progress');
-            const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
-            const alldynamicProgressBar = document.getElementById('all-dynamic-progress-bar');
+                const imagesDiv = document.getElementById('images');
+                const progressText = document.getElementById('progress');
+                const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
+                const alldynamicProgressBar = document.getElementById('all-dynamic-progress-bar');
 
-            // Update progress value smoothly
-            if (Number.isInteger(data.imgprogress)) {
-                dynamicProgressBar.style.width = `${data.imgprogress}%`;
-                progressText.innerHTML = `Progress: ${data.imgprogress}%`;
-            } else {
-                dynamicProgressBar.style.width = `0%`;
-                alldynamicProgressBar.style.width = `0%`;
-                progressText.innerHTML = `Progress: ${data.imgprogress}`;
-            }
+                // Update progress value smoothly
+                if (Number.isInteger(data.imgprogress)) {
+                    dynamicProgressBar.style.width = `${data.imgprogress}%`;
+                    progressText.innerHTML = `Progress: ${data.imgprogress}%`;
+                } else {
+                    dynamicProgressBar.style.width = `0%`;
+                    alldynamicProgressBar.style.width = `0%`;
+                    progressText.innerHTML = `Progress: ${data.imgprogress}`;
+                }
 
-            if (Number.isInteger(data.allpercentage)) {
-                alldynamicProgressBar.style.width = `${data.allpercentage}%`;
-            } else {
-                alldynamicProgressBar.style.width = `0%`;
-            }
+                if (Number.isInteger(data.allpercentage)) {
+                    alldynamicProgressBar.style.width = `${data.allpercentage}%`;
+                } else {
+                    alldynamicProgressBar.style.width = `0%`;
+                }
 
-            // Only process images if not currently generating new ones
-            if (!isGeneratingNewImages && data.images.length > 0) {
-                data.images.forEach(imgData => {
-                    const key = imgData.seed; // Assuming seed is the unique identifier for the image
+                // Only process images if not currently generating new ones
+                if (!isGeneratingNewImages && data.images.length > 0) {
+                    data.images.forEach(imgData => {
+                        const key = imgData.seed; // Assuming seed is the unique identifier for the image
 
-                    if (existingImages.has(key)) {
-                        // Update existing image
-                        const existingWrapper = existingImages.get(key);
-                        const existingImg = existingWrapper.querySelector('img');
-                        existingImg.src = imgData.img+"?size=small";
+                        if (existingImages.has(key)) {
+                            // Update existing image
+                            const existingWrapper = existingImages.get(key);
+                            const existingImg = existingWrapper.querySelector('img');
+                            existingImg.src = imgData.img + "?size=small";
 
-                        // Update the blur effect based on the toggle
-                        updateBlurEffect(existingImg, imgData.sensitive);
-                    } else {
-                        // Create new image element if it doesn't exist
-                        const wrapper = document.createElement('div');
-                        wrapper.className = 'image-wrapper';
+                            // Update the blur effect based on the toggle
+                            updateBlurEffect(existingImg, imgData.sensitive);
+                        } else {
+                            // Create new image element if it doesn't exist
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'image-wrapper';
 
-                        const img = document.createElement('img');
-                        img.src = imgData.img+"?size=small";
-                        img.loading = "lazy";
+                            const img = document.createElement('img');
+                            img.src = imgData.img + "?size=small";
+                            img.loading = "lazy";
 
-                        // Create sensitive text if necessary
-                        if (imgData.sensitive) {
-                            const sensitiveText = document.createElement('p');
-                            sensitiveText.classList.add('centered');
-                            sensitiveText.innerHTML = imgData.sensitive;
-                            wrapper.appendChild(sensitiveText);
+                            // Create sensitive text if necessary
+                            if (imgData.sensitive) {
+                                const sensitiveText = document.createElement('p');
+                                sensitiveText.classList.add('centered');
+                                sensitiveText.innerHTML = imgData.sensitive;
+                                wrapper.appendChild(sensitiveText);
+                            }
+
+                            // Apply initial blur effect
+                            updateBlurEffect(img, imgData.sensitive);
+
+                            img.onclick = () => {
+                                openLink(imgData.img);
+                            };
+
+                            wrapper.appendChild(img); // Add image to wrapper
+                            imagesDiv.appendChild(wrapper); // Add wrapper to imagesDiv
+
+                            existingImages.set(key, wrapper); // Store the wrapper in the map
                         }
-
-                        // Apply initial blur effect
-                        updateBlurEffect(img, imgData.sensitive);
-
-                        img.onclick = () => {
-                            openLink(imgData.img);
-                        };
-
-                        wrapper.appendChild(img); // Add image to wrapper
-                        imagesDiv.appendChild(wrapper); // Add wrapper to imagesDiv
-
-                        existingImages.set(key, wrapper); // Store the wrapper in the map
-                    }
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching status:', error);
-            document.getElementById('all').style.display = 'none';
-        });
-}, 1500); // Check every 1.5 second
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching status:', error);
+                document.getElementById('all').style.display = 'none';
+            });
+    }
+}, 1500); // Check every 1.5 seconds
 
 document.getElementById('stopButton').addEventListener('click', function() {
     fetch('/stop', {
@@ -157,7 +160,7 @@ sensitiveToggle.addEventListener('change', () => {
     if (sensitiveToggle.checked) {
         // Ask for confirmation if the user is 18+
         const isAdult = confirm('Are you 18 years or older?');
-        
+
         if (!isAdult) {
             // If user clicks "No", uncheck the toggle switch
             sensitiveToggle.checked = false;
