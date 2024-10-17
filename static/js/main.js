@@ -133,15 +133,19 @@ document.getElementById('restartButton').addEventListener('click', function() {
 });
 
 document.getElementById('clearButton').addEventListener('click', function() {
-    fetch('/clear', {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        existingImages.clear();
-        document.getElementById('images').innerHTML = '';
-    })
-    .catch(error => console.error('Error Clearing Images:', error));
+    const isConfirmed = confirm('Are you sure you want to clear all images?');
+
+    if (isConfirmed) {
+        fetch('/clear', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            existingImages.clear();
+            document.getElementById('images').innerHTML = '';
+        })
+        .catch(error => console.error('Error Clearing Images:', error));
+    }
 });
 
 function updateBlurEffect(img, isSensitive) {
@@ -176,13 +180,43 @@ sensitiveToggle.addEventListener('change', () => {
     });
 });
 
-const selectElement = document.getElementById('example_prompt');
-const SwitchTextareaElement = document.getElementById('prompt');
+//TODO handle prompt example change
+
+const promptSelectElement = document.getElementById('example_prompt');
+const promptTextareaElement = document.getElementById('prompt');
 
 // Add an event listener for the 'change' event on the select element
-selectElement.addEventListener('change', function() {
-    SwitchTextareaElement.value = selectElement.value; // Update textarea with the selected prompt
+promptSelectElement.addEventListener('change', function() {
+    promptTextareaElement.value = promptSelectElement.value; // Update textarea with the selected prompt
 });
 
 // Set the initial value of the textarea to the first option's value
-SwitchTextareaElement.value = selectElement.value;
+promptTextareaElement.value = promptSelectElement.value;
+
+//TODO handle pre dimension change
+
+// Assuming the following elements exist in your HTML
+const exampleSizeSelectElement = document.getElementById('example_size');
+const widthInputElement = document.getElementById('width');
+const heightInputElement = document.getElementById('height');
+
+// Add an event listener for the 'change' event on the example_size select element
+exampleSizeSelectElement.addEventListener('change', function() {
+    const selectedOption = exampleSizeSelectElement.options[exampleSizeSelectElement.selectedIndex];
+
+    if (selectedOption) {
+        // Parse the selected value to get width and height
+        const dimensions = selectedOption.value.split('x'); // Assuming the value format is "widthxheight"
+        if (dimensions.length === 2) {
+            widthInputElement.value = dimensions[0]; // Set width
+            heightInputElement.value = dimensions[1]; // Set height
+        }
+    }
+});
+
+// Optionally, set the initial values based on the first option in the select
+if (exampleSizeSelectElement.options.length > 0) {
+    const initialDimensions = exampleSizeSelectElement.options[0].value.split('x');
+    widthInputElement.value = initialDimensions[0];
+    heightInputElement.value = initialDimensions[1];
+}

@@ -31,6 +31,15 @@ function populateExamplePrompts(data, select) {
     });
 }
 
+function populateExampleSizes(data, select) {
+    Object.entries(data).forEach(([sizeName, sizeDimensions]) => {
+        const option = document.createElement('option');
+        option.value = sizeDimensions.join('x'); // Format as "width x height"
+        option.textContent = sizeName; // Display the size name
+        select.appendChild(option);
+    });
+}
+
 // Determine which prompts file to load based on the URL
 const promptsFile = window.location.pathname.includes('/hidden') 
     ? '/static/json/prompts-hidden.json' 
@@ -39,3 +48,5 @@ const promptsFile = window.location.pathname.includes('/hidden')
 // Load and populate both selects
 loadJsonAndPopulateSelect('/static/json/models.json', 'model', populateModels);
 loadJsonAndPopulateSelect(promptsFile, 'example_prompt', populateExamplePrompts);
+loadJsonAndPopulateSelect('/static/json/dimensions.json', 'example_size', populateExampleSizes);
+

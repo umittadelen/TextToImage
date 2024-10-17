@@ -29,6 +29,8 @@
                     <select id="model" name="model" required>
                         <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
                     </select><br>
+
+                    <div id="form-separator"></div>
                 
                     <label for="example_prompt" title="Choose from a list of example prompts.">Example Prompts:</label>
                     <select id="example_prompt" name="example_prompt">
@@ -44,14 +46,23 @@
                         <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
                         <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
                     </div>
+
+                    <div id="form-separator"></div>
                 
                     <div id="size-select">
+                        <label for="example_size" title="Choose from a list of sizes.">Size Examples:</label>
+                        <select id="example_size" name="example_size">
+                            <option value="832x1216">832x1216  13:19</option>
+                        </select><br>
+
                         <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
-                        <input type="number" id="width" name="width" value="832" min="800"><br>
+                        <input type="number" id="width" name="width" value="832"><br>
                 
                         <label for="height" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
-                        <input type="number" id="height" name="height" value="1216" min="800"><br>
+                        <input type="number" id="height" name="height" value="1216"><br>
                     </div>
+
+                    <div id="form-separator"></div>
 
                     <div id="custom-seed">
                         <label for="custom_seed" title="Enter a custom seed. If you want it to be random enter 0">Custom Seed:</label>
