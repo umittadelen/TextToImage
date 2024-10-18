@@ -96,7 +96,7 @@ setInterval(() => {
                             updateBlurEffect(img, imgData.sensitive);
 
                             img.onclick = () => {
-                                openLink(imgData.img);
+                                openLink("image/" + imgData.img.split('/').pop()); // Send to "image/" + filename
                             };
 
                             wrapper.appendChild(img); // Add image to wrapper

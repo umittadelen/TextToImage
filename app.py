@@ -18,6 +18,8 @@ from nudenet import NudeDetector
 import sys
 import subprocess
 import glob
+from fileinput import filename
+from fileinput import filename
 
 config = Config()
 
@@ -91,6 +93,7 @@ def generate():
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
     config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
+    samplingSteps = int(request.form.get('sampling_steps', 28))
 
     if config.CUSTOM_SEED != 0:
         config.IMAGE_COUNT = 1
@@ -122,7 +125,7 @@ def generate():
             else:
                 seed = config.CUSTOM_SEED
                 
-            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale)
+            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
 
             # Store the generated image path
             if image_path:
@@ -148,14 +151,14 @@ def status():
     
     return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage)
 
-def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
+def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
     # Generate image with progress tracking
 
     detector = NudeDetector()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
         config.imgprogress = int(math.floor(step_index / 28 * 100)) # config.IMAGE_COUNT config.remainingImages
-        config.allPercentage = int(math.floor((config.IMAGE_COUNT - config.remainingImages + (step_index / 28)) / config.IMAGE_COUNT * 100))
+        config.allPercentage = int(math.floor((config.IMAGE_COUNT - config.remainingImages + (step_index / samplingSteps)) / config.IMAGE_COUNT * 100))
 
         if config.generation_stopped:
             config.imgprogress = "Generation Stopped"
@@ -172,7 +175,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
             width=width,
             height=height,
             guidance_scale=cfg_scale,
-            num_inference_steps=28,
+            num_inference_steps=samplingSteps,
             generator=torch.manual_seed(seed),
             callback_on_step_end=progress
         ).images[0]
@@ -184,6 +187,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale):
         metadata.add_text("Height", str(height))
         metadata.add_text("CFGScale", str(cfg_scale))
         metadata.add_text("Seed", str(seed))
+        metadata.add_text("SamplingSteps", str(samplingSteps))
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
 
         # Save the image to the temporary directory
@@ -231,6 +235,10 @@ def serve_temp_image(filename):
     
     return send_file(image_path, mimetype='image/png')
 
+@app.route('/image/<filename>', methods=['GET'])
+def image(filename):
+    return render_template('image.html', image=filename)
+
 @app.route('/stop', methods=['POST'])
 def stop_generation():
     config.generation_stopped = True
@@ -251,7 +259,6 @@ def clear_images():
 def restart_app():
     # Spawn a new process of the current script
     subprocess.Popen([sys.executable] + sys.argv)
-    
     # Exit the current process
     os._exit(0)
 
