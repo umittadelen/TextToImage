@@ -18,8 +18,7 @@ from nudenet import NudeDetector
 import sys
 import subprocess
 import glob
-from fileinput import filename
-from fileinput import filename
+from io import BytesIO
 
 config = Config()
 
@@ -29,7 +28,6 @@ log.setLevel(logging.ERROR)
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
     
-    # Explicitly clear cache before loading new model
     torch.cuda.empty_cache()
 
     if model_name not in config.model_cache:
@@ -157,7 +155,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, sampl
     detector = NudeDetector()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
-        config.imgprogress = int(math.floor(step_index / 28 * 100)) # config.IMAGE_COUNT config.remainingImages
+        config.imgprogress = int(math.floor(step_index / samplingSteps * 100))
         config.allPercentage = int(math.floor((config.IMAGE_COUNT - config.remainingImages + (step_index / samplingSteps)) / config.IMAGE_COUNT * 100))
 
         if config.generation_stopped:
@@ -229,9 +227,12 @@ def serve_temp_image(filename):
         with Image.open(image_path) as img:
             new_size = (img.width // 3, img.height // 3)
             img = img.resize(new_size, Image.LANCZOS)
-            temp_image_path = os.path.join(config.generated_dir, 'temp_' + filename)
-            img.save(temp_image_path, format='PNG')
-            return send_file(temp_image_path, mimetype='image/png')
+
+            img_io = BytesIO()
+            img.save(img_io, format='PNG')
+            img_io.seek(0)
+
+            return send_file(img_io, mimetype='image/png')
     
     return send_file(image_path, mimetype='image/png')
 
@@ -265,6 +266,10 @@ def restart_app():
 @app.route('/')
 def index():
     return render_template('index.html', use_hidden=False)
+
+@app.route('/metadata')
+def metadata():
+    return render_template('metadata.html', use_hidden=False)
 
 @app.route('/hidden')
 def hidden_index():
