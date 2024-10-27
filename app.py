@@ -19,6 +19,7 @@ import sys
 import subprocess
 import glob
 from io import BytesIO
+import gc
 
 config = Config()
 
@@ -27,8 +28,6 @@ log.setLevel(logging.ERROR)
 
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
-    
-    torch.cuda.empty_cache()
 
     if model_name not in config.model_cache:
         config.imgprogress = "Loading New Pipeline..."
@@ -106,28 +105,33 @@ def generate():
 
     # Function to generate images
     def generate_images():
-        for i in range(config.IMAGE_COUNT):
-            if config.generation_stopped:
-                config.imgprogress = "Generation Stopped"
-                config.generating = False
-                config.generation_stopped = False
-                break
+        try:
+            for i in range(config.IMAGE_COUNT):
+                if config.generation_stopped:
+                    config.imgprogress = "Generation Stopped"
+                    config.generating = False
+                    config.generation_stopped = False
+                    break
 
-            # Update the progress message
-            config.remainingImages = config.IMAGE_COUNT - i
-            config.imgprogress = f"Generating {config.remainingImages} Images..."
+                # Update the progress message
+                config.remainingImages = config.IMAGE_COUNT - i
+                config.imgprogress = f"Generating {config.remainingImages} Images..."
 
-            # Generate a new seed for each image
-            if config.CUSTOM_SEED == 0:
-                seed = random.randint(0, 100000000000)
-            else:
-                seed = config.CUSTOM_SEED
-                
-            image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
+                # Generate a new seed for each image
+                if config.CUSTOM_SEED == 0:
+                    seed = random.randint(0, 100000000000)
+                else:
+                    seed = config.CUSTOM_SEED
+                    
+                torch.cuda.empty_cache()
+                image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
 
-            # Store the generated image path
-            if image_path:
-                config.generated_image[seed] = [image_path, sensitive]
+                # Store the generated image path
+                if image_path:
+                    config.generated_image[seed] = [image_path, sensitive]
+        finally:
+            gc.collect()
+            torch.cuda.empty_cache()
 
         config.imgprogress = "Generation Complete"
         config.generating = False
