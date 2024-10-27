@@ -71,7 +71,7 @@ app = Flask(__name__)
 @app.route('/generate', methods=['POST'])
 def generate():
     # Initialize global state
-    global pipe, seed
+    global pipe
 
     # Check if generation is already in progress
     if config.generating:
@@ -122,14 +122,15 @@ def generate():
                     seed = random.randint(0, 100000000000)
                 else:
                     seed = config.CUSTOM_SEED
-                    
-                torch.cuda.empty_cache()
+
                 image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
 
                 # Store the generated image path
                 if image_path:
                     config.generated_image[seed] = [image_path, sensitive]
         finally:
+            global pipe
+            del pipe
             gc.collect()
             torch.cuda.empty_cache()
 
