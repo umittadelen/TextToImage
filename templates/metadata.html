@@ -17,6 +17,7 @@
             margin: 0;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
@@ -72,6 +73,7 @@
     <div>
         <h2>Upload an Image to Extract Metadata</h2>
         <input type="file" id="imageInput" accept="image/png">
+        
         <div id="metadataDisplay"></div>
     </div>
 
@@ -93,6 +95,7 @@
                 if (metadata) {
                     const extractedData = {
                         Prompt: metadata.Prompt || "N/A",
+                        OriginalPrompt: metadata.OriginalPrompt || "N/A",
                         NegativePrompt: metadata.NegativePrompt || "N/A",
                         Width: metadata.Width || "N/A",
                         Height: metadata.Height || "N/A",

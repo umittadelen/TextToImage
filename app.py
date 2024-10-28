@@ -26,26 +26,33 @@ config = Config()
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+app = Flask(__name__)
+
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
 
     if model_name not in config.model_cache:
         config.imgprogress = "Loading New Pipeline..."
         config.model_cache = {}
-        
+
+        config.imgprogress = "Loading New Pipeline... (loading VAE)"
         # Load the VAE model
         vae = AutoencoderKL.from_pretrained(
             "madebyollin/sdxl-vae-fp16-fix",
             torch_dtype=torch.float16,
         )
+        config.imgprogress = "Loading New Pipeline... (VAE loaded)"
 
+        config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
         # Set the pipeline
         pipeline = (
             StableDiffusionXLPipeline.from_single_file
             if model_name.endswith(".safetensors")
             else StableDiffusionXLPipeline.from_pretrained
         )
+        config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
 
+        config.imgprogress = "Loading New Pipeline... (pipe)"
         # Load the pipeline
         pipe = pipeline(
             model_name,
@@ -56,6 +63,7 @@ def load_pipeline(model_name):
             add_watermarker=False,
             use_auth_token=config.HF_TOKEN
         )
+        config.imgprogress = "Loading New Pipeline... (pipe loaded)"
 
         pipe.to('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -66,95 +74,7 @@ def load_pipeline(model_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
-app = Flask(__name__)
-
-@app.route('/generate', methods=['POST'])
-def generate():
-    # Initialize global state
-    global pipe
-
-    # Check if generation is already in progress
-    if config.generating:
-        return jsonify(status='Image generation already in progress'), 400
-
-    config.generating = True
-    config.generated_image = {}
-    config.imgprogress = "Starting Image Generation..."
-
-    # Get parameters from the request
-    model_name = request.form['model']
-    prompt = utils.preprocess_prompt(request.form['prompt'])
-    negative_prompt = utils.preprocess_prompt(request.form['negative_prompt'])
-    width = int(request.form.get('width', 832))
-    height = int(request.form.get('height', 1216))
-    cfg_scale = float(request.form.get('cfg_scale', 7))
-    config.IMAGE_COUNT = int(request.form.get('image_count', 4))
-    config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
-    samplingSteps = int(request.form.get('sampling_steps', 28))
-
-    if config.CUSTOM_SEED != 0:
-        config.IMAGE_COUNT = 1
-
-    # Load the model pipeline
-    try:
-        pipe = load_pipeline(model_name)
-    except Exception as e:
-        config.generating = False
-        config.imgprogress = "Error Loading Model..."
-        return jsonify(status=f"Error loading model: {str(e)}"), 500
-
-    # Function to generate images
-    def generate_images():
-        try:
-            for i in range(config.IMAGE_COUNT):
-                if config.generation_stopped:
-                    config.imgprogress = "Generation Stopped"
-                    config.generating = False
-                    config.generation_stopped = False
-                    break
-
-                # Update the progress message
-                config.remainingImages = config.IMAGE_COUNT - i
-                config.imgprogress = f"Generating {config.remainingImages} Images..."
-
-                # Generate a new seed for each image
-                if config.CUSTOM_SEED == 0:
-                    seed = random.randint(0, 100000000000)
-                else:
-                    seed = config.CUSTOM_SEED
-
-                image_path, sensitive = generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
-
-                # Store the generated image path
-                if image_path:
-                    config.generated_image[seed] = [image_path, sensitive]
-        finally:
-            global pipe
-            del pipe
-            gc.collect()
-            torch.cuda.empty_cache()
-
-        config.imgprogress = "Generation Complete"
-        config.generating = False
-
-    # Start image generation in a separate thread to avoid blocking
-    threading.Thread(target=generate_images).start()
-
-    return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
-
-@app.route('/status', methods=['GET'])
-def status():
-    # Convert the generated images to a list to send to the client
-    images =[
-        {
-            'img': path[0],
-            'seed': seed,
-            'sensitive': path[1]
-        } for seed, path in config.generated_image.items()]
-    
-    return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage)
-
-def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
+def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
     # Generate image with progress tracking
 
     detector = NudeDetector()
@@ -165,6 +85,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, sampl
 
         if config.generation_stopped:
             config.imgprogress = "Generation Stopped"
+            config.allPercentage = 0
             raise StopIteration
         
         return callback_kwargs
@@ -185,6 +106,7 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, sampl
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
+        metadata.add_text("OriginalPrompt", original_prompt)
         metadata.add_text("NegativePrompt", negative_prompt)
         metadata.add_text("Width", str(width))
         metadata.add_text("Height", str(height))
@@ -223,6 +145,95 @@ def generateImage(prompt, negative_prompt, seed, width, height, cfg_scale, sampl
         config.imgprogress = "Generation Manually Stopped"
         return False, False
 
+@app.route('/generate', methods=['POST'])
+def generate():
+    # Check if generation is already in progress
+    if config.generating:
+        return jsonify(status='Image generation already in progress'), 400
+
+    config.generating = True
+    config.generated_image = {}
+    config.imgprogress = "Starting Image Generation..."
+
+    # Get parameters from the request
+    model_name = request.form['model']
+    original_prompt = request.form['prompt']
+    prompt = utils.preprocess_prompt(request.form['prompt']) if request.form.get("prompt_helper", "OFF") == "ON" else request.form['prompt']
+    negative_prompt = str(request.form['negative_prompt'])
+    width = int(request.form.get('width', 832))
+    height = int(request.form.get('height', 1216))
+    cfg_scale = float(request.form.get('cfg_scale', 7))
+    config.IMAGE_COUNT = int(request.form.get('image_count', 4))
+    config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
+    samplingSteps = int(request.form.get('sampling_steps', 28))
+
+    if config.CUSTOM_SEED != 0:
+        config.IMAGE_COUNT = 1
+
+    # Function to generate images
+    def generate_images():
+        # Load the model pipeline
+        try:
+            pipe = load_pipeline(model_name)
+        except Exception as e:
+            config.generating = False
+            config.imgprogress = "Error Loading Model..."
+            config.allPercentage = 0
+            return jsonify(status=f"Error loading model: {str(e)}"), 500
+        
+        try:
+            for i in range(config.IMAGE_COUNT):
+                if config.generation_stopped:
+                    config.allPercentage = 0
+                    config.imgprogress = "Generation Stopped"
+                    config.generating = False
+                    config.generation_stopped = False
+                    break
+
+                # Update the progress message
+                config.remainingImages = config.IMAGE_COUNT - i
+                config.imgprogress = f"Generating {config.remainingImages} Images..."
+                config.allPercentage = 0
+
+                # Generate a new seed for each image
+                if config.CUSTOM_SEED == 0:
+                    seed = random.randint(0, 100000000000)
+                else:
+                    seed = config.CUSTOM_SEED
+
+                image_path, sensitive = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
+
+                # Store the generated image path
+                if image_path:
+                    config.generated_image[seed] = [image_path, sensitive]
+        finally:
+            del pipe
+            config.model_cache = {}
+            torch.cuda.ipc_collect()
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        config.imgprogress = "Generation Complete"
+        config.allPercentage = 100
+        config.generating = False
+
+    # Start image generation in a separate thread to avoid blocking
+    threading.Thread(target=generate_images).start()
+
+    return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
+
+@app.route('/status', methods=['GET'])
+def status():
+    # Convert the generated images to a list to send to the client
+    images =[
+        {
+            'img': path[0],
+            'seed': seed,
+            'sensitive': path[1]
+        } for seed, path in config.generated_image.items()]
+    
+    return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage)
+
 @app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
     size = request.args.get('size')
@@ -258,11 +269,13 @@ def clear_images():
         try:
             os.remove(file)
         except Exception as e:
+            config.allPercentage = 0
             config.imgprogress = f"Error Deleteing File... {e}"
     return jsonify(status='Images cleared')
 
 @app.route('/restart', methods=['POST'])
 def restart_app():
+    config.allPercentage = 0
     # Spawn a new process of the current script
     subprocess.Popen([sys.executable] + sys.argv)
     # Exit the current process
@@ -274,7 +287,7 @@ def index():
 
 @app.route('/metadata')
 def metadata():
-    return render_template('metadata.html', use_hidden=False)
+    return render_template('metadata.html')
 
 @app.route('/hidden')
 def hidden_index():
