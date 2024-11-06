@@ -9,7 +9,7 @@ A **free text-to-image generator** that you can run on your computer. This proje
 - **GPU acceleration** is recommended for optimal performance.
 
 ## Upcoming
-- i am trying to make the website with github pages
+- i am trying to make the website using github pages
 
 ## Requirements
 
