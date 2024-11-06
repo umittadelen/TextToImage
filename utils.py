@@ -44,3 +44,23 @@ def preprocess_prompt(prompt):
 
 def num_to_range(num, inMin, inMax, outMin, outMax):
     return outMin + (float(num - inMin) / float(inMax - inMin) * (outMax - outMin))
+
+import subprocess
+import sys
+import os
+
+def check_and_install():
+    if not os.path.exists("requirements.txt"):
+        return
+
+    try:
+        import pkg_resources
+        missing_packages = [pkg.strip() for pkg in open("requirements.txt") if pkg.strip().lower() not in {pkg.key for pkg in pkg_resources.working_set}]
+    except ImportError:
+        missing_packages = []
+
+    if missing_packages:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        except subprocess.CalledProcessError as e:
+            return
