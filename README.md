@@ -8,6 +8,9 @@ A **free text-to-image generator** that you can run on your computer. This proje
 - Can be run locally on your machine.
 - **GPU acceleration** is recommended for optimal performance.
 
+## Upcoming
+- i am trying to make the website with github pages
+
 ## Requirements
 
 - A **graphics card (GPU)** is recommended for the best performance. Without a GPU, the application may run slowly.
