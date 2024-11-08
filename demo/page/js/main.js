@@ -41,8 +41,6 @@ setInterval(() => {
         fetch(`${serverUrl}/status`, { cache: 'no-store' })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('all').style.display = 'flex';
-
                 const imagesDiv = document.getElementById('images');
                 const progressText = document.getElementById('progress');
                 const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
@@ -109,10 +107,6 @@ setInterval(() => {
                     });
                 }
             })
-            .catch(error => {
-                console.error('Error fetching status:', error);
-                document.getElementById('all').style.display = 'none';
-            });
     }
 }, 1500); // Check every 1.5 seconds
 
@@ -128,9 +122,6 @@ document.getElementById('restartButton').addEventListener('click', function() {
         method: 'POST'
     })
     .then(response => response.json())
-    .then(data => {
-        document.getElementById('all').style.display = 'none';
-    })
     .catch(error => console.error('Error stopping generation:', error));
 });
 
