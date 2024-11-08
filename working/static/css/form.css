@@ -1,0 +1,46 @@
+textarea, 
+input[type="number"], 
+select {
+    appearance:none;
+    font-family: var(--font-family);
+    font-size: 1em;
+    padding: 10px;
+    border: var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-light-color); /* Darker background for text area */
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+textarea {
+    height: 6em; /* Fixed height of 6em */
+    resize: none; /* Prevent resizing */
+    overflow-y: auto; /* Add scroll if needed */
+    line-height: 1.4em; /* Set line height */
+}
+
+textarea:focus, 
+input[type="number"]:focus, 
+select:focus {
+    outline: none;
+    border: var(--border-highlighted);
+    background-color: var(--bg-color); /* Darken background on focus */
+}
+
+select#model {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+select#example_prompt {
+    margin-bottom: 15px;
+}
+
+#generateForm > #form-separator {
+    width: calc(100% + 40px);
+    height: 2px;
+    background-color: var(--border-color);
+    margin-top: 5px;
+    margin-bottom: 30px;
+    transform: translateX(-20px);
+}
