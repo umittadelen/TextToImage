@@ -1,0 +1,94 @@
+:root {
+    --bg-color: #0005; /* Darker background color */
+    --bg-light-color: #fff4; /* Dark background color */
+    --text-color: #ffffff; /* White text color */
+    --border-color: #fff4; /* Pink border color */
+    --highlight-color: #0005;
+    --darker-highlight-color: #0007;
+    --font-family: 'Quicksand', sans-serif; /* Quicksand font */
+    --border: 2px solid var(--border-color);
+    --border-highlighted: 2px solid var(--highlight-color);
+    --transition:all 0.5s ease;
+
+    --bg-gradient-start: rgba(0, 0, 0);
+    --bg-gradient-end: rgba(0, 0, 0);
+    --bg-degree: 0deg;
+}
+
+body {
+    color: var(--text-color);
+    transition: all 1s ease;
+    background: linear-gradient(0deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 20px;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    user-select: none;
+}
+
+h1 {
+    font-family: var(--font-family);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 30px;
+    display: block;
+    overflow: auto;
+}
+
+#all {
+    font-family: var(--font-family);
+    display: none;
+    flex-direction: column; /* Change to column for vertical stacking */
+    align-items: center; /* Center align items */
+    box-sizing: border-box;
+    width: 100%;
+    transition: var(--transition);
+}
+
+.form {
+    box-sizing: border-box;
+    border: var(--border);
+    padding: 20px;
+    border-radius: 10px;
+    background-color: var(--bg-light-color); /* Slightly lighter background for form */
+    width: 90%;
+    max-width: 100%; /* Ensure form isn't too wide */
+    margin: 0 auto; /* Center the form */
+}
+
+.form form {
+    width: 100%;
+    height: 100%;
+}
+
+#generateForm > div {
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: column; /* Stack labels and inputs vertically */
+    margin-bottom: 15px;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 1.25em;
+}
+
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    z-index: 10;
+    text-align: center;
+    font-size: 14px;
+}

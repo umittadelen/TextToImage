@@ -1,0 +1,5 @@
+Flask
+torch
+diffusers
+Pillow
+nudenet

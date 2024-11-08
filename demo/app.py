@@ -1,8 +1,10 @@
 # import the required libraries
+import utils
+utils.check_and_install()
+
 from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
-import utils
 from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
@@ -280,18 +282,6 @@ def restart_app():
     subprocess.Popen([sys.executable] + sys.argv)
     # Exit the current process
     os._exit(0)
-
-@app.route('/')
-def index():
-    return render_template('index.html', use_hidden=False)
-
-@app.route('/metadata')
-def metadata():
-    return render_template('metadata.html')
-
-@app.route('/hidden')
-def hidden_index():
-    return render_template('index.html', use_hidden=True)
 
 if __name__ == '__main__':
     app.run(host='192.168.0.4', port=8080, debug=False)
