@@ -123,6 +123,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
 
         detection_results = detector.detect(image_path)
         config.imgprogress = "DONE"
+        config.allPercentage = 0
 
         # Define sensitive classes
         sensitive_classes = {
