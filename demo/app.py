@@ -22,6 +22,7 @@ import subprocess
 import glob
 from io import BytesIO
 import gc
+from flask_cors import CORS
 
 config = Config()
 
@@ -29,6 +30,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
+CORS(app)
 
 def load_pipeline(model_name):
     config.imgprogress = "Loading Pipeline..."
