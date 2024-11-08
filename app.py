@@ -217,7 +217,7 @@ def generate():
             torch.cuda.empty_cache()
 
         config.imgprogress = "Generation Complete"
-        config.allPercentage = 100
+        config.allPercentage = 0
         config.generating = False
 
     # Start image generation in a separate thread to avoid blocking
