@@ -151,7 +151,7 @@ document.getElementById('ChangeIpButton').addEventListener('click', () => {
 
 // Function to get the stored IP and port or a default value
 function getServerUrl() {
-    return `http://${localStorage.getItem('serverIpPort') || '127.0.0.1:5000'}`;
+    return `https://${localStorage.getItem('serverIpPort') || '127.0.0.1:5000'}`;
 }
 
 function updateBlurEffect(img, isSensitive) {
