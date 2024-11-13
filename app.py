@@ -1,7 +1,6 @@
 # import the required libraries
 import utils
 utils.check_and_install()
-
 from flask import Flask, render_template, request, send_file, jsonify
 import torch
 import random
