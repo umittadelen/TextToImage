@@ -8,6 +8,7 @@
 - **Adjustable CFG** (Classifier-Free Guidance) for creative flexibility
 
 For setup instructions, see the **Installation Guide**.
+Thanks to @John6666cat for the models at [huggingface](https://huggingface.co/John6666).
 
 ---
 
