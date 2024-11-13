@@ -23,3 +23,5 @@ A **free text-to-image generator** that you can run on your computer. This proje
    ```bash
    git clone https://github.com/umittadelen/TextToImage.git
    cd TextToImage
+   py app.py
+   ```
