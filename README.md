@@ -1,27 +1,35 @@
-# TextToImage Generator
+## TextToImage
+**TextToImage** is a free, open-source text-to-image generation tool designed for ease of use, allowing anyone to run advanced models on their computer with customizable parameters and progress tracking.
 
-A **free text-to-image generator** that you can run on your computer. This project is still in active development and aims to provide an easy way to generate images from text using AI models without paying money to other websites.
+### Features
+- **Progress Tracking**
+- **Nudity Detection** (via **NudeDetector**) (not good enough)
+- **Seed Control** for reproducibility
+- **Adjustable CFG** (Classifier-Free Guidance) for creative flexibility
 
-## Features
+For setup instructions, see the **Installation Guide**.
 
-- **Text-to-image generation** based on your input.
-- Can be run locally on your machine.
-- **GPU acceleration** is recommended for optimal performance.
+---
 
-## Upcoming
-- i am trying to make the website using github pages
+# Installation Guide
 
-## Requirements
+### Prerequisites
+- **A good GPU** (it will run slowly if you don't have)
+- **CUDA**
+- **VS Code** (recommended editor)
 
-- A **graphics card (GPU)** is recommended for the best performance. Without a GPU, the application may run slowly.
-- Python 3.7 or higher.
-- Some dependencies like `torch` and `transformers`.
-
-## Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/umittadelen/TextToImage.git
-   cd TextToImage
-   py app.py
-   ```
+### Steps
+1. **Clone the Repository**:
+```bash
+git clone https://github.com/umittadelen/TextToImage.git
+cd TextToImage
+```
+2. **Change the IP**:
+open the app.py and change the address at this line to your local IP
+```bash
+app.run(host='192.168.0.4', port=8080, debug=False)
+```
+3. **Install Dependencies**: (if the code don't automatically installs the libs)
+```bash
+pip install -r requirements.txt
+```
