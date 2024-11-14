@@ -88,7 +88,7 @@ setInterval(() => {
                             if (imgData.sensitive) {
                                 const sensitiveText = document.createElement('p');
                                 sensitiveText.classList.add('centered');
-                                sensitiveText.innerHTML = imgData.sensitive;
+                                sensitiveText.innerHTML = "SENSITIVE";
                                 wrapper.appendChild(sensitiveText);
                             }
 
