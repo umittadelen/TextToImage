@@ -66,7 +66,10 @@ def load_pipeline(model_name):
         )
         config.imgprogress = "Loading New Pipeline... (pipe loaded)"
 
-        pipe.to('cuda' if torch.cuda.is_available() else 'cpu')
+        if torch.cuda.is_available():
+            pipe.to('cuda')
+        else:
+            raise RuntimeError("CUDA is not available. Please ensure you have a compatible GPU and drivers installed.")
 
         config.model_cache[model_name] = pipe
         config.imgprogress = "Pipeline Loaded..."
@@ -181,7 +184,8 @@ def generate():
             config.generating = False
             config.imgprogress = "Error Loading Model..."
             config.allPercentage = 0
-            return jsonify(status=f"Error loading model: {str(e)}"), 500
+            print(e)
+            return
         
         try:
             for i in range(config.IMAGE_COUNT):
