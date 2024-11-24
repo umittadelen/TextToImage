@@ -1,0 +1,18 @@
+{
+    "schedulers":[
+        "Euler",
+        "DPM++ 2M",
+        "DPM++ 2M Karras",
+        "DPM++ 2M SDE",
+        "DPM++ 2M SDE Karras",
+        "DPM++ SDE",
+        "DPM++ SDE Karras",
+        "DPM2",
+        "DPM2 Karras",
+        "DPM2 a",
+        "DPM2 a Karras",
+        "Heun",
+        "LMS",
+        "LMS Karras"
+    ]
+}

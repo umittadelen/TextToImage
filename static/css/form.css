@@ -14,7 +14,7 @@ select {
 
 textarea {
     height: 6em; /* Fixed height of 6em */
-    resize: none; /* Prevent resizing */
+    resize: vertical; /* Prevent resizing horizontally */
     overflow-y: auto; /* Add scroll if needed */
     line-height: 1.4em; /* Set line height */
 }
@@ -28,6 +28,11 @@ select:focus {
 }
 
 select#model {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+select#scheduler {
     width: 100%;
     margin-bottom: 15px;
 }

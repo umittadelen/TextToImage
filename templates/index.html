@@ -30,6 +30,11 @@
                         <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
                     </select><br>
 
+                    <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
+                    <select id="scheduler" name="scheduler" required>
+                        <option value="Euler a" selected>Euler a</option>
+                    </select><br>
+
                     <div id="form-separator"></div>
                 
                     <label for="example_prompt" title="Choose from a list of example prompts.">Example Prompts:</label>

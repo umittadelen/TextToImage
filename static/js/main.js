@@ -193,6 +193,19 @@ promptSelectElement.addEventListener('change', function() {
 // Set the initial value of the textarea to the first option's value
 promptTextareaElement.value = promptSelectElement.value;
 
+//TODO handle model change
+
+const modelSelectElement = document.getElementById('model');
+const cfgInputElement = document.getElementById('cfg_scale');
+
+// Add an event listener for the 'change' event on the select element
+modelSelectElement.addEventListener('change', function() {
+    cfgInputElement.value = modelSelectElement.options[modelSelectElement.selectedIndex].dataset.cfg || 7;
+});
+
+// Set the initial value of the textarea to the first option's value
+promptTextareaElement.value = promptSelectElement.value;
+
 //TODO handle pre dimension change
 
 // Assuming the following elements exist in your HTML

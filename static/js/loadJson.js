@@ -15,7 +15,8 @@ function loadJsonAndPopulateSelect(location, selectId, dataHandler) {
 function populateModels(data, select) {
     Object.entries(data).forEach(([modelName, modelUrl]) => {
         const option = document.createElement('option');
-        option.value = modelUrl;
+        option.value = modelUrl[0];
+        option.dataset.cfg = modelUrl[1] || 7;
         option.textContent = modelName;
         select.appendChild(option);
     });
@@ -40,6 +41,15 @@ function populateExampleSizes(data, select) {
     });
 }
 
+function populateSchedulers(data, select) {
+    data.schedulers.forEach(scheduler => {
+        const option = document.createElement('option');
+        option.value = scheduler;
+        option.textContent = scheduler;
+        select.appendChild(option);
+    });
+}
+
 // Determine which prompts file to load based on the URL
 const promptsFile = window.location.pathname.includes('/hidden') 
     ? '/static/json/prompts-hidden.json' 
@@ -49,4 +59,4 @@ const promptsFile = window.location.pathname.includes('/hidden')
 loadJsonAndPopulateSelect('/static/json/models.json', 'model', populateModels);
 loadJsonAndPopulateSelect(promptsFile, 'example_prompt', populateExamplePrompts);
 loadJsonAndPopulateSelect('/static/json/dimensions.json', 'example_size', populateExampleSizes);
-
+loadJsonAndPopulateSelect('/static/json/schedulers.json', 'scheduler', populateSchedulers);

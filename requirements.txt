@@ -5,3 +5,4 @@ Pillow
 nudenet
 transformers
 accelerate
+scipy

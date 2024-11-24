@@ -21,3 +21,4 @@ class Config():
         self.model_cache = {}
 
         self.remainingImages = 0
+        self.scheduler_name = "Euler a"

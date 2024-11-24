@@ -21,7 +21,17 @@ import subprocess
 import glob
 from io import BytesIO
 import gc
-
+from diffusers import (
+    DPMSolverMultistepScheduler,
+    DPMSolverSinglestepScheduler,
+    KDPM2DiscreteScheduler,
+    KDPM2AncestralDiscreteScheduler,
+    EulerDiscreteScheduler,
+    EulerAncestralDiscreteScheduler,
+    HeunDiscreteScheduler,
+    LMSDiscreteScheduler,
+    LMSDiscreteScheduler
+)
 config = Config()
 
 log = logging.getLogger('werkzeug')
@@ -29,7 +39,25 @@ log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
-def load_pipeline(model_name):
+def load_scheduler(pipe, scheduler_name):
+    if scheduler_name == "DPM++ 2M": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "DPM++ 2M Karras": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
+    elif scheduler_name == "DPM++ 2M SDE": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, algorithm_type="sde-dpmsolver++")
+    elif scheduler_name == "DPM++ 2M SDE Karras": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++")
+    elif scheduler_name == "DPM++ SDE": pipe.scheduler = DPMSolverSinglestepScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "DPM++ SDE Karras": pipe.scheduler = DPMSolverSinglestepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
+    elif scheduler_name == "DPM2": pipe.scheduler = KDPM2DiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "DPM2 Karras": pipe.scheduler = KDPM2DiscreteScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
+    elif scheduler_name == "DPM2 a": pipe.scheduler = KDPM2AncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "DPM2 a Karras": pipe.scheduler = KDPM2AncestralDiscreteScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
+    elif scheduler_name == "Euler": pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "Euler a": pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "Heun": pipe.scheduler = HeunDiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "LMS": pipe.scheduler = LMSDiscreteScheduler.from_config(pipe.scheduler.config)
+    elif scheduler_name == "LMS Karras": pipe.scheduler = LMSDiscreteScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
+    return pipe
+
+def load_pipeline(model_name, scheduler_name):
     config.imgprogress = "Loading Pipeline..."
 
     if model_name not in config.model_cache:
@@ -64,6 +92,7 @@ def load_pipeline(model_name):
             add_watermarker=False,
             use_auth_token=config.HF_TOKEN
         )
+        pipe = load_scheduler(pipe, scheduler_name)
         config.imgprogress = "Loading New Pipeline... (pipe loaded)"
 
         if torch.cuda.is_available():
@@ -118,6 +147,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         metadata.add_text("Seed", str(seed))
         metadata.add_text("SamplingSteps", str(samplingSteps))
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
+        metadata.add_text("Scheduler", config.scheduler_name)
 
         # Save the image to the temporary directory
         image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
@@ -162,6 +192,7 @@ def generate():
 
     # Get parameters from the request
     model_name = request.form['model']
+    config.scheduler_name = request.form['scheduler']
     original_prompt = request.form['prompt']
     prompt = utils.preprocess_prompt(request.form['prompt']) if request.form.get("prompt_helper", "OFF") == "ON" else request.form['prompt']
     negative_prompt = str(request.form['negative_prompt'])
@@ -177,9 +208,8 @@ def generate():
 
     # Function to generate images
     def generate_images():
-        # Load the model pipeline
         try:
-            pipe = load_pipeline(model_name)
+            pipe = load_pipeline(model_name, config.scheduler_name)
         except Exception as e:
             config.generating = False
             config.imgprogress = "Error Loading Model..."
