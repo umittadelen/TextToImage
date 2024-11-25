@@ -2,25 +2,11 @@
 import utils
 utils.check_and_install()
 from flask import Flask, render_template, request, send_file, jsonify
-import torch
-import random
-from diffusers import (
-    StableDiffusionXLPipeline,
-    AutoencoderKL
-)
+import torch, random, os, math, time, threading, sys, subprocess, glob, gc
 from PIL import PngImagePlugin, Image
-import os
-import math
-import logging
-import time
-import threading
 from config import Config
 from nudenet import NudeDetector
-import sys
-import subprocess
-import glob
 from io import BytesIO
-import gc
 from diffusers import (
     DPMSolverMultistepScheduler,
     DPMSolverSinglestepScheduler,
@@ -30,13 +16,12 @@ from diffusers import (
     EulerAncestralDiscreteScheduler,
     HeunDiscreteScheduler,
     LMSDiscreteScheduler,
-    LMSDiscreteScheduler
+    LMSDiscreteScheduler,
+    StableDiffusionXLPipeline,
+    AutoencoderKL
 )
+
 config = Config()
-
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
 app = Flask(__name__)
 
 def load_scheduler(pipe, scheduler_name):
@@ -303,6 +288,7 @@ def stop_generation():
 def clear_images():
     config.generated_image = {}
     files = glob.glob(os.path.join(config.generated_dir, '*'))
+    
     for file in files:
         try:
             os.remove(file)
