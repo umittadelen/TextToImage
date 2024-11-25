@@ -49,7 +49,7 @@ setInterval(() => {
                 // Update progress value smoothly
                 if (Number.isInteger(data.imgprogress)) {
                     dynamicProgressBar.style.width = `${data.imgprogress}%`;
-                    progressText.innerHTML = `Progress: ${data.imgprogress}%`;
+                    progressText.innerHTML = `Progress: ${data.imgprogress}% Remaining: ${data.remainingimages}`;
                 } else {
                     dynamicProgressBar.style.width = `0%`;
                     alldynamicProgressBar.style.width = `0%`;

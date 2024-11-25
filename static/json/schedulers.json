@@ -1,7 +1,6 @@
 {
     "schedulers":[
         "Euler",
-        "Euler a",
         "DPM++ 2M",
         "DPM++ 2M Karras",
         "DPM++ 2M SDE",
