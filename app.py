@@ -92,7 +92,8 @@ def load_pipeline(model_name, scheduler_name):
             add_watermarker=False,
             use_auth_token=config.HF_TOKEN
         )
-        pipe = load_scheduler(pipe, scheduler_name)
+        if scheduler_name != "None":
+            pipe = load_scheduler(pipe, scheduler_name)
         config.imgprogress = "Loading New Pipeline... (pipe loaded)"
 
         if torch.cuda.is_available():
@@ -120,7 +121,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             config.imgprogress = "Generation Stopped"
             config.allPercentage = 0
             raise StopIteration
-        
+
         return callback_kwargs
 
     config.imgprogress = "Generating Image..."
@@ -174,7 +175,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         }
 
         return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
-    
+
     except StopIteration:
         # If generation was stopped, handle it gracefully
         config.imgprogress = "Generation Manually Stopped"
@@ -216,7 +217,7 @@ def generate():
             config.allPercentage = 0
             print(e)
             return
-        
+
         try:
             for i in range(config.IMAGE_COUNT):
                 if config.generation_stopped:
@@ -267,7 +268,7 @@ def status():
             'seed': seed,
             'sensitive': path[1]
         } for seed, path in config.generated_image.items()]
-    
+
     return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage)
 
 @app.route('/generated/<filename>', methods=['GET'])
@@ -312,9 +313,7 @@ def clear_images():
 @app.route('/restart', methods=['POST'])
 def restart_app():
     config.allPercentage = 0
-    # Spawn a new process of the current script
     subprocess.Popen([sys.executable] + sys.argv)
-    # Exit the current process
     os._exit(0)
 
 @app.route('/')
