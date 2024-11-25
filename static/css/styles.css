@@ -5,7 +5,7 @@
     --border-color: #fff4; /* Pink border color */
     --highlight-color: #0005;
     --darker-highlight-color: #0007;
-    --font-family: 'Quicksand', sans-serif; /* Quicksand font */
+    --font-family: 'Quicksand', 'Comic Sans MS', sans-serif;
     --border: 2px solid var(--border-color);
     --border-highlighted: 2px solid var(--highlight-color);
     --transition:all 0.5s ease;
