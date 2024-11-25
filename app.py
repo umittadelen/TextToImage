@@ -2,7 +2,7 @@
 import utils
 utils.check_and_install()
 from flask import Flask, render_template, request, send_file, jsonify
-import torch, random, os, math, time, threading, sys, subprocess, glob, gc
+import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging
 from PIL import PngImagePlugin, Image
 from config import Config
 from nudenet import NudeDetector
@@ -23,6 +23,8 @@ from diffusers import (
 
 config = Config()
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 def load_scheduler(pipe, scheduler_name):
     if scheduler_name == "DPM++ 2M": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
@@ -239,7 +241,6 @@ def generate():
         config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
-
     # Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
 
@@ -261,7 +262,6 @@ def status():
 def serve_temp_image(filename):
     size = request.args.get('size')
     image_path = os.path.join(config.generated_dir, filename)
-
     if size == 'small':
         with Image.open(image_path) as img:
             new_size = (img.width // 3, img.height // 3)
