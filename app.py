@@ -128,14 +128,15 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
 
     try:
         image = pipe(
-            prompt,
+            prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
             guidance_scale=cfg_scale,
             num_inference_steps=samplingSteps,
             generator=torch.manual_seed(seed),
-            callback_on_step_end=progress
+            callback_on_step_end=progress,
+            num_images_per_prompt=1
         ).images[0]
 
         metadata = PngImagePlugin.PngInfo()
