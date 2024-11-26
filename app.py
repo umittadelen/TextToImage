@@ -316,5 +316,5 @@ def hidden_index():
     return render_template('index.html', use_hidden=True)
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.4', port=8080, debug=False)
+    app.run(host='0.0.0.0', port=8080, debug=False)
     config.imgprogress = "Server Started"
