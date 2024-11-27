@@ -48,8 +48,8 @@ setInterval(() => {
 
                 // Update progress value smoothly
                 if (Number.isInteger(data.imgprogress)) {
-                    dynamicProgressBar.style.width = `${data.imgprogress}%`;
-                    progressText.innerHTML = `Progress: ${data.imgprogress}% Remaining: ${data.remainingimages}`;
+                    dynamicProgressBar.style.width = `calc(${data.imgprogress}% - 2px)`;
+                    progressText.innerHTML = `Progress: ${data.imgprogress}% Remaining: ${Math.max(0, data.remainingimages - 1)}`;
                 } else {
                     dynamicProgressBar.style.width = `0%`;
                     alldynamicProgressBar.style.width = `0%`;
@@ -57,7 +57,7 @@ setInterval(() => {
                 }
 
                 if (Number.isInteger(data.allpercentage)) {
-                    alldynamicProgressBar.style.width = `${data.allpercentage}%`;
+                    alldynamicProgressBar.style.width = `calc(${data.allpercentage}% - 2px)`;
                 } else {
                     alldynamicProgressBar.style.width = `0%`;
                 }
