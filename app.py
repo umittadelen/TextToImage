@@ -263,7 +263,12 @@ def status():
             'sensitive': path[1]
         } for seed, path in config.generated_image.items()]
 
-    return jsonify(images=images, imgprogress=config.imgprogress, allpercentage=config.allPercentage, remainingimages=config.remainingImages)
+    return jsonify(
+        images=images,
+        imgprogress=config.imgprogress,
+        allpercentage=config.allPercentage,
+        remainingimages=config.remainingImages-1 if config.remainingImages > 0 else config.remainingImages
+    )
 
 @app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
