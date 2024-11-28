@@ -190,7 +190,7 @@ def generate():
     model_name = request.form['model']
     config.scheduler_name = request.form['scheduler']
     original_prompt = request.form['prompt']
-    prompt = utils.preprocess_prompt(request.form['prompt']) if request.form.get("prompt_helper", "OFF") == "ON" else request.form['prompt']
+    prompt = utils.preprocess_prompt(request.form['prompt']) if int(request.form.get("prompt_helper", 0)) == 1 else request.form['prompt']
     negative_prompt = str(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
