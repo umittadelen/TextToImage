@@ -26,6 +26,7 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+#TODO: function to load the selected scheduler from name
 def load_scheduler(pipe, scheduler_name):
     if scheduler_name == "DPM++ 2M": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     elif scheduler_name == "DPM++ 2M Karras": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
@@ -44,20 +45,13 @@ def load_scheduler(pipe, scheduler_name):
     elif scheduler_name == "LMS Karras": pipe.scheduler = LMSDiscreteScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
     return pipe
 
+#TODO:  function to load pipeline from given huggingface repo and scheduler
 def load_pipeline(model_name, scheduler_name):
     config.imgprogress = "Loading Pipeline..."
 
     if model_name not in config.model_cache:
         config.imgprogress = "Loading New Pipeline..."
         config.model_cache = {}
-
-        config.imgprogress = "Loading New Pipeline... (loading VAE)"
-        # Load the VAE model
-        vae = AutoencoderKL.from_pretrained(
-            "madebyollin/sdxl-vae-fp16-fix",
-            torch_dtype=torch.float16,
-        )
-        config.imgprogress = "Loading New Pipeline... (VAE loaded)"
 
         config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
         # Set the pipeline
@@ -72,13 +66,26 @@ def load_pipeline(model_name, scheduler_name):
         # Load the pipeline
         pipe = pipeline(
             model_name,
-            vae=vae,
             torch_dtype=torch.float16,
             custom_pipeline="lpw_stable_diffusion_xl",
             use_safetensors=True,
             add_watermarker=False,
             use_auth_token=config.HF_TOKEN
         )
+
+        config.imgprogress = "Loading New Pipeline... (loading VAE)"
+        # Load the VAE model
+        if not hasattr(pipe, "vae") or pipe.vae is None:
+            config.imgprogress = "Model does not include a VAE. Loading external VAE..."
+            vae = AutoencoderKL.from_pretrained(
+                "madebyollin/sdxl-vae-fp16-fix",
+                torch_dtype=torch.float16,
+            )
+            pipe.vae = vae
+            config.imgprogress = "External VAE loaded."
+
+        config.imgprogress = "Loading New Pipeline... (VAE loaded)"
+
         if scheduler_name != "None":
             pipe = load_scheduler(pipe, scheduler_name)
         config.imgprogress = "Loading New Pipeline... (pipe loaded)"
@@ -96,7 +103,7 @@ def load_pipeline(model_name, scheduler_name):
         return config.model_cache[model_name]
 
 def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
-    # Generate image with progress tracking
+    #TODO: Generate image with progress tracking
 
     detector = NudeDetector()
 
@@ -138,7 +145,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
         metadata.add_text("Scheduler", config.scheduler_name)
 
-        # Save the image to the temporary directory
+        #TODO: Save the image to the temporary directory
         image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
         image.save(image_path, 'PNG', pnginfo=metadata)
 
@@ -146,7 +153,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         config.imgprogress = "DONE"
         config.allPercentage = 0
 
-        # Define sensitive classes
+        #TODO: Define sensitive classes
         sensitive_classes = {
             "FEMALE_GENITALIA_COVERED",
             "BUTTOCKS_EXPOSED",
@@ -165,7 +172,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
 
     except StopIteration:
-        # If generation was stopped, handle it gracefully
+        #TODO: If generation was stopped, handle it gracefully
         config.imgprogress = "Generation Manually Stopped"
         return False, False
 
@@ -179,7 +186,7 @@ def generate():
     config.generated_image = {}
     config.imgprogress = "Starting Image Generation..."
 
-    # Get parameters from the request
+    #TODO: Get parameters from the request
     model_name = request.form['model']
     config.scheduler_name = request.form['scheduler']
     original_prompt = request.form['prompt']
@@ -195,7 +202,7 @@ def generate():
     if config.CUSTOM_SEED != 0:
         config.IMAGE_COUNT = 1
 
-    # Function to generate images
+    #TODO: Function to generate images
     def generate_images():
         try:
             pipe = load_pipeline(model_name, config.scheduler_name)
@@ -215,12 +222,12 @@ def generate():
                     config.generation_stopped = False
                     break
 
-                # Update the progress message
+                #TODO: Update the progress message
                 config.remainingImages = config.IMAGE_COUNT - i
                 config.imgprogress = f"Generating {config.remainingImages} Images..."
                 config.allPercentage = 0
 
-                # Generate a new seed for each image
+                #TODO: Generate a new seed for each image
                 if config.CUSTOM_SEED == 0:
                     seed = random.randint(0, 100000000000)
                 else:
@@ -228,7 +235,7 @@ def generate():
 
                 image_path, sensitive = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
 
-                # Store the generated image path
+                #TODO: Store the generated image path
                 if image_path:
                     config.generated_image[seed] = [image_path, sensitive]
         finally:
@@ -241,14 +248,14 @@ def generate():
         config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
-    # Start image generation in a separate thread to avoid blocking
+    #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
 
     return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
 
 @app.route('/status', methods=['GET'])
 def status():
-    # Convert the generated images to a list to send to the client
+    #TODO: Convert the generated images to a list to send to the client
     images =[
         {
             'img': path[0],
