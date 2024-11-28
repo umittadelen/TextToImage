@@ -13,6 +13,10 @@ document.getElementById('generateForm').addEventListener('submit', function(even
     existingImages.clear();
     document.getElementById('images').innerHTML = '';
 
+    if (document.getElementById('model').value === "custom") {
+        document.getElementById('model').value = document.getElementById('custom-model').value;
+    }
+
     const formData = new FormData(this);
     fetch('/generate', {
         method: 'POST',
