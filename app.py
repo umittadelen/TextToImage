@@ -104,7 +104,6 @@ def load_pipeline(model_name, scheduler_name):
 
 def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
-
     detector = NudeDetector()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
@@ -248,16 +247,15 @@ def generate():
         config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
+
     #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
-
     return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
 
 @app.route('/status', methods=['GET'])
 def status():
     #TODO: Convert the generated images to a list to send to the client
-    images =[
-        {
+    images =[{
             'img': path[0],
             'seed': seed,
             'sensitive': path[1]
