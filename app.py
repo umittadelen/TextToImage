@@ -54,7 +54,7 @@ def load_pipeline(model_name, scheduler_name):
         config.model_cache = {}
 
         config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
-        # Set the pipeline
+        #TODO: Set the pipeline
         pipeline = (
             StableDiffusionXLPipeline.from_single_file
             if model_name.endswith(".safetensors")
@@ -63,7 +63,7 @@ def load_pipeline(model_name, scheduler_name):
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
 
         config.imgprogress = "Loading New Pipeline... (pipe)"
-        # Load the pipeline
+        #TODO: Load the pipeline
         pipe = pipeline(
             model_name,
             torch_dtype=torch.float16,
@@ -74,7 +74,7 @@ def load_pipeline(model_name, scheduler_name):
         )
 
         config.imgprogress = "Loading New Pipeline... (loading VAE)"
-        # Load the VAE model
+        #TODO: Load the VAE model
         if not hasattr(pipe, "vae") or pipe.vae is None:
             config.imgprogress = "Model does not include a VAE. Loading external VAE..."
             vae = AutoencoderKL.from_pretrained(
@@ -178,7 +178,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    # Check if generation is already in progress
+    #TODO: Check if generation is already in progress
     if config.generating:
         return jsonify(status='Image generation already in progress'), 400
 
