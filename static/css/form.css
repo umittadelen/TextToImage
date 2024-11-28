@@ -1,5 +1,5 @@
 textarea, 
-input[type="number"], 
+input,
 select {
     appearance:none;
     font-family: var(--font-family);
@@ -20,11 +20,15 @@ textarea {
 }
 
 textarea:focus, 
-input[type="number"]:focus, 
+input:focus,
 select:focus {
     outline: none;
     border: var(--border-highlighted);
     background-color: var(--bg-color); /* Darken background on focus */
+}
+
+input::placeholder {
+    color: var(--text-color);
 }
 
 select#model {
@@ -38,6 +42,12 @@ select#scheduler {
 }
 
 select#example_prompt {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+#input-div {
+    width: 100%;
     margin-bottom: 15px;
 }
 

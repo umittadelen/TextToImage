@@ -233,3 +233,15 @@ if (exampleSizeSelectElement.options.length > 0) {
     widthInputElement.value = initialDimensions[0];
     heightInputElement.value = initialDimensions[1];
 }
+
+function toggleCustomModelInput() {
+    const dropdown = document.getElementById('model');
+    const customInput = document.getElementById('custom-model');
+    if (dropdown.value === 'custom') {
+        customInput.style.display = 'block';
+        customInput.required = true; // Make input field required when visible
+    } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+    }
+}

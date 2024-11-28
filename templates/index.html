@@ -26,9 +26,15 @@
             <div class="form">
                 <form id="generateForm">
                     <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
-                    <select id="model" name="model" required>
-                        <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>Animagine XL 3.1</option>
-                    </select><br>
+                    <select id="model" name="model" required onchange="toggleCustomModelInput()">
+                        <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>
+                            Animagine XL 3.1
+                        </option>
+                    </select>
+                    <br>
+                    <div id="input-div">
+                        <input type="text" id="custom-model" name="custom-model" placeholder="Enter custom model URL" style="display: none;" />
+                    </div>
 
                     <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
                     <select id="scheduler" name="scheduler" required>

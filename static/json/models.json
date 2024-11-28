@@ -20,5 +20,6 @@
     "Ebara Pony V1 SDXL":["John6666/ebara-pony-v1-sdxl","7"],
     "Pero Pero Sitai V1 SDXL":["John6666/peroperositai-v1-sdxl",""],
     "Pony Diffusion V6 XL":["https://huggingface.co/LyliaEngine/Pony_Diffusion_V6_XL/blob/main/ponyDiffusionV6XL_v6StartWithThisOne.safetensors","7"],
-    "Furry Diffusion":["https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt",""]
+    "Furry Diffusion":["https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt",""],
+    "Custom":["custom", "7"]
 }
