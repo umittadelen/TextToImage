@@ -3,6 +3,7 @@
     "SeaArt Furry XL 4.0":["https://huggingface.co/SeaArtLab/SeaArt-Furry-XL-1.0/blob/main/furry-xl-4.0.safetensors","7"],
     "KiwiMix XL V3 SDXL":["John6666/kiwimix-xl-v3-sdxl","2"],
     "KiwiMix XL V3":["./models/kiwimixXL_v3.safetensors","7"],
+    "NoobAI XL EpsPred10":["./models/noobaiXLNAIXL_epsilonPred10Version.safetensors","7"],
     "NoobAI XL 1.0":["Laxhar/noobai-XL-1.0","2"],
     "SDXL base 1.0":["stabilityai/stable-diffusion-xl-base-1.0","7"],
     "Anything XL XLyper SDXL":["John6666/anything-xl-xlhyper-sdxl","7"],

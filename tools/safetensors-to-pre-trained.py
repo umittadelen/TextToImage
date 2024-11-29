@@ -2,7 +2,7 @@ from diffusers import StableDiffusionXLPipeline
 from pathlib import Path
 
 # Load the model from the safetensors file (or the format you're using)
-model_name ="C:/Users/umitt/Downloads/kiwimixXL_v3.safetensors"
+model_name ="./tools/kiwimixXL_v3.safetensors"
 
 pipe = StableDiffusionXLPipeline.from_single_file(model_name)
 
