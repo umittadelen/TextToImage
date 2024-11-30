@@ -22,3 +22,6 @@ class Config():
 
         self.remainingImages = 0
         self.scheduler_name = "Euler a"
+
+        self.enable_attention_slicing = True
+        self.enable_xformers_memory_efficient_attention = True

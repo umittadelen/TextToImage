@@ -6,3 +6,4 @@ nudenet
 transformers
 accelerate
 scipy
+xformers

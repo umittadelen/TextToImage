@@ -94,6 +94,11 @@ def load_pipeline(model_name, scheduler_name):
             pipe.to('cuda')
         else:
             raise RuntimeError("CUDA is not available. Please ensure you have a compatible GPU and drivers installed.")
+        
+        if config.enable_attention_slicing:
+            pipe.enable_attention_slicing()
+        if config.enable_xformers_memory_efficient_attention:
+            pipe.enable_xformers_memory_efficient_attention()
 
         config.model_cache[model_name] = pipe
         config.imgprogress = "Pipeline Loaded..."
