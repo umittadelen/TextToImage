@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>Image Generator</title>
 
         <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -109,6 +108,7 @@
                         <button type="button" id="restartButton">Restart Server</button>
                         <button type="button" id="clearButton">Clear Images</button>
                         <button type="button" id="metadataButton" onclick="window.location.href=`{{ url_for('metadata') }}`">Get Metadata</button>
+                        <button type="button" onclick="window.location.href=`https://umittadelen.github.io/PromptBuilder/`">Prompt Builder</button>
                     </div>
 
                     <div id="form-separator"></div>

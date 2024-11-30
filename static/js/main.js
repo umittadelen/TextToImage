@@ -116,7 +116,15 @@ setInterval(() => {
                 document.getElementById('all').style.display = 'none';
             });
     }
-}, 1500); // Check every 1.5 seconds
+}, 2000); // Check every 2 seconds
+
+document.addEventListener('visibilitychange', function() {
+    const state = document.visibilityState === 'visible' ? 'Vis' : 
+                 document.visibilityState === 'hidden' ? 'Hid' : 
+                 document.visibilityState === 'prerender' ? 'Pre' : 'Unk';
+    document.title = `Image Generator (${state})`;
+});
+
 
 document.getElementById('stopButton').addEventListener('click', function() {
     fetch('/stop', {
