@@ -5,6 +5,7 @@
     "KiwiMix XL V3":["./models/kiwimixXL_v3.safetensors","7"],
     "NoobAI XL EpsPred10":["./models/noobaiXLNAIXL_epsilonPred10Version.safetensors","7"],
     "NoobAI XL 1.0":["Laxhar/noobai-XL-1.0","2"],
+    "Illustrious XL early release V0":["OnomaAIResearch/Illustrious-xl-early-release-v0","2"],
     "SDXL base 1.0":["stabilityai/stable-diffusion-xl-base-1.0","7"],
     "Anything XL XLyper SDXL":["John6666/anything-xl-xlhyper-sdxl","7"],
     "WAI Cute V8 SDXL":["John6666/wai-cute-v8-sdxl","7"],
