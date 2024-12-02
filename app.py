@@ -16,7 +16,6 @@ from diffusers import (
     EulerAncestralDiscreteScheduler,
     HeunDiscreteScheduler,
     LMSDiscreteScheduler,
-    LMSDiscreteScheduler,
     StableDiffusionXLPipeline,
     AutoencoderKL
 )
