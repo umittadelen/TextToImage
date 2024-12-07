@@ -177,6 +177,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
     except StopIteration:
         #TODO: If generation was stopped, handle it gracefully
         config.imgprogress = "Generation Manually Stopped"
+        config.generation_stopped = False
         return False, False
 
 @app.route('/generate', methods=['POST'])
@@ -211,6 +212,7 @@ def generate():
             pipe = load_pipeline(model_name, config.scheduler_name)
         except Exception as e:
             config.generating = False
+            config.generation_stopped = False
             config.imgprogress = "Error Loading Model..."
             config.allPercentage = 0
             print(e)
@@ -251,6 +253,7 @@ def generate():
         config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
+        config.generation_stopped = False
 
     #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
