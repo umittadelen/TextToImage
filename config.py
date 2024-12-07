@@ -1,9 +1,9 @@
 import os
 
-# Create a temporary directory for images
 class Config():
     def __init__(self):
         self.HF_TOKEN = os.getenv("HF_TOKEN")
+        #self.HF_TOKEN = "HF_TOKEN"
 
         self.generation_stopped = False
         self.generating = False
@@ -11,7 +11,6 @@ class Config():
         
         os.makedirs(self.generated_dir, exist_ok=True)
         
-        # Dictionary to store generated images
         self.generated_image = {}
         self.imgprogress = ""
         self.allPercentage = 0
@@ -23,5 +22,5 @@ class Config():
         self.remainingImages = 0
         self.scheduler_name = "Euler a"
 
-        self.enable_attention_slicing = False
-        self.enable_xformers_memory_efficient_attention = False
+        self.enable_attention_slicing = True
+        self.enable_xformers_memory_efficient_attention = True
