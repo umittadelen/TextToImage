@@ -5,7 +5,6 @@ from flask import Flask, render_template, request, send_file, jsonify
 import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging
 from PIL import PngImagePlugin, Image
 from config import Config
-from nudenet import NudeDetector
 from io import BytesIO
 from diffusers import (
     DPMSolverMultistepScheduler,
@@ -19,6 +18,7 @@ from diffusers import (
     StableDiffusionXLPipeline,
     AutoencoderKL
 )
+from downloadModelFromCivitai import downloadModelFromCivitai
 
 config = Config()
 app = Flask(__name__)
@@ -46,6 +46,7 @@ def load_scheduler(pipe, scheduler_name):
 
 #TODO:  function to load pipeline from given huggingface repo and scheduler
 def load_pipeline(model_name, scheduler_name):
+
     config.imgprogress = "Loading Pipeline..."
 
     if model_name not in config.model_cache:
@@ -108,7 +109,6 @@ def load_pipeline(model_name, scheduler_name):
 
 def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
-    detector = NudeDetector()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
         config.imgprogress = int(math.floor(step_index / samplingSteps * 100))
@@ -152,37 +152,20 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
         image.save(image_path, 'PNG', pnginfo=metadata)
 
-        detection_results = detector.detect(image_path)
         config.imgprogress = "DONE"
         config.allPercentage = 0
 
-        #TODO: Define sensitive classes
-        sensitive_classes = {
-            "FEMALE_GENITALIA_COVERED",
-            "BUTTOCKS_EXPOSED",
-            "FEMALE_BREAST_EXPOSED",
-            "FEMALE_GENITALIA_EXPOSED",
-            "MALE_BREAST_EXPOSED",
-            "ANUS_EXPOSED",
-            "BELLY_COVERED",
-            "BELLY_EXPOSED",
-            "MALE_GENITALIA_EXPOSED",
-            "ANUS_COVERED",
-            #"FEMALE_BREAST_COVERED",
-            "BUTTOCKS_COVERED"
-        }
-
-        return image_path, next((detection['class'] for detection in detection_results if detection['class'] in sensitive_classes), False)
+        return image_path
 
     except StopIteration:
         #TODO: If generation was stopped, handle it gracefully
         config.imgprogress = "Generation Manually Stopped"
-        return False, False
+        return False
 
 @app.route('/generate', methods=['POST'])
 def generate():
     #TODO: Check if generation is already in progress
-    if config.generating:
+    if config.generating or config.downloading:
         return jsonify(status='Image generation already in progress'), 400
 
     config.generating = True
@@ -236,11 +219,11 @@ def generate():
                 else:
                     seed = config.CUSTOM_SEED
 
-                image_path, sensitive = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
 
                 #TODO: Store the generated image path
                 if image_path:
-                    config.generated_image[seed] = [image_path, sensitive]
+                    config.generated_image[seed] = [image_path]
         finally:
             del pipe
             config.model_cache = {}
@@ -256,13 +239,48 @@ def generate():
     threading.Thread(target=generate_images).start()
     return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
 
+@app.route('/addmodel', methods=['POST'])
+def addmodel():
+    #TODO: Download the model
+    model_url = request.form['model-name']
+
+    config.imgprogress = "Downloading Model..."
+
+    if config.generating:
+        return jsonify(status='Image generation in progress. Please wait'), 400
+
+    #! civitai.com
+    if "civitai" in model_url:
+        if not config.generating:
+
+            config.downloading = True
+            downloadModelFromCivitai(model_url)
+            config.downloading = False
+
+            return jsonify(status='Model Downloaded')
+    else:
+        return jsonify(status='Invalid or Unsupported Model URL')
+    
+@app.route('/changejson', methods=['POST'])
+def changejson():
+    try:
+        json_data = request.get_json()  # Parse JSON data from the request
+        
+        import json
+        # Save the JSON data to the file
+        with open('./static/json/models.json', 'w', encoding='utf-8') as json_file:
+            json.dump(json_data, json_file, indent=4, ensure_ascii=False)  # Ensure proper encoding
+
+        return jsonify({"message": "JSON saved successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 @app.route('/status', methods=['GET'])
 def status():
     #TODO: Convert the generated images to a list to send to the client
     images =[{
             'img': path[0],
-            'seed': seed,
-            'sensitive': path[1]
+            'seed': seed
         } for seed, path in config.generated_image.items()]
 
     return jsonify(
@@ -319,15 +337,15 @@ def restart_app():
 
 @app.route('/')
 def index():
-    return render_template('index.html', use_hidden=False)
+    return render_template('index.html')
+
+@app.route('/models')
+def models():
+    return render_template('models.html')
 
 @app.route('/metadata')
 def metadata():
     return render_template('metadata.html')
-
-@app.route('/hidden')
-def hidden_index():
-    return render_template('index.html', use_hidden=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=False)

@@ -9,31 +9,22 @@
 
         <script src="https://cdn.jsdelivr.net/gh/seikichi/tiff.js@master/tiff.min.js"></script>
         
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/sensitive-toggle.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/example-prompt.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/progress-bar.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/image.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
 
     </head>
     <body>
         <div id="all">
             <h1>Text to Image Generator</h1>
+
             <div class="form">
                 <form id="generateForm">
+
                     <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
                     <select id="model" name="model" required onchange="toggleCustomModelInput()">
                         <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>
                             Animagine XL 3.1
                         </option>
-                    </select>
-                    <br>
-                    <div id="input-div">
-                        <input type="text" id="custom-model" name="custom-model" placeholder="Enter custom model URL" style="display: none;" />
-                    </div>
+                    </select><br>
 
                     <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
                     <select id="scheduler" name="scheduler" required>
@@ -108,6 +99,7 @@
                         <button type="button" id="restartButton">Restart Server</button>
                         <button type="button" id="clearButton">Clear Images</button>
                         <button type="button" id="metadataButton" onclick="window.open(`{{ url_for('metadata') }}`)">Get Metadata</button>
+                        <button type="button" id="modelEditorButton" onclick="window.open(`{{ url_for('models') }}`)">Model Editor</button>
                         <button type="button" onclick="window.open(`https://umittadelen.github.io/PromptBuilder/`)">Prompt Builder</button>
                     </div>
 
@@ -122,17 +114,11 @@
                     </div>
                 </form>
             </div>
-            
-            <label for="sensitive-toggle">Show Sensitive Images:</label>
-            <div id="toggle-container" class="switch">
-                <input type="checkbox" id="sensitive-toggle">
-                <span class="slider"></span>
-            </div>
+
             <div id="images"></div>
         </div>
 
         <script src="{{url_for('static', filename='js/loadJson.js')}}" defer></script>
         <script src="{{url_for('static', filename='js/main.js')}}" defer></script>
-        <script src="{{url_for('static', filename='js/background.js')}}" defer></script>
     </body>
 </html>

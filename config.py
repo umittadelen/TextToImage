@@ -8,6 +8,7 @@ class Config():
         self.generation_stopped = False
         self.generating = False
         self.generated_dir = './generated/'
+        self.downloading = False
         
         os.makedirs(self.generated_dir, exist_ok=True)
         

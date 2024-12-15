@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
+</head>
+<body>
+    <div id="all">
+        <h1>Model Editor</h1>
+
+        <!-- Form Section -->
+        <form id="model-form" class="form" onsubmit="submitModel(event)">
+            <label for="model-name">Model Name:</label>
+            <input type="text" id="model-name" name="model-name" placeholder="Enter model url" required>
+
+            <button type="submit">Submit Model</button>
+        </form>
+
+        <div id="form-separator"></div>
+
+        <!-- JSON Viewer/Editor Section -->
+        <div class="form">
+            <h2>View and Edit JSON</h2>
+            <textarea id="json-editor" placeholder="JSON content will appear here" oninput="validateJson()" style="height: 20em;"></textarea>
+            <button onclick="saveJson()">Save JSON</button>
+            <div id="json-status"></div>
+        </div>
+    </div>
+
+    <script src="{{url_for('static', filename='js/models.js')}}" defer></script>
+</body>
+</html>

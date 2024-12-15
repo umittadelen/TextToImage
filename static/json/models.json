@@ -99,7 +99,11 @@
         "./models/molKeunFurryMix_molKeunnoobXLILXL.safetensors",
         "7"
     ],
-    "Custom": [
+    "counterfeitxl_v25.safetensors": [
+        "./models/counterfeitxl_v25.safetensors",
+        "7"
+    ],
+    "custom": [
         "custom",
         "7"
     ]
