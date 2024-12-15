@@ -30,6 +30,9 @@ def downloadModelFromCivitai(modelUrl):
 
         def fix_path_slashes(path):
             return path.replace("\\", "/")
+        
+        if modelUrl.find("?") != -1:
+            modelUrl = modelUrl[:modelUrl.find("?")]
 
         if "token" not in modelUrl:
             modelUrl = append_token(modelUrl, "token", api_key)

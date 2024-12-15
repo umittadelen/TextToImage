@@ -20,10 +20,16 @@
                 <form id="generateForm">
 
                     <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
-                    <select id="model" name="model" required onchange="toggleCustomModelInput()">
+                    <select id="model" name="model" required>
                         <option value="https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors" selected>
                             Animagine XL 3.1
                         </option>
+                    </select><br>
+
+                    <label for="model_type" title="The type of the model (change this if you know what are you doing or if the model is not working)">Choose a model type:</label>
+                    <select id="model_type" name="model_type" required>
+                        <option value="SDXL" selected>SDXL</option>
+                        <option value="SD1.5">SD1.5</option>
                     </select><br>
 
                     <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
@@ -67,6 +73,13 @@
                 
                         <label for="height" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
                         <input type="number" id="height" name="height" value="1216"><br>
+                    </div>
+
+                    <div id="form-separator"></div>
+
+                    <div id="img2img">
+                        <label for="img2img-input" title="Paste a valid image url to generate image from image">image url:</label>
+                        <input type="text" id="img2img-input" name="img2img-input" placeholder="https://example.com/image.png"><br>
                     </div>
 
                     <div id="form-separator"></div>

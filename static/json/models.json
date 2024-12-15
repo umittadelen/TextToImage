@@ -102,5 +102,9 @@
     "kiwimixXL_v3.safetensors": [
         "./models/kiwimixXL_v3.safetensors",
         "7"
+    ],
+    "cuteyukimixAdorable_kemiaomiao.safetensors": [
+        "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
+        "7"
     ]
 }

@@ -64,3 +64,22 @@ def check_and_install():
             subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         except subprocess.CalledProcessError as e:
             return
+        
+from PIL import Image
+
+def resize_image(image, width, height):
+    """
+    Resizes an image to the specified width and height.
+
+    Args:
+        image (PIL.Image.Image): The input image to resize.
+        width (int): The desired width of the resized image.
+        height (int): The desired height of the resized image.
+
+    Returns:
+        PIL.Image.Image: The resized image.
+    """
+    # Resize the image
+    resized_image = image.resize((width, height), Image.LANCZOS)
+    
+    return resized_image

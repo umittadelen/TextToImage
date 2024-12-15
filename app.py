@@ -16,8 +16,11 @@ from diffusers import (
     HeunDiscreteScheduler,
     LMSDiscreteScheduler,
     StableDiffusionXLPipeline,
+    StableDiffusionPipeline,
+    StableDiffusionXLImg2ImgPipeline,
     AutoencoderKL
 )
+from diffusers.utils import load_image
 from downloadModelFromCivitai import downloadModelFromCivitai
 
 config = Config()
@@ -45,7 +48,7 @@ def load_scheduler(pipe, scheduler_name):
     return pipe
 
 #TODO:  function to load pipeline from given huggingface repo and scheduler
-def load_pipeline(model_name, scheduler_name):
+def load_pipeline(model_name, model_type, scheduler_name):
 
     config.imgprogress = "Loading Pipeline..."
 
@@ -57,9 +60,23 @@ def load_pipeline(model_name, scheduler_name):
         #TODO: Set the pipeline
         pipeline = (
             StableDiffusionXLPipeline.from_single_file
-            if model_name.endswith(".safetensors")
-            else StableDiffusionXLPipeline.from_pretrained
+            if model_name.endswith(".safetensors") and model_type == "SDXL" else
+
+            StableDiffusionXLPipeline.from_pretrained
+            if model_type == "SDXL" else
+
+            StableDiffusionPipeline.from_single_file
+            if model_name.endswith(".safetensors") and model_type == "SD1.5" else
+
+            StableDiffusionPipeline.from_pretrained
+            if model_type == "SD1.5" else
+
+            StableDiffusionXLImg2ImgPipeline.from_pretrained
+            if model_type == "IMG2IMG" else
+            
+            StableDiffusionXLPipeline.from_pretrained  # Default case
         )
+
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
 
         config.imgprogress = "Loading New Pipeline... (pipe)"
@@ -107,7 +124,7 @@ def load_pipeline(model_name, scheduler_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
-def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps):
+def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img2img_input, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
 
     def progress(pipe, step_index, timestep, callback_kwargs):
@@ -124,17 +141,34 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
     config.imgprogress = "Generating Image..."
 
     try:
-        image = pipe(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            width=width,
-            height=height,
-            guidance_scale=cfg_scale,
-            num_inference_steps=samplingSteps,
-            generator=torch.manual_seed(seed),
-            callback_on_step_end=progress,
-            num_images_per_prompt=1
-        ).images[0]
+        if img2img_input != "":
+            image = load_image(img2img_input).convert("RGB")
+            image = utils.resize_image(image, width, height)
+            image = pipe(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                image=image,
+                #strength=0.1,
+                guidance_scale=cfg_scale,
+                num_inference_steps=samplingSteps,
+                generator=torch.manual_seed(seed),
+                callback_on_step_end=progress,
+                num_images_per_prompt=1
+            ).images[0]
+        else:
+            image = pipe(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                guidance_scale=cfg_scale,
+                num_inference_steps=samplingSteps,
+                generator=torch.manual_seed(seed),
+                callback_on_step_end=progress,
+                num_images_per_prompt=1
+            ).images[0]
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -174,12 +208,14 @@ def generate():
 
     #TODO: Get parameters from the request
     model_name = request.form['model']
+    model_type = request.form['model_type']
     config.scheduler_name = request.form['scheduler']
     original_prompt = request.form['prompt']
     prompt = utils.preprocess_prompt(request.form['prompt']) if int(request.form.get("prompt_helper", 0)) == 1 else request.form['prompt']
     negative_prompt = str(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
+    img2img_input = request.form.get('img2img-input', "")
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
     config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
@@ -187,11 +223,14 @@ def generate():
 
     if config.CUSTOM_SEED != 0:
         config.IMAGE_COUNT = 1
+    
+    if img2img_input != "":
+        model_type = model_type+"IMG2IMG"
 
     #TODO: Function to generate images
     def generate_images():
         try:
-            pipe = load_pipeline(model_name, config.scheduler_name)
+            pipe = load_pipeline(model_name, model_type, config.scheduler_name)
         except Exception as e:
             config.generating = False
             config.imgprogress = "Error Loading Model..."
@@ -219,7 +258,7 @@ def generate():
                 else:
                     seed = config.CUSTOM_SEED
 
-                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img2img_input, cfg_scale, samplingSteps)
 
                 #TODO: Store the generated image path
                 if image_path:
