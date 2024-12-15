@@ -11,10 +11,6 @@
         "John6666/kiwimix-xl-v3-sdxl",
         "2"
     ],
-    "KiwiMix XL V3": [
-        "./models/kiwimixXL_v3.safetensors",
-        "7"
-    ],
     "NoobAI XL 1.0": [
         "Laxhar/noobai-XL-1.0",
         "2"
@@ -103,8 +99,8 @@
         "./models/counterfeitxl_v25.safetensors",
         "7"
     ],
-    "custom": [
-        "custom",
+    "kiwimixXL_v3.safetensors": [
+        "./models/kiwimixXL_v3.safetensors",
         "7"
     ]
 }

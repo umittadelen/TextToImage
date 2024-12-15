@@ -24,12 +24,9 @@ def downloadModelFromCivitai(modelUrl):
             return urlunparse(parsed._replace(query=urlencode(query, doseq=True)))
 
         def update_models_json(file_name, file_path):
-            models_json_path = './static/json/models.json'
-            models_data = {} if not os.path.exists(models_json_path) else json.load(open(models_json_path, 'r', encoding='utf-8'))
-            models_items = list(models_data.items())
-            custom_index = next((i for i, entry in enumerate(models_items) if entry[0] == "custom"), None)
-            models_items.insert(custom_index if custom_index is not None else len(models_items), (file_name, [file_path, "7"]))
-            json.dump(dict(models_items), open(models_json_path, 'w', encoding='utf-8'), indent=4)
+            models_data = (json.load(open('./static/json/models.json', 'r', encoding='utf-8')) if os.path.exists('./static/json/models.json') else {})
+            models_data[file_name] = [file_path, "7"]
+            json.dump(models_data, open('./static/json/models.json', 'w', encoding='utf-8'), indent=4)
 
         def fix_path_slashes(path):
             return path.replace("\\", "/")
