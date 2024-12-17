@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Editor</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
 </head>
 <body>
@@ -22,7 +23,7 @@
 
         <!-- JSON Viewer/Editor Section -->
         <div class="form">
-            <h2>View and Edit JSON</h2>
+            <label for="json-editor">View and Edit JSON</label>
             <textarea id="json-editor" placeholder="JSON content will appear here" oninput="validateJson()" style="height: 20em;"></textarea>
             <button onclick="saveJson()">Save JSON</button>
             <div id="json-status"></div>

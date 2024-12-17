@@ -19,7 +19,8 @@ from diffusers import (
     StableDiffusionXLPipeline,
     StableDiffusionPipeline,
     StableDiffusionXLImg2ImgPipeline,
-    StableDiffusionControlNetPipeline,
+    StableDiffusionXLControlNetPipeline,
+    DiffusionPipeline,
     ControlNetModel,
     AutoencoderKL
 )
@@ -62,11 +63,17 @@ def load_pipeline(model_name, model_type, scheduler_name):
         config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
         #TODO: Set the pipeline
 
+        kwargs = {}
+
         if "controlnet" in model_type and "SDXL" in model_type:
-            controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-canny", torch_dtype=torch.float16)
+            controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
+            kwargs["controlnet"] = controlnet
+
+        if "SD1.5" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion"
+        elif "SDXL" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
 
         pipeline = (
-            StableDiffusionControlNetPipeline.from_pretrained(controlnet=controlnet)
+            StableDiffusionXLControlNetPipeline.from_pretrained
             if "controlnet" in model_type and "SDXL" in model_type else
 
             StableDiffusionXLImg2ImgPipeline.from_pretrained
@@ -84,7 +91,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
             StableDiffusionPipeline.from_pretrained
             if "txt2img" in model_type and "SD1.5" in model_type else
 
-            StableDiffusionPipeline.from_pretrained  # Default case
+            DiffusionPipeline.from_pretrained  # Default case
         )
 
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
@@ -94,10 +101,10 @@ def load_pipeline(model_name, model_type, scheduler_name):
         pipe = pipeline(
             model_name,
             torch_dtype=torch.float16,
-            custom_pipeline="lpw_stable_diffusion_xl",
             use_safetensors=True,
             add_watermarker=False,
-            use_auth_token=config.HF_TOKEN
+            use_auth_token=config.HF_TOKEN,
+            **kwargs
         )
 
         config.imgprogress = "Loading New Pipeline... (loading VAE)"
@@ -134,7 +141,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
-def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, model_type, cfg_scale, samplingSteps):
+def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strenght, model_type, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
 
     def progress(pipe, step_index, timestep, callback_kwargs):
@@ -161,8 +168,6 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 canny_edges = canny_edges[:, :, None]  # Add channel dimension
                 canny_edges = np.concatenate([canny_edges, canny_edges, canny_edges], axis=2)  # Convert to 3 channels
                 canny_image = Image.fromarray(canny_edges)
-
-                cv2.imshow('Canny Edges', canny_edges)
 
                 # Generate the image using the pipeline
                 image = pipe(
@@ -192,7 +197,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                     width=width,
                     height=height,
                     image=image,
-                    strength=0.1,  # Specific to img2img
+                    strength=strenght,  # Specific to img2img
                     guidance_scale=cfg_scale,
                     num_inference_steps=samplingSteps,
                     generator=torch.manual_seed(seed),
@@ -261,6 +266,7 @@ def generate():
     negative_prompt = str(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
+    strenght = float(request.form.get('strength', 0.5))
     img_input = request.form.get('img_input', "")
     generation_type = request.form['generation_type']
     cfg_scale = float(request.form.get('cfg_scale', 7))
@@ -305,7 +311,7 @@ def generate():
                 else:
                     seed = config.CUSTOM_SEED
 
-                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, model_type, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strenght, model_type, cfg_scale, samplingSteps)
 
                 #TODO: Store the generated image path
                 if image_path:
@@ -320,6 +326,7 @@ def generate():
         config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
+        config.generation_stopped = False
 
     #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()

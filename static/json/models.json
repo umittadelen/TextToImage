@@ -106,5 +106,9 @@
     "cuteyukimixAdorable_kemiaomiao.safetensors": [
         "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
         "7"
+    ],
+    "madlyMixVerNightnoob_v2.safetensors": [
+        "./models/madlyMixVerNightnoob_v2.safetensors",
+        "7"
     ]
 }

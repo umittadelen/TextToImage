@@ -21,6 +21,13 @@
     --dark-text-color:    rgb(var(--tone4));
 }
 
+@font-face {
+    font-family: 'Quicksand';
+    src: url('/static/fonts/Quicksand.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* General body styling */
 body {
     width: 100%;
