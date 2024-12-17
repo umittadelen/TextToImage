@@ -2,8 +2,9 @@
 import utils
 utils.check_and_install()
 from flask import Flask, render_template, request, send_file, jsonify
-import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging
+import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging, cv2
 from PIL import PngImagePlugin, Image
+import numpy as np
 from config import Config
 from io import BytesIO
 from diffusers import (
@@ -18,6 +19,8 @@ from diffusers import (
     StableDiffusionXLPipeline,
     StableDiffusionPipeline,
     StableDiffusionXLImg2ImgPipeline,
+    StableDiffusionControlNetPipeline,
+    ControlNetModel,
     AutoencoderKL
 )
 from diffusers.utils import load_image
@@ -58,23 +61,30 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
         config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
         #TODO: Set the pipeline
+
+        if "controlnet" in model_type and "SDXL" in model_type:
+            controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-canny", torch_dtype=torch.float16)
+
         pipeline = (
-            StableDiffusionXLPipeline.from_single_file
-            if model_name.endswith(".safetensors") and model_type == "SDXL" else
-
-            StableDiffusionXLPipeline.from_pretrained
-            if model_type == "SDXL" else
-
-            StableDiffusionPipeline.from_single_file
-            if model_name.endswith(".safetensors") and model_type == "SD1.5" else
-
-            StableDiffusionPipeline.from_pretrained
-            if model_type == "SD1.5" else
+            StableDiffusionControlNetPipeline.from_pretrained(controlnet=controlnet)
+            if "controlnet" in model_type and "SDXL" in model_type else
 
             StableDiffusionXLImg2ImgPipeline.from_pretrained
-            if model_type == "IMG2IMG" else
-            
-            StableDiffusionXLPipeline.from_pretrained  # Default case
+            if "img2img" in model_type and "SDXL" in model_type else
+
+            StableDiffusionXLPipeline.from_single_file
+            if model_name.endswith(".safetensors") and "SDXL" in model_type else
+
+            StableDiffusionXLPipeline.from_pretrained
+            if "txt2img" in model_type and "SDXL" in model_type else
+
+            StableDiffusionPipeline.from_single_file
+            if model_name.endswith(".safetensors") and "SD1.5" in model_type else
+
+            StableDiffusionPipeline.from_pretrained
+            if "txt2img" in model_type and "SD1.5" in model_type else
+
+            StableDiffusionPipeline.from_pretrained  # Default case
         )
 
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
@@ -124,7 +134,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
-def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img2img_input, cfg_scale, samplingSteps):
+def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, model_type, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
 
     def progress(pipe, step_index, timestep, callback_kwargs):
@@ -141,23 +151,58 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
     config.imgprogress = "Generating Image..."
 
     try:
-        if img2img_input != "":
-            image = load_image(img2img_input).convert("RGB")
-            image = utils.resize_image(image, width, height)
-            image = pipe(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                width=width,
-                height=height,
-                image=image,
-                #strength=0.1,
-                guidance_scale=cfg_scale,
-                num_inference_steps=samplingSteps,
-                generator=torch.manual_seed(seed),
-                callback_on_step_end=progress,
-                num_images_per_prompt=1
-            ).images[0]
+        if "controlnet" in model_type:
+            if img_input != "":
+                image = load_image(img_input).convert("RGB")
+                image = np.array(image)
+
+                # Apply Canny edge detection
+                canny_edges = cv2.Canny(image, 100, 200)
+                canny_edges = canny_edges[:, :, None]  # Add channel dimension
+                canny_edges = np.concatenate([canny_edges, canny_edges, canny_edges], axis=2)  # Convert to 3 channels
+                canny_image = Image.fromarray(canny_edges)
+
+                cv2.imshow('Canny Edges', canny_edges)
+
+                # Generate the image using the pipeline
+                image = pipe(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    width=width,
+                    height=height,
+                    image=canny_image,  # Pass the processed Canny image
+                    guidance_scale=cfg_scale,
+                    num_inference_steps=samplingSteps,
+                    generator=torch.manual_seed(seed),
+                    callback_on_step_end=progress,
+                    num_images_per_prompt=1
+                ).images[0]
+            else:
+                return False
+        elif "img2img" in model_type:
+            if img_input != "":
+                # Load and preprocess the image for img2img
+                image = load_image(img_input).convert("RGB")
+                image = utils.resize_image(image, width, height)
+
+                # Pass the original image to the pipeline
+                image = pipe(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    width=width,
+                    height=height,
+                    image=image,
+                    strength=0.1,  # Specific to img2img
+                    guidance_scale=cfg_scale,
+                    num_inference_steps=samplingSteps,
+                    generator=torch.manual_seed(seed),
+                    callback_on_step_end=progress,
+                    num_images_per_prompt=1
+                ).images[0]
+            else:
+                return False
         else:
+            # For txt2img pipelines
             image = pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -169,6 +214,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 callback_on_step_end=progress,
                 num_images_per_prompt=1
             ).images[0]
+
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -215,7 +261,8 @@ def generate():
     negative_prompt = str(request.form['negative_prompt'])
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
-    img2img_input = request.form.get('img2img-input', "")
+    img_input = request.form.get('img_input', "")
+    generation_type = request.form['generation_type']
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
     config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
@@ -224,8 +271,8 @@ def generate():
     if config.CUSTOM_SEED != 0:
         config.IMAGE_COUNT = 1
     
-    if img2img_input != "":
-        model_type = model_type+"IMG2IMG"
+    if img_input != "":
+        model_type = model_type+generation_type
 
     #TODO: Function to generate images
     def generate_images():
@@ -258,7 +305,7 @@ def generate():
                 else:
                     seed = config.CUSTOM_SEED
 
-                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img2img_input, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, model_type, cfg_scale, samplingSteps)
 
                 #TODO: Store the generated image path
                 if image_path:

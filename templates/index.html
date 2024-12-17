@@ -77,9 +77,16 @@
 
                     <div id="form-separator"></div>
 
+                    <label for="generation_type" title="Chose generation type (Text to Image is default)">Generation Type:</label>
+                    <select id="generation_type" name="generation_type">
+                        <option value="txt2img" selected>Text To Image</option>
+                        <option value="img2img">Image To Image</option>
+                        <option value="controlnet">ControlNet</option>
+                    </select><br>
+
                     <div id="img2img">
-                        <label for="img2img-input" title="Paste a valid image url to generate image from image">image url:</label>
-                        <input type="text" id="img2img-input" name="img2img-input" placeholder="https://example.com/image.png"><br>
+                        <label for="img_input" title="Paste a valid image url to generate image from image">image url:</label>
+                        <input type="text" id="img_input" name="img_input" placeholder="https://example.com/image.png"><br>
                     </div>
 
                     <div id="form-separator"></div>
