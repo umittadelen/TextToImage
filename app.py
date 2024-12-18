@@ -76,8 +76,8 @@ def load_pipeline(model_name, model_type, scheduler_name):
             StableDiffusionXLControlNetPipeline.from_pretrained
             if "controlnet" in model_type and "SDXL" in model_type else
 
-            StableDiffusionXLControlNetPipeline.from_pretrained
-            if "controlnet" in model_type and "SDXL" in model_type else
+            StableDiffusionXLControlNetPipeline.from_single_file
+            if "controlnet" in model_type and "SDXL" in model_type and model_name.endswith(".safetensors") else
 
             StableDiffusionXLImg2ImgPipeline.from_pretrained
             if "img2img" in model_type and "SDXL" in model_type else
