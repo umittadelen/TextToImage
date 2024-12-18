@@ -91,6 +91,10 @@
         "https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt",
         ""
     ],
+    "Dream Anything": [
+        "Yntec/DreamAnything",
+        ""
+    ],
     "molKeunFurryMix_molKeunnoobXLILXL.safetensors": [
         "./models/molKeunFurryMix_molKeunnoobXLILXL.safetensors",
         "7"
@@ -109,6 +113,10 @@
     ],
     "madlyMixVerNightnoob_v2.safetensors": [
         "./models/madlyMixVerNightnoob_v2.safetensors",
+        "7"
+    ],
+    "matatabi_v10.safetensors": [
+        "./models/matatabi_v10.safetensors",
         "7"
     ]
 }
