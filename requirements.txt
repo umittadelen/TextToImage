@@ -2,8 +2,6 @@ Flask
 torch
 diffusers
 Pillow
-nudenet
 transformers
 accelerate
 scipy
-xformers

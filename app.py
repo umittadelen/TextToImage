@@ -127,7 +127,8 @@ def load_pipeline(model_name, model_type, scheduler_name):
         if torch.cuda.is_available():
             pipe.to('cuda')
         else:
-            raise RuntimeError("CUDA is not available. Please ensure you have a compatible GPU and drivers installed.")
+            pipe.to('cpu')
+            config.imgprogress = "Using CPU..."
         
         if config.enable_attention_slicing:
             pipe.enable_attention_slicing()
