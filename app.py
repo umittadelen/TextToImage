@@ -69,10 +69,13 @@ def load_pipeline(model_name, model_type, scheduler_name):
             controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
             kwargs["controlnet"] = controlnet
 
-        if "SD1.5" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion"
-        elif "SDXL" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
+        if "SD1.5" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion"
+        elif "SDXL" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
 
         pipeline = (
+            StableDiffusionXLControlNetPipeline.from_pretrained
+            if "controlnet" in model_type and "SDXL" in model_type else
+
             StableDiffusionXLControlNetPipeline.from_pretrained
             if "controlnet" in model_type and "SDXL" in model_type else
 

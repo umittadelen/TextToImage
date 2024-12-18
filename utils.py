@@ -79,7 +79,5 @@ def resize_image(image, width, height):
     Returns:
         PIL.Image.Image: The resized image.
     """
-    # Resize the image
-    resized_image = image.resize((width, height), Image.LANCZOS)
-    
-    return resized_image
+    # Resize the image    
+    return image.resize((width, height), resample=Image.BICUBIC)
