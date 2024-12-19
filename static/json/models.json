@@ -95,27 +95,27 @@
         "Yntec/DreamAnything",
         ""
     ],
-    "molKeunFurryMix_molKeunnoobXLILXL.safetensors": [
+    "molKeunFurryMix molKeunnoobXLILXL": [
         "./models/molKeunFurryMix_molKeunnoobXLILXL.safetensors",
         "7"
     ],
-    "counterfeitxl_v25.safetensors": [
+    "counterfeitxl v25": [
         "./models/counterfeitxl_v25.safetensors",
         "7"
     ],
-    "kiwimixXL_v3.safetensors": [
+    "kiwimixXL v3": [
         "./models/kiwimixXL_v3.safetensors",
         "7"
     ],
-    "cuteyukimixAdorable_kemiaomiao.safetensors": [
+    "cuteyukimixAdorable kemiaomiao": [
         "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
         "7"
     ],
-    "madlyMixVerNightnoob_v2.safetensors": [
+    "madlyMixVerNightnoob v2": [
         "./models/madlyMixVerNightnoob_v2.safetensors",
         "7"
     ],
-    "matatabi_v10.safetensors": [
+    "matatabi v10": [
         "./models/matatabi_v10.safetensors",
         "7"
     ]

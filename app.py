@@ -284,10 +284,11 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
 
         return image_path
 
-    except Exception:
+    except Exception as e:
         #TODO: If generation was stopped, handle it gracefully
         config.imgprogress = "Generation Stopped"
-        logging.log(logging.ERROR, msg="Generation Stopped")
+        logging.log(logging.ERROR, msg=f"Generation Stopped with reason:{e}")
+        config.model_cache = {}
         return False
 
 @app.route('/generate', methods=['POST'])
@@ -329,9 +330,9 @@ def generate():
             pipe = load_pipeline(model_name, model_type, config.scheduler_name)
         except Exception as e:
             config.generating = False
-            config.imgprogress = "Error Loading Model..."
+            config.imgprogress = f"Error Loading Model...{e}"
+            config.model_cache = {}
             config.allPercentage = 0
-            print(e)
             return
 
         try:
@@ -359,14 +360,20 @@ def generate():
                 #TODO: Store the generated image path
                 if image_path:
                     config.generated_image[seed] = [image_path]
+        except Exception as e:
+            config.generating = False
+            config.imgprogress = f"Error Generating Images...<br>{e}"
+            config.model_cache = {}
+            config.allPercentage = 0
+
         finally:
             del pipe
             config.model_cache = {}
             torch.cuda.ipc_collect()
             gc.collect()
             torch.cuda.empty_cache()
+            config.imgprogress = "Generation Complete"
 
-        config.imgprogress = "Generation Complete"
         config.allPercentage = 0
         config.generating = False
         config.generation_stopped = False

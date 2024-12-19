@@ -65,7 +65,7 @@ def downloadModelFromCivitai(modelUrl):
             shutil.rmtree(temp_directory)
             print("Deleted temp directory.")
             
-            update_models_json(file_name, destination_path)
+            update_models_json(file_name.replace(".safetensors", "").replace("_", ""), destination_path)
         else:
             print("No files were downloaded.")
     finally:

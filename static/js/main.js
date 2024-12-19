@@ -5,26 +5,75 @@ let pendingUpdates = false;
 document.getElementById('generateForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    // Set the flag to true when a new generation starts
-    isGeneratingNewImages = true;
+    // Save form data to localStorage
+    const formDataToSave = {};
+    Array.from(this.elements).forEach(field => {
+        if (field.name && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+            formDataToSave[field.name] = field.value;
+        }
+    });
+    localStorage.setItem('formData', JSON.stringify(formDataToSave));
+    localStorage.setItem('formExpiry', Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 week expiry
 
     // Clear existing images for new generation
+    isGeneratingNewImages = true;
     existingImages.clear();
     document.getElementById('images').innerHTML = '';
 
+    // Prepare data for the server
     const formData = new FormData(this);
     fetch('/generate', {
         method: 'POST',
         body: formData
     })
-    .then((response) => response.json())
-    .then((data) => {
-        isGeneratingNewImages = false;
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        isGeneratingNewImages = false; // Reset the flag in case of an error
-    });
+        .then(response => response.json())
+        .then(data => {
+            isGeneratingNewImages = false;
+            console.log('Server response:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            isGeneratingNewImages = false;
+        });
+});
+
+// Load form data from localStorage on page load
+window.addEventListener('load', () => {
+    const savedData = JSON.parse(localStorage.getItem('formData'));
+    const expiryTime = localStorage.getItem('formExpiry');
+
+    if (savedData && expiryTime && Date.now() < expiryTime) {
+        const form = document.getElementById('generateForm');
+        for (const [key, value] of Object.entries(savedData)) {
+            const field = form.elements[key];
+            if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+                if (field.tagName === 'SELECT') {
+                    // Set the selected option for <select>
+                    Array.from(field.options).forEach(option => {
+                        option.selected = option.value === value;
+                    });
+                } else {
+                    // Set the value for <textarea> and <input>
+                    field.value = value;
+                }
+            }
+        }
+    } else {
+        // Clear expired data
+        localStorage.removeItem('formData');
+        localStorage.removeItem('formExpiry');
+    }
+});
+
+document.getElementById('resetCacheButton').addEventListener('click', function () {
+    // Remove form data and expiry from localStorage
+    localStorage.removeItem('formData');
+    localStorage.removeItem('formExpiry');
+    
+    // Refresh the page
+    location.reload(); // This reloads the page, effectively resetting the form and clearing cache
+
+    console.log('Form cache has been reset.');
 });
 
 setInterval(() => {
