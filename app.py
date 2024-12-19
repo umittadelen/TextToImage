@@ -270,6 +270,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         metadata.add_text("Width", str(width))
         metadata.add_text("Height", str(height))
         metadata.add_text("CFGScale", str(cfg_scale))
+        metadata.add_text("ImgInput", str(img_input))
         metadata.add_text("Seed", str(seed))
         metadata.add_text("SamplingSteps", str(samplingSteps))
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))

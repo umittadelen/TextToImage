@@ -43,10 +43,15 @@ body {
     background-color: var(--background-color);
 }
 
+body,
+html {
+    overflow-x: clip;
+}
+
 /* Wrapper for centering and structure */
 #all {
     max-width: 80%;
-    margin: 3em auto;
+    margin: 3em auto 0 auto;
     padding: 1em;
     display: flex;
     flex-direction: column;
@@ -168,6 +173,17 @@ button:hover > svg {
     color: var(--dark-text-color);
     font-size: 1.2em;
     margin-top: 1em;
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 1em;
+    z-index: 1000;
+    width: 100%;
+    padding: 0 1em 1em 1em;
+    background-color: var(--mid-color);
+    border: var(--border);
+    border-radius: 10px;
+    max-width: 80%; /* Match the max-width of .form */
+    margin: 0 auto 1em auto; /* Center the element */
 }
 
 /* Progress bar container */
