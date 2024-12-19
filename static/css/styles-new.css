@@ -9,18 +9,21 @@
 
     --progress-bar-color: rgba(var(--tone4), 0.75);
 
-    --primary-color:      rgb(var(--tone1));
-    --mid-color:          rgb(var(--tone2));
-    --accent-color:       rgb(var(--tone3));
-
-    --highlight-color:    rgb(var(--tone4));
+    --primary-color: rgb(var(--tone1));
+    --mid-color: rgb(var(--tone2));
+    --accent-color: rgb(var(--tone3));
+    --highlight-color: rgb(var(--tone4));
     --button-hover-color: rgb(var(--tone3));
-    --button-color:       rgb(var(--tone4));
-    --background-color:   rgb(var(--tone1));
-    --light-text-color:   rgb(var(--tone1));
-    --dark-text-color:    rgb(var(--tone4));
+    --button-color: rgb(var(--tone4));
+    --background-color: rgb(var(--tone1));
+    --light-text-color: rgb(var(--tone1));
+    --dark-text-color: rgb(var(--tone4));
+
+    --transition: all 0.2s ease-in-out;
+    --border: 2px solid var(--highlight-color);
 }
 
+/* Font face definition */
 @font-face {
     font-family: 'Quicksand';
     src: url('/static/fonts/Quicksand.ttf') format('truetype');
@@ -35,10 +38,9 @@ body {
     margin: 0;
     padding: 0;
     font-family: var(--font-family);
-    font-size: 1em; /* Base font size */
+    font-size: 1em;
     line-height: 1.5;
     background-color: var(--background-color);
-
 }
 
 /* Wrapper for centering and structure */
@@ -48,25 +50,25 @@ body {
     padding: 1em;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
     align-items: center;
-    background-color: #0000;
+    box-sizing: border-box;
+    background-color: transparent;
 }
 
 /* Title styling */
 h1 {
     font-size: 2.5em;
     text-align: center;
-    margin: 0; /* Space below the title */
+    margin: 0;
     padding: 0.5em 0;
-    color: var(--dark-text-color); /* Accent color */
+    color: var(--dark-text-color);
 }
 
 /* Form container styling */
 .form {
     padding: 2em;
     background-color: var(--mid-color);
-    border: 2px solid var(--highlight-color);
+    border: var(--border);
     border-radius: 10px;
     width: 100%;
 }
@@ -93,9 +95,8 @@ button {
     color: var(--dark-text-color);
     font-weight: bold;
     background-color: var(--primary-color);
-    border: 2px solid var(--highlight-color);
+    border: var(--border);
     border-radius: 10px;
-    resize: vertical;
     box-sizing: border-box;
 }
 
@@ -125,18 +126,25 @@ button {
     cursor: pointer;
     border: 2px solid #0000;
     text-transform: uppercase;
+    align-items: center;
+    text-align: center;
     transition: all 0.2s ease-in-out;
 }
 
-/* Button hover effects */
+button .btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 button:hover {
     background-color: var(--primary-color);
     color: var(--dark-text-color);
     border: 2px solid var(--highlight-color);
 }
 
-svg {
-    transition: all 0.2s ease-in-out;
+button .btn-container svg {
+    margin-right: 8px;
     background-color: transparent;
     height: 1em;
     width: 1em;
@@ -167,14 +175,15 @@ button:hover > svg {
     margin-top: 1em;
     height: 1em;
     background-color: var(--primary-color);
-    border: 2px solid var(--highlight-color);
+    border: var(--border);
     border-radius: 20px;
     overflow: hidden;
     position: relative;
 }
 
 /* Progress bar styling */
-.progress-bar {
+.progress-bar,
+.all-progress-bar {
     display: block;
     height: 100%;
     background-color: var(--progress-bar-color);
@@ -182,11 +191,7 @@ button:hover > svg {
 }
 
 .all-progress-bar {
-    display: block;
-    height: 100%;
-    background-color: var(--progress-bar-color);
     position: absolute;
-    transition: width 0.5s ease;
     left: 0;
     top: 0;
     width: 0;
@@ -204,15 +209,15 @@ button:hover > svg {
 
 #images img {
     max-width: 100%;
-    border: 2px solid var(--highlight-color);
+    border: var(--border);
     border-radius: 10px;
 }
 
+/* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 1em;
     background-color: var(--highlight-color);
     border-radius: 10px;
-    cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -220,7 +225,6 @@ button:hover > svg {
     background-color: var(--primary-color);
     border-radius: 10px;
     background-clip: content-box;
-    cursor: pointer;
 }
 
 ::-webkit-resizer {
