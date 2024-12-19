@@ -118,5 +118,13 @@
     "matatabi v10": [
         "./models/matatabi_v10.safetensors",
         "7"
+    ],
+    "ntrMIXIllustriousXL xiii": [
+        "./models/ntrMIXIllustriousXL_xiii.safetensors",
+        "7"
+    ],
+    "obsessionIllustrious v31": [
+        "./models/obsessionIllustrious_v31.safetensors",
+        "7"
     ]
 }
