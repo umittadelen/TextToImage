@@ -302,17 +302,17 @@ def generate():
     config.imgprogress = "Starting Image Generation..."
 
     #TODO: Get parameters from the request
-    model_name = request.form['model']
-    model_type = request.form['model_type']
-    config.scheduler_name = request.form['scheduler']
-    original_prompt = request.form['prompt']
-    prompt = utils.preprocess_prompt(request.form['prompt']) if int(request.form.get("prompt_helper", 0)) == 1 else request.form['prompt']
-    negative_prompt = str(request.form['negative_prompt'])
+    model_name = request.form.get('model', 'https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors')
+    model_type = request.form.get('model_type', 'SDXL')
+    config.scheduler_name = request.form.get('scheduler', 'Euler a')
+    original_prompt = request.form.get('prompt', '1girl, cute, kawaii, full body')
+    prompt = utils.preprocess_prompt(request.form.get('prompt', '1girl, cute, kawaii, full body')) if int(request.form.get("prompt_helper", 0)) == 1 else request.form.get('prompt', '1girl, cute, kawaii, full body')
+    negative_prompt = request.form.get('negative_prompt', 'default_negative_prompt')
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
     strength = float(request.form.get('strength', 0.5))
     img_input = request.form.get('img_input', "")
-    generation_type = request.form['generation_type']
+    generation_type = request.form.get('generation_type', 'txt2img')
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
     config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
