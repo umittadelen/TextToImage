@@ -103,6 +103,7 @@ button {
     border: var(--border);
     border-radius: 10px;
     box-sizing: border-box;
+    resize: vertical;
 }
 
 input::placeholder {
@@ -172,18 +173,17 @@ button:hover > svg {
     text-align: center;
     color: var(--dark-text-color);
     font-size: 1.2em;
-    margin-top: 1em;
     position: -webkit-sticky; /* For Safari */
     position: sticky;
     top: 1em;
     z-index: 1000;
-    width: 100%;
-    padding: 0 1em 1em 1em;
+    width: 80%;
     background-color: var(--mid-color);
     border: var(--border);
     border-radius: 10px;
-    max-width: 80%; /* Match the max-width of .form */
-    margin: 0 auto 1em auto; /* Center the element */
+    margin: 0 auto 0 auto;
+    padding: 0 1em 1em 1em;
+    box-sizing: border-box;
 }
 
 /* Progress bar container */
@@ -216,17 +216,20 @@ button:hover > svg {
 
 /* Image container */
 #images {
+    max-width: 100%;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1em;
     margin-top: 2em;
+    padding: 2em;
 }
 
 #images img {
-    max-width: 100%;
     border: var(--border);
     border-radius: 10px;
+    width: 20vw;
+    min-width: 24em;
 }
 
 /* Scrollbar styling */

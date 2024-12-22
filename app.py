@@ -7,6 +7,7 @@ from PIL import PngImagePlugin, Image
 import numpy as np
 from config import Config
 from io import BytesIO
+
 from diffusers import (
     DPMSolverMultistepScheduler,
     DPMSolverSinglestepScheduler,
@@ -20,6 +21,7 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionXLImg2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
+    StableDiffusionControlNetPipeline,
     StableDiffusionXLControlNetPipeline,
     DiffusionPipeline,
     ControlNetModel,
@@ -73,82 +75,59 @@ def load_pipeline(model_name, model_type, scheduler_name):
         if "SD1.5" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion"
         elif "SDXL" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
 
-        pipeline = (
-            StableDiffusionXLControlNetPipeline.from_single_file
-            if "controlnet" in model_type and "SDXL" in model_type and model_name.endswith(".safetensors") else
-            
-            StableDiffusionXLControlNetPipeline.from_pretrained
-            if "controlnet" in model_type and "SDXL" in model_type else
+        if "img2img" in model_type:
+            pipeline = (
+                StableDiffusionXLImg2ImgPipeline.from_pretrained
+                if "SDXL" in model_type else
 
-            StableDiffusionXLImg2ImgPipeline.from_pretrained
-            if "img2img" in model_type and "SDXL" in model_type else
+                StableDiffusionImg2ImgPipeline.from_pretrained
+                if "SD1.5" in model_type else
 
-            StableDiffusionImg2ImgPipeline.from_pretrained
-            if "img2img" in model_type and "SD1.5" in model_type else
+                DiffusionPipeline.from_pretrained
+            )
+        elif "controlnet" in model_type:
+            pipeline = (
+                StableDiffusionXLControlNetPipeline.from_single_file
+                if "SDXL" in model_type and model_name.endswith(".safetensors") else
 
-            StableDiffusionXLPipeline.from_single_file
-            if model_name.endswith(".safetensors") and "SDXL" in model_type else
+                StableDiffusionXLControlNetPipeline.from_pretrained
+                if "SDXL" in model_type else
 
-            StableDiffusionXLPipeline.from_pretrained
-            if "txt2img" in model_type and "SDXL" in model_type else
+                StableDiffusionControlNetPipeline.from_pretrained
+                if "SD1.5" in model_type else
 
-            StableDiffusionPipeline.from_single_file
-            if model_name.endswith(".safetensors") and "SD1.5" in model_type else
+                DiffusionPipeline.from_pretrained
+            )
+        else:
+            pipeline = (
+                StableDiffusionXLPipeline.from_single_file
+                if "SDXL" in model_type and model_name.endswith(".safetensors") else
 
-            StableDiffusionPipeline.from_pretrained
-            if "txt2img" in model_type and "SD1.5" in model_type else
+                StableDiffusionXLPipeline.from_pretrained
+                if "SDXL" in model_type else
 
-            DiffusionPipeline.from_pretrained  # Default case
-        )
+                StableDiffusionPipeline.from_single_file
+                if "SD1.5" in model_type and model_name.endswith(".safetensors") else
+
+                StableDiffusionPipeline.from_pretrained
+                if "SD1.5" in model_type else
+
+                DiffusionPipeline.from_pretrained
+            )
 
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
 
         config.imgprogress = "Loading New Pipeline... (pipe)"
         #TODO: Load the pipeline
 
-        if model_name.endswith(".safetensors") and "img2img" in model_type:
-            if "SDXL" in model_type:
-                base_pipeline = StableDiffusionXLPipeline.from_single_file(model_name, torch_dtype=torch.float16)
-
-                pipeline = StableDiffusionXLImg2ImgPipeline(
-                    vae=base_pipeline.vae,
-                    text_encoder=base_pipeline.text_encoder,
-                    text_encoder_2=base_pipeline.text_encoder_2,  # Include the second text encoder
-                    tokenizer=base_pipeline.tokenizer,
-                    tokenizer_2=base_pipeline.tokenizer_2,        # Include the second tokenizer
-                    unet=base_pipeline.unet,
-                    scheduler=base_pipeline.scheduler,
-                    feature_extractor=base_pipeline.feature_extractor
-                )
-            elif "SD1.5" in model_type:
-                base_pipeline = StableDiffusionPipeline.from_single_file(model_name, torch_dtype=torch.float16)
-
-                pipeline = StableDiffusionImg2ImgPipeline(
-                    vae=base_pipeline.vae,
-                    text_encoder=base_pipeline.text_encoder,
-                    tokenizer=base_pipeline.tokenizer,
-                    unet=base_pipeline.unet,
-                    scheduler=base_pipeline.scheduler,
-                    feature_extractor=base_pipeline.feature_extractor
-                )
-
-            pipe = pipeline(
-                torch_dtype=torch.float16,
-                use_safetensors=True,
-                add_watermarker=False,
-                use_auth_token=config.HF_TOKEN,
-                **kwargs
-            )
-
-        else:
-            pipe = pipeline(
-                model_name,
-                torch_dtype=torch.float16,
-                use_safetensors=True,
-                add_watermarker=False,
-                use_auth_token=config.HF_TOKEN,
-                **kwargs
-            )
+        pipe = pipeline(
+            model_name,
+            torch_dtype=torch.float16,
+            use_safetensors=True,
+            add_watermarker=False,
+            use_auth_token=config.HF_TOKEN,
+            **kwargs
+        )
 
         config.imgprogress = "Loading New Pipeline... (loading VAE)"
         #TODO: Load the VAE model
@@ -204,7 +183,14 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
     try:
         if "controlnet" in model_type:
             if img_input != "":
-                image = load_image(img_input).convert("RGB")
+                try:
+                    image = load_image(img_input).convert("RGB")
+                except:
+                    #TODO: If the image is not valid, return False
+                    config.imgprogress = "Image Invalid"
+                    logging.log(logging.ERROR, msg=f"Cannot acces to image:{e}")
+                    config.model_cache = {}
+                    return False
                 image = np.array(image)
 
                 # Apply Canny edge detection
@@ -228,7 +214,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 ).images[0]
             else:
                 return False
-        elif "img2img" in model_type:
+        elif "img2img" in model_type and "SDXL" not in model_type:
             if img_input != "":
                 # Load and preprocess the image for img2img
                 image = load_image(img_input).convert("RGB")
@@ -419,6 +405,36 @@ def changejson():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+@app.route('/serve_canny', methods=['POST'])
+def serve_canny():
+    if 'image' not in request.files:
+        return 'No image uploaded', 400
+
+    file = request.files['image']
+    if not file:
+        return 'No file provided', 400
+
+    # Convert the uploaded file to a NumPy array
+    img = Image.open(file)
+    img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+
+    # Apply Canny edge detection
+    edges = cv2.Canny(img, 100, 200)
+
+    # Convert the result to a PIL Image
+    edges_image = Image.fromarray(edges)
+
+    # Save the result to a byte buffer
+    buf = BytesIO()
+    edges_image.save(buf, format='PNG')
+    buf.seek(0)
+
+    return send_file(buf, mimetype='image/png')
+
+@app.route('/canny')
+def canny():
+    return render_template('canny_preview.html')
+
 @app.route('/status', methods=['GET'])
 def status():
     #TODO: Convert the generated images to a list to send to the client
@@ -438,15 +454,15 @@ def status():
 def serve_temp_image(filename):
     size = request.args.get('size')
     image_path = os.path.join(config.generated_dir, filename)
-    if size == 'small':
-        with Image.open(image_path) as img:
-            new_size = (img.width // 3, img.height // 3)
-            img = img.resize(new_size, Image.LANCZOS)
+    size_map = {'mini': 4, 'small': 3, 'medium': 2}
 
+    if size in size_map:
+        with Image.open(image_path) as img:
+            new_size = (img.width // size_map[size], img.height // size_map[size])
+            img = img.resize(new_size, Image.LANCZOS)
             img_io = BytesIO()
             img.save(img_io, format='PNG')
             img_io.seek(0)
-
             return send_file(img_io, mimetype='image/png')
     
     return send_file(image_path, mimetype='image/png')

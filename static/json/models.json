@@ -126,5 +126,13 @@
     "obsessionIllustrious v31": [
         "./models/obsessionIllustrious_v31.safetensors",
         "7"
+    ],
+    "fluffyTartXL v17": [
+        "./models/fluffyTartXL_v17.safetensors",
+        "7"
+    ],
+    "fluffyTart v70": [
+        "./models/fluffyTart_v70.safetensors",
+        "7"
     ]
 }

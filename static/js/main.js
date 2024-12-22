@@ -37,8 +37,7 @@ document.getElementById('generateForm').addEventListener('submit', function (eve
         });
 });
 
-// Load form data from localStorage on page load
-window.addEventListener('load', () => {
+function loadFormData() {
     const savedData = JSON.parse(localStorage.getItem('formData'));
     const expiryTime = localStorage.getItem('formExpiry');
 
@@ -63,7 +62,7 @@ window.addEventListener('load', () => {
         localStorage.removeItem('formData');
         localStorage.removeItem('formExpiry');
     }
-});
+}
 
 document.getElementById('resetCacheButton').addEventListener('click', function () {
     // Remove form data and expiry from localStorage
@@ -101,7 +100,7 @@ setInterval(() => {
                 pendingUpdates = false; // Allow the next update
             });
     }
-}, 2500); // Check every 2.5 seconds
+}, 2500);
 
 function updateProgressBars(data) {
     const progressText = document.getElementById('progress');
@@ -125,42 +124,71 @@ function updateProgressBars(data) {
     }
 }
 
+function getSizeSuffix() {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const sizeMap = {
+        'slow-2g': '?size=mini',
+        '2g': '?size=mini',
+        '3g': '?size=small',
+        '4g': '?size=medium'
+    };
+    const typesWithSuffix = ['cellular', 'wimax', 'bluetooth', 'other', 'unknown', 'none'];
+
+    if (connection) {
+        if (connection.type === 'cellular' && connection.effectiveType === '4g') {
+            return '?size=small';
+        }
+        if (typesWithSuffix.includes(connection.type)) {
+            return sizeMap[connection.effectiveType] || '';
+        }
+    }
+    return '';
+}
+
+function updateImageSizes() {
+    existingImages.forEach((wrapper) => {
+        const img = wrapper.querySelector('img');
+        const imgData = img.src.split('?')[0];
+        const sizeSuffix = getSizeSuffix();
+        img.src = `${imgData}${sizeSuffix}`;
+    });
+}
+
+if (navigator.connection || navigator.mozConnection || navigator.webkitConnection) {
+    (navigator.connection || navigator.mozConnection || navigator.webkitConnection).addEventListener('change', updateImageSizes);
+}
+
 function processImageUpdates(images) {
     const imagesDiv = document.getElementById('images');
 
     images.forEach((imgData) => {
-        const key = imgData.seed; // Assuming seed is the unique identifier for the image
+        const key = imgData.seed;
+        const sizeSuffix = getSizeSuffix();
 
         if (existingImages.has(key)) {
-            // Update existing image only if its source has changed
-            const existingWrapper = existingImages.get(key);
-            const existingImg = existingWrapper.querySelector('img');
-
-            if (existingImg.src !== imgData.img + "?size=small") {
-                existingImg.src = imgData.img + "?size=small";
+            const existingImg = existingImages.get(key).querySelector('img');
+            if (existingImg.src !== imgData.img + sizeSuffix) {
+                existingImg.src = imgData.img + sizeSuffix;
             }
         } else {
-            // Create new image element if it doesn't exist
             const wrapper = document.createElement('div');
             wrapper.className = 'image-wrapper';
 
             const img = document.createElement('img');
-            img.src = imgData.img + "?size=small";
+            img.src = imgData.img + sizeSuffix;
             img.loading = "lazy";
+            img.onclick = () => openLink("image/" + imgData.img.split('/').pop());
 
-            img.onclick = () => {
-                openLink("image/" + imgData.img.split('/').pop()); // Send to "image/" + filename
-            };
-
-            wrapper.appendChild(img); // Add image to wrapper
-            imagesDiv.appendChild(wrapper); // Add wrapper to imagesDiv
-            existingImages.set(key, wrapper); // Store the wrapper in the map
+            wrapper.appendChild(img);
+            imagesDiv.appendChild(wrapper);
+            existingImages.set(key, wrapper);
+            updateImageSizes();
         }
     });
 }
 
 function openLink(link) {
-    window.location.href = link.replace("?size=small", "");
+    window.open(link.split('?')[0]);
 }
 
 document.addEventListener('visibilitychange', function () {

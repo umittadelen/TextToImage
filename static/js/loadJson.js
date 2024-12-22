@@ -48,6 +48,7 @@ function populateSchedulers(data, select) {
         option.textContent = scheduler;
         select.appendChild(option);
     });
+    loadFormData();
 }
 
 // Load and populate both selects
