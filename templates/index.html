@@ -35,6 +35,7 @@
                     <select id="model_type" name="model_type" required>
                         <option value="SDXL" selected>SDXL</option>
                         <option value="SD1.5">SD1.5</option>
+                        <option value="FLUX">FLUX</option>
                     </select><br>
 
                     <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
@@ -70,7 +71,7 @@
                     <div id="size-select">
                         <label for="example_size" title="Choose from a list of sizes.">Size Examples:</label>
                         <select id="example_size" name="example_size">
-                            <option value="832x1216">832x1216  13:19</option>
+                            <option value="832x1216">832x1216 13:19</option>
                         </select><br>
 
                         <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
@@ -119,6 +120,11 @@
                     <div id="cfg-scale">
                         <label for="cfg_scale" title="The scale value decides how closely the AI follows your prompts. When the scale is low, AI tends to produce softer, painterly pictures. We recommend keeping the scale below 7.">CFG Scale:</label>
                         <input type="number" id="cfg_scale" name="cfg_scale" value="7" min="1" max="20" step="0.1" required><br>
+                    </div>
+
+                    <div id="img_display">
+                        <label for="img_display" title="The number of images displayed on the page">Images Displayed:</label>
+                        <input type="number" id="img_display_input" name="img_display" value="4" min="1" max="4" step="1" required><br>
                     </div>
                     
                     <div id="form-separator"></div>

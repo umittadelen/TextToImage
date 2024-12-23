@@ -87,6 +87,9 @@ setInterval(() => {
                 updateProgressBars(data);
 
                 processImageUpdates(data.images);
+
+                updateImageScales();
+
                 if (data.images.length < existingImages.size) {
                     existingImages.clear();
                     document.getElementById('images').innerHTML = '';
@@ -102,8 +105,20 @@ setInterval(() => {
     }
 }, 2500);
 
+function updateImageScales() {
+    const images = document.querySelectorAll('#images img');
+    const value = Number(document.getElementById('img_display_input').value); // Convert value to a number
+    images.forEach(img => {
+        img.style.width = `${100 / value - 4}vw`;
+        console.log(100 / value - 2);
+    });
+}
+
+document.getElementById('img_display_input').addEventListener('change', updateImageScales);
+
 function updateProgressBars(data) {
     const progressText = document.getElementById('progress');
+    const statusDiv = document.getElementById('status');
     const dynamicProgressBar = document.getElementById('dynamic-progress-bar');
     const alldynamicProgressBar = document.getElementById('all-dynamic-progress-bar');
 
@@ -111,7 +126,12 @@ function updateProgressBars(data) {
     if (Number.isInteger(data.imgprogress)) {
         dynamicProgressBar.style.width = `calc(${data.imgprogress}%)`;
         progressText.innerHTML = `Progress: ${data.imgprogress}% Remaining: ${data.remainingimages}`;
-    } else {
+        statusDiv.style.display = 'block';
+    }
+    else if (data.imgprogress === 'Done' || data.imgprogress === 'Generation Complete') {
+        statusDiv.style.display = 'none';
+    }
+    else {
         dynamicProgressBar.style.width = `0%`;
         alldynamicProgressBar.style.width = `0%`;
         progressText.innerHTML = `Progress: ${data.imgprogress}`;

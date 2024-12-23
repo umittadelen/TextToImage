@@ -23,12 +23,14 @@ from diffusers import (
     StableDiffusionImg2ImgPipeline,
     StableDiffusionControlNetPipeline,
     StableDiffusionXLControlNetPipeline,
+    FluxPipeline,
     DiffusionPipeline,
     ControlNetModel,
     AutoencoderKL
 )
 from diffusers.utils import load_image
 from downloadModelFromCivitai import downloadModelFromCivitai
+from downloadModelFromHuggingFace import downloadModelFromHuggingFace
 
 config = Config()
 app = Flask(__name__)
@@ -98,6 +100,8 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
                 DiffusionPipeline.from_pretrained
             )
+        elif "FLUX" in model_type:
+            pipeline = FluxPipeline.from_pretrained
         else:
             pipeline = (
                 StableDiffusionXLPipeline.from_single_file
@@ -385,6 +389,15 @@ def addmodel():
 
             config.downloading = True
             downloadModelFromCivitai(model_url)
+            config.downloading = False
+
+            return jsonify(status='Model Downloaded')
+
+    #! handle huggingface "{}/{}" format
+    elif model_url.count('/') == 1:
+        if not config.generating:
+            config.downloading = True
+            downloadModelFromHuggingFace(model_url)
             config.downloading = False
 
             return jsonify(status='Model Downloaded')

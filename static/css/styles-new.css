@@ -74,6 +74,7 @@ p {
     color: var(--dark-text-color);
     font-size: 1.2em;
     margin: 0.5em 0;
+    text-align: center;
 }
 
 /* Form container styling */
@@ -236,7 +237,14 @@ button:hover > svg {
     border: var(--border);
     border-radius: 10px;
     width: 20vw;
-    min-width: 24em;
+    min-width: 20vw;
+    max-width: 98vw;
+}
+
+@media (max-width: 768px) {
+    #images img {
+        min-width: 98vw;
+    }
 }
 
 /* Scrollbar styling */
