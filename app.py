@@ -174,11 +174,12 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         if config.generation_stopped:
             config.imgprogress = "Generation Stopped"
             config.allPercentage = 0
-            raise Exception
+            raise Exception("Generation Stopped")
 
         return callback_kwargs
 
     config.imgprogress = "Generating Image..."
+    kwargs = {}
 
     try:
         if "controlnet" in model_type:
@@ -199,19 +200,15 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 canny_edges = np.concatenate([canny_edges, canny_edges, canny_edges], axis=2)  # Convert to 3 channels
                 canny_image = Image.fromarray(canny_edges)
 
-                # Generate the image using the pipeline
-                image = pipe(
-                    prompt=prompt,
-                    negative_prompt=negative_prompt,
-                    width=width,
-                    height=height,
-                    image=canny_image,  # Pass the processed Canny image
-                    guidance_scale=cfg_scale,
-                    num_inference_steps=samplingSteps,
-                    generator=torch.manual_seed(seed),
-                    callback_on_step_end=progress,
-                    num_images_per_prompt=1
-                ).images[0]
+                kwargs["image"] = canny_image
+                kwargs["prompt"] = prompt
+                kwargs["negative_prompt"] = negative_prompt
+                kwargs["strength"] = strength
+                kwargs["guidance_scale"] = cfg_scale
+                kwargs["num_inference_steps"] = samplingSteps
+                kwargs["generator"] = torch.manual_seed(seed)
+                kwargs["callback_on_step_end"] = progress
+                kwargs["num_images_per_prompt"] = 1
             else:
                 return False
         elif "img2img" in model_type and "SDXL" not in model_type:
@@ -221,33 +218,35 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 image = utils.resize_image(image, width, height)
 
                 # Pass the original image to the pipeline
-                image = pipe(
-                    prompt=prompt,
-                    negative_prompt=negative_prompt,
-                    image=image,
-                    strength=strength,  # Specific to img2img
-                    guidance_scale=cfg_scale,
-                    num_inference_steps=samplingSteps,
-                    generator=torch.manual_seed(seed),
-                    callback_on_step_end=progress,
-                    num_images_per_prompt=1
-                ).images[0]
+                kwargs["image"] = image
+                kwargs["prompt"] = prompt
+                kwargs["negative_prompt"] = negative_prompt
+                kwargs["strength"] = strength
+                kwargs["guidance_scale"] = cfg_scale
+                kwargs["num_inference_steps"] = samplingSteps
+                kwargs["generator"] = torch.manual_seed(seed)
+                kwargs["callback_on_step_end"] = progress
+                kwargs["num_images_per_prompt"] = 1
             else:
                 return False
         else:
             # For txt2img pipelines
-            image = pipe(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                width=width,
-                height=height,
-                guidance_scale=cfg_scale,
-                num_inference_steps=samplingSteps,
-                generator=torch.manual_seed(seed),
-                callback_on_step_end=progress,
-                num_images_per_prompt=1
-            ).images[0]
+            kwargs["prompt"] = prompt
+            kwargs["negative_prompt"] = negative_prompt
+            kwargs["width"] = width
+            kwargs["height"] = height
+            kwargs["guidance_scale"] = cfg_scale
+            kwargs["num_inference_steps"] = samplingSteps
+            kwargs["generator"] = torch.manual_seed(seed)
+            kwargs["callback_on_step_end"] = progress
+            kwargs["num_images_per_prompt"] = 1
 
+        try:
+            image = pipe(
+                **kwargs
+            ).images[0]
+        except Exception as e:
+            raise Exception(e)
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -256,7 +255,8 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         metadata.add_text("Width", str(width))
         metadata.add_text("Height", str(height))
         metadata.add_text("CFGScale", str(cfg_scale))
-        metadata.add_text("ImgInput", str(img_input))
+        metadata.add_text("ImgInput", str(img_input) if "img2img" in model_type else "N/A")
+        metadata.add_text("Strength", str(strength) if "img2img" in model_type else "N/A")
         metadata.add_text("Seed", str(seed))
         metadata.add_text("SamplingSteps", str(samplingSteps))
         metadata.add_text("Model", str(list(config.model_cache.keys())[0]))

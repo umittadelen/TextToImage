@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
     <style>
         body, html {
             margin: 0;
@@ -14,6 +15,8 @@
             align-items: center;
             overflow: hidden;
             flex-direction: column; /* Stack items vertically */
+            background-color: var(--background-color);
+            color: var(--dark-text-color);
         }
 
         .img-container {
@@ -28,25 +31,27 @@
             max-height: 80vh;  /* Limit height to 80% of viewport height */
             object-fit: contain;
             cursor: pointer;
+            border: var(--border);
+            border-radius: 10px;
         }
 
         .metadata {
             margin-top: 10px;            /* Add space above the button */
             display: inline-block;        /* Allow padding and margin */
             padding: 10px 20px;          /* Add padding for size */
-            border: 2px solid #000;      /* Set border */
+            border: var(--border);      /* Set border */
             border-radius: 5px;          /* Rounded corners */
-            background-color: #007bff;   /* Button background color */
-            color: white;                 /* Text color */
+            background-color: var(--highlight-color);   /* Button background color */
+            color: var(--light-text-color);                 /* Text color */
             text-align: center;           /* Center text */
             text-decoration: none;        /* Remove underline */
             font-weight: bold;            /* Bold text */
-            transition: background-color 0.3s; /* Smooth transition for hover effect */
+            transition: var(--transition); /* Smooth transition for hover effect */
             cursor: pointer;              /* Change cursor on hover */
         }
 
         .metadata:hover {
-            background-color: #0056b3;    /* Darker background on hover */
+            background-color: var(--button-hover-color);    /* Darker background on hover */
         }
     </style>
 </head>
@@ -56,6 +61,7 @@
             <img src="{{ url_for('serve_temp_image', filename=image) }}" alt="{{ image }}">
         </a>
     </div>
+    <p>Click on the image to download</p>
     <a class="metadata" href="javascript:void(0);" onclick="openMetadata()">Metadata</a>
     
     <script>

@@ -69,6 +69,13 @@ h1 {
     color: var(--dark-text-color);
 }
 
+/* Text Styling */
+p {
+    color: var(--dark-text-color);
+    font-size: 1.2em;
+    margin: 0.5em 0;
+}
+
 /* Form container styling */
 .form {
     padding: 2em;
