@@ -79,8 +79,14 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
         if "img2img" in model_type:
             pipeline = (
+                StableDiffusionXLImg2ImgPipeline.from_single_file
+                if "SDXL" in model_type and model_name.endswith(".safetensors") else
+
                 StableDiffusionXLImg2ImgPipeline.from_pretrained
                 if "SDXL" in model_type else
+
+                StableDiffusionImg2ImgPipeline.from_single_file
+                if "SD1.5" in model_type and model_name.endswith(".safetensors") else
 
                 StableDiffusionImg2ImgPipeline.from_pretrained
                 if "SD1.5" in model_type else
