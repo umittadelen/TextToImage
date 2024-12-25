@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLIP Token Count</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
+    <style>
+        span.token {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 2px 5px;
+            background-color: var(--primary-color);
+            border: var(--border);
+            border-radius: 10px;
+        }
+        .form {
+            margin: 20px 0 0 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="all">
+        <h1>CLIP Token Count</h1>
+        <form id="clip-token-form" class="form">
+            <label for="text">Enter Text:</label>
+            <textarea id="text" name="text" placeholder="Enter text here..."></textarea>
+            <button type="submit">Calculate Token Count</button>
+        </form>
+        <div id="result" class="form">
+            <h1>Result</h1>
+            <p id="token-count">CLIP Token Count: <span id="clip-token-count"></span></p>
+            <p id="tokens">Tokens: <span id="clip-tokens"></span></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('clip-token-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const text = document.getElementById('text').value;
+            const response = await fetch('/clip_token_count', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ text })
+            });
+            const result = await response.json();
+            document.getElementById('clip-token-count').textContent = result['CLIP Token Count'];
+            document.getElementById('clip-tokens').innerHTML = result['Tokens'].map(token => `<span class="token">${token}</span>`).join('');
+        });
+    </script>
+</body>
+</html>

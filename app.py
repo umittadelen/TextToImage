@@ -28,6 +28,7 @@ from diffusers import (
     ControlNetModel,
     AutoencoderKL
 )
+from transformers import CLIPTokenizer
 from diffusers.utils import load_image
 from downloadModelFromCivitai import downloadModelFromCivitai
 from downloadModelFromHuggingFace import downloadModelFromHuggingFace
@@ -208,7 +209,7 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             if img_input != "":
                 try:
                     image = load_image(img_input).convert("RGB")
-                except:
+                except Exception as e:
                     #TODO: If the image is not valid, return False
                     config.imgprogress = "Image Invalid"
                     logging.log(logging.ERROR, msg=f"Cannot acces to image:{e}")
@@ -244,12 +245,9 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             kwargs["width"] = width
             kwargs["height"] = height
 
-        try:
-            image = pipe(
-                **kwargs
-            ).images[0]
-        except Exception as e:
-            raise Exception(e)
+        image = pipe(
+            **kwargs
+        ).images[0]
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -511,6 +509,39 @@ def restart_app():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+def get_clip_token_info(text):
+    clip_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+    # Get tokens and their IDs
+    clip_tokens = clip_tokenizer.encode(text, add_special_tokens=True)
+    
+    # Decode individual tokens for display
+    clip_decoded = []
+    for token in clip_tokens:
+        decoded = clip_tokenizer.decode([token], skip_special_tokens=False)
+        if decoded.isspace():
+            decoded = "␣"
+        elif decoded == "":
+            decoded = "∅"
+        clip_decoded.append(decoded)
+    
+    # Return the dictionary
+    return {
+        "CLIP Token Count": len(clip_tokens),
+        "Tokens": clip_decoded
+    }
+
+#TODO: route to calculate the clip token count
+@app.route('/clip_token_count', methods=['POST'])
+def clip_token_count():
+    text = request.form['text']
+    result = get_clip_token_info(text)
+    return jsonify(result)
+
+#TODO: route to serve the clip token count page
+@app.route('/clip_token')
+def clip_token():
+    return render_template('clip_token_count.html')
 
 @app.route('/models')
 def models():
