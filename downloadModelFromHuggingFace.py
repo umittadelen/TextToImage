@@ -1,7 +1,9 @@
+from config import Config
+config = Config()
+
 # just load the model from huggingface to make it save to default directory
 def downloadModelFromHuggingFace(model_name):
-    from transformers import AutoModelForSequenceClassification
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    # load the model with pipeline just to save it to default directory
     updateModelsJson(model_name)
 
 def updateModelsJson(model_name):

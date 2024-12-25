@@ -1,9 +1,23 @@
 import os
+from huggingface_hub import login
 
-class Config():
+class Config:
     def __init__(self):
-        self.HF_TOKEN = os.getenv("HF_TOKEN")
-        #self.HF_TOKEN = "HF_TOKEN"
+        username = os.getlogin()
+        HFHub_file = f'C:\\Users\\{username}\\.cache\\huggingface\\token'
+
+        if os.path.exists(HFHub_file):
+            with open(HFHub_file, 'r') as file:
+                hf_token = file.read().strip()
+        else:
+            hf_token = None
+
+        if hf_token in [None, "", "None"]:
+            login()
+
+        login(token=hf_token)
+
+        self.HF_TOKEN = hf_token
 
         self.generation_stopped = False
         self.generating = False
@@ -25,3 +39,6 @@ class Config():
 
         self.enable_attention_slicing = True
         self.enable_xformers_memory_efficient_attention = True
+
+if __name__ == "__main__":
+    config = Config()

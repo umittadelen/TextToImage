@@ -174,7 +174,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
         config.imgprogress = "Using Cached Pipeline..."
         return config.model_cache[model_name]
 
-def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, cfg_scale, samplingSteps):
+def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps):
     #TODO: Generate image with progress tracking
 
     def progress(pipe, step_index, timestep, callback_kwargs):
@@ -192,6 +192,15 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
     kwargs = {}
 
     try:
+        #! Pass the parameters to the pipeline - (default kwargs for all pipelines)
+        kwargs["prompt"] = prompt
+        kwargs["negative_prompt"] = negative_prompt
+        kwargs["generator"] = torch.manual_seed(seed)
+        kwargs["guidance_scale"] = cfg_scale
+        kwargs["num_inference_steps"] = samplingSteps
+        kwargs["callback_on_step_end"] = progress
+        kwargs["num_images_per_prompt"] = 1
+
         if "controlnet" in model_type:
             if img_input != "":
                 try:
@@ -210,46 +219,27 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                 canny_edges = np.concatenate([canny_edges, canny_edges, canny_edges], axis=2)  # Convert to 3 channels
                 canny_image = Image.fromarray(canny_edges)
 
+                #! Pass the image to pipeline - (kwargs for controlnet)
                 kwargs["image"] = canny_image
-                kwargs["prompt"] = prompt
-                kwargs["negative_prompt"] = negative_prompt
                 kwargs["strength"] = strength
-                kwargs["guidance_scale"] = cfg_scale
-                kwargs["num_inference_steps"] = samplingSteps
-                kwargs["generator"] = torch.manual_seed(seed)
-                kwargs["callback_on_step_end"] = progress
-                kwargs["num_images_per_prompt"] = 1
             else:
                 return False
         elif "img2img" in model_type and "SDXL" not in model_type:
             if img_input != "":
                 # Load and preprocess the image for img2img
                 image = load_image(img_input).convert("RGB")
-                image = utils.resize_image(image, width, height)
+                if image_size == "resize":
+                    image = utils.resize_image(image, width, height)
 
-                # Pass the original image to the pipeline
+                #! Pass the image to pipeline - (kwargs for img2img)
                 kwargs["image"] = image
-                kwargs["prompt"] = prompt
-                kwargs["negative_prompt"] = negative_prompt
                 kwargs["strength"] = strength
-                kwargs["guidance_scale"] = cfg_scale
-                kwargs["num_inference_steps"] = samplingSteps
-                kwargs["generator"] = torch.manual_seed(seed)
-                kwargs["callback_on_step_end"] = progress
-                kwargs["num_images_per_prompt"] = 1
             else:
                 return False
         else:
-            # For txt2img pipelines
-            kwargs["prompt"] = prompt
-            kwargs["negative_prompt"] = negative_prompt
+            #! Pass the parameters to the pipeline - (kwargs for txt2img)
             kwargs["width"] = width
             kwargs["height"] = height
-            kwargs["guidance_scale"] = cfg_scale
-            kwargs["num_inference_steps"] = samplingSteps
-            kwargs["generator"] = torch.manual_seed(seed)
-            kwargs["callback_on_step_end"] = progress
-            kwargs["num_images_per_prompt"] = 1
 
         try:
             image = pipe(
@@ -310,6 +300,7 @@ def generate():
     strength = float(request.form.get('strength', 0.5))
     img_input = request.form.get('img_input', "")
     generation_type = request.form.get('generation_type', 'txt2img')
+    image_size = request.form.get('image_size', 'original')
     cfg_scale = float(request.form.get('cfg_scale', 7))
     config.IMAGE_COUNT = int(request.form.get('image_count', 4))
     config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
@@ -352,7 +343,7 @@ def generate():
                 else:
                     seed = config.CUSTOM_SEED
 
-                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps)
 
                 #TODO: Store the generated image path
                 if image_path:

@@ -90,6 +90,12 @@
                         <option value="controlnet">ControlNet</option>
                     </select><br>
 
+                    <label for="image_size" title="">Image Size:</label>
+                    <select id="image_size" name="image_size" required>
+                        <option value="original" selected>Original</option>
+                        <option value="resize">Resize</option>
+                    </select><br>
+
                     <div id="img_input">
                         <label for="img_input" title="Paste a valid image url to generate image from image">image url:</label>
                         <input type="text" id="img_input" name="img_input" placeholder="https://example.com/image.png"><br>
