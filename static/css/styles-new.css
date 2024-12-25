@@ -129,6 +129,11 @@ select:focus {
     outline: none;
 }
 
+/* Select option disabled color*/
+select option:disabled {
+    color: var(--dark-text-color);
+}
+
 /* Buttons styling */
 button {
     font-size: 1em;
