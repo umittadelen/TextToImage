@@ -74,19 +74,22 @@ def load_pipeline(model_name, model_type, scheduler_name):
             controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
             kwargs["controlnet"] = controlnet
 
-        if "SD1.5" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion"
-        elif "SDXL" in model_type and "txt2img" in model_type: kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
+        if "SD1.5" in model_type and "txt2img" in model_type:
+            kwargs["custom_pipeline"] = "lpw_stable_diffusion"
+        elif "SDXL" in model_type and "txt2img" in model_type:
+            kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
+            kwargs["clip_skip"] = 2
 
         if "img2img" in model_type:
             pipeline = (
                 StableDiffusionXLImg2ImgPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith(".safetensors") else
+                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
                 StableDiffusionXLImg2ImgPipeline.from_pretrained
                 if "SDXL" in model_type else
 
                 StableDiffusionImg2ImgPipeline.from_single_file
-                if "SD1.5" in model_type and model_name.endswith(".safetensors") else
+                if "SD1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
                 StableDiffusionImg2ImgPipeline.from_pretrained
                 if "SD1.5" in model_type else
@@ -96,7 +99,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
         elif "controlnet" in model_type:
             pipeline = (
                 StableDiffusionXLControlNetPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith(".safetensors") else
+                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
                 StableDiffusionXLControlNetPipeline.from_pretrained
                 if "SDXL" in model_type else
@@ -111,13 +114,13 @@ def load_pipeline(model_name, model_type, scheduler_name):
         else:
             pipeline = (
                 StableDiffusionXLPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith(".safetensors") else
+                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
                 StableDiffusionXLPipeline.from_pretrained
                 if "SDXL" in model_type else
 
                 StableDiffusionPipeline.from_single_file
-                if "SD1.5" in model_type and model_name.endswith(".safetensors") else
+                if "SD1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
                 StableDiffusionPipeline.from_pretrained
                 if "SD1.5" in model_type else

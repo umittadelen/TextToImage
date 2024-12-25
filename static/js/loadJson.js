@@ -18,6 +18,9 @@ function populateModels(data, select) {
         option.value = modelUrl[0];
         option.dataset.cfg = modelUrl[1] || 7;
         option.textContent = modelName;
+        if (modelUrl[2] === "disabled") {
+            option.disabled = true;
+        }
         select.appendChild(option);
     });
 }

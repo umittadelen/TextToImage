@@ -1,6 +1,67 @@
+class CustomConfirm {
+    constructor() {
+        this.overlay = null;
+        this.box = null;
+    }
+
+    createConfirm(message, buttons, overlayReturnValue) {
+        return new Promise((resolve) => {
+            // Create overlay
+            this.overlay = document.createElement('div');
+            this.overlay.className = 'custom-confirm-overlay';
+
+            // Create confirm box
+            this.box = document.createElement('div');
+            this.box.className = 'custom-confirm-box';
+
+            // Add message
+            const msg = document.createElement('p');
+            message = message.replace(/\n/g, '<br>');
+            msg.innerHTML = message;
+            this.box.appendChild(msg);
+
+            // Add button container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+
+            // Add buttons to the button container
+            buttons.forEach((buttonConfig) => {
+                const button = document.createElement('button');
+                button.textContent = buttonConfig.text;
+                button.addEventListener('click', () => {
+                    this.closeConfirm();
+                    resolve(buttonConfig.value);
+                });
+                buttonContainer.appendChild(button);
+            });
+
+            // Append button container to the box
+            this.box.appendChild(buttonContainer);
+
+            // Append the box to the overlay and the overlay to the document body
+            this.overlay.appendChild(this.box);
+            document.body.appendChild(this.overlay);
+
+            // Add overlay click listener
+            this.overlay.addEventListener('click', (e) => {
+                // Prevent click events from propagating when clicking the confirm box itself
+                if (e.target === this.overlay) {
+                    this.closeConfirm();
+                    resolve(overlayReturnValue);
+                }
+            });
+        });
+    }
+
+    closeConfirm() {
+        document.body.removeChild(this.overlay);
+    }
+}
+
 const existingImages = new Map(); // Store existing images with their seeds as keys
 let isGeneratingNewImages = false;
 let pendingUpdates = false;
+const customConfirm = new CustomConfirm();
 
 document.getElementById('generateForm').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -236,8 +297,15 @@ document.getElementById('stopButton').addEventListener('click', function() {
     .catch(error => console.error('Error stopping generation:', error));
 });
 
-document.getElementById('restartButton').addEventListener('click', function() {
-    const isConfirmed = confirm('Are you sure you want to restart the server?\nIt will reset all of the variables and has a chance to fail restarting');
+document.getElementById('restartButton').addEventListener('click', async function() {
+    const isConfirmed = await customConfirm.createConfirm(
+        'Are you sure you want to restart the server?\nIt will reset all variables and has a chance to fail restarting.',
+        [
+            { text: 'Restart', value: true },
+            { text: 'Cancel', value: false }
+        ],
+        false
+    );
 
     if (isConfirmed) {
         fetch('/restart', {
@@ -252,7 +320,14 @@ document.getElementById('restartButton').addEventListener('click', function() {
 });
 
 document.getElementById('clearButton').addEventListener('click', function() {
-    const isConfirmed = confirm('Are you sure you want to clear all images?');
+    const isConfirmed = customConfirm.createConfirm(
+        'Are you sure you want to clear all images?',
+        [
+            { text: 'Clear', value: true },
+            { text: 'Cancel', value: false }
+        ],
+        false
+    );
 
     if (isConfirmed) {
         fetch('/clear', {

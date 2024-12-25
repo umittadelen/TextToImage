@@ -5,3 +5,4 @@ Pillow
 transformers
 accelerate
 scipy
+sentencepiece
