@@ -42,6 +42,13 @@ class CustomConfirm {
             this.overlay.appendChild(this.box);
             document.body.appendChild(this.overlay);
 
+            // Force reflow to ensure the transition is applied
+            window.getComputedStyle(this.overlay).opacity;
+
+            // Add the show class to trigger the transition
+            this.overlay.classList.add('show');
+            this.box.classList.add('show');
+
             // Add overlay click listener
             this.overlay.addEventListener('click', (e) => {
                 // Prevent click events from propagating when clicking the confirm box itself
@@ -54,7 +61,15 @@ class CustomConfirm {
     }
 
     closeConfirm() {
-        document.body.removeChild(this.overlay);
+        if (this.overlay) {
+            this.overlay.classList.remove('show');
+            this.box.classList.remove('show');
+            this.overlay.addEventListener('transitionend', () => {
+                if (this.overlay && this.overlay.parentNode) {
+                    document.body.removeChild(this.overlay);
+                }
+            });
+        }
     }
 }
 

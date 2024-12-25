@@ -277,6 +277,12 @@ button:hover > svg {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.custom-confirm-overlay.show {
+    opacity: 1;
 }
 
 .custom-confirm-box {
@@ -292,6 +298,14 @@ button:hover > svg {
     overflow: auto;
     transition: var(--transition);
     text-wrap: wrap;
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.custom-confirm-box.show {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .custom-confirm-box p {
