@@ -120,6 +120,29 @@ input::placeholder {
     color: var(--dark-text-color);
 }
 
+input[type="file"] {
+    padding: 0.3em;
+}
+
+::-webkit-file-upload-button {
+    background-color: var(--highlight-color);
+    color: var(--light-text-color);
+    font-family: var(--font-family);
+    font-weight: bold;
+    padding: 0.4em;
+    border: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+::-webkit-file-upload-button:hover {
+    background-color: var(--primary-color);
+    color: var(--dark-text-color);
+    border: var(--border);
+}
+
 textarea {
     height: 6em;
 }

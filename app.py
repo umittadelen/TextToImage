@@ -209,6 +209,9 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             if img_input != "":
                 try:
                     image = load_image(img_input).convert("RGB")
+                    if image_size == "resize":
+                        image = utils.resize_image(image, width, height)
+
                 except Exception as e:
                     #TODO: If the image is not valid, return False
                     config.imgprogress = "Image Invalid"
@@ -299,7 +302,8 @@ def generate():
     width = int(request.form.get('width', 832))
     height = int(request.form.get('height', 1216))
     strength = float(request.form.get('strength', 0.5))
-    img_input = request.form.get('img_input', "")
+    img_input_link = request.form.get('img_input_link', "")
+    img_input_img = request.files.get('img_input_img', "")
     generation_type = request.form.get('generation_type', 'txt2img')
     image_size = request.form.get('image_size', 'original')
     cfg_scale = float(request.form.get('cfg_scale', 7))
@@ -310,8 +314,13 @@ def generate():
     if config.CUSTOM_SEED != 0:
         config.IMAGE_COUNT = 1
     
-    if img_input != "":
-        model_type = model_type+generation_type
+    model_type = model_type+generation_type
+
+    if img_input_img and generation_type != "txt2img":
+        temp_image = Image.open(img_input_img).convert("RGB")
+        temp_image.save("./generated/temp_image.png")
+
+    img_input = "./generated/temp_image.png" if img_input_img else img_input_link
 
     #TODO: Function to generate images
     def generate_images():

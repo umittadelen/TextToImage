@@ -72,7 +72,7 @@
                     <div id="size-select">
                         <label for="example_size" title="Choose from a list of sizes.">Size Examples:</label>
                         <select id="example_size" name="example_size">
-                            <option value="832x1216">832x1216 13:19</option>
+                            <option value="832x1216">13:19 - 832x1216 - Vertical</option>
                         </select><br>
 
                         <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
@@ -98,8 +98,9 @@
                     </select><br>
 
                     <div id="img_input">
-                        <label for="img_input" title="Paste a valid image url to generate image from image">image url:</label>
-                        <input type="text" id="img_input" name="img_input" placeholder="https://example.com/image.png"><br>
+                        <label for="img_input_link" title="Paste a valid image url to generate image from image">image url:</label>
+                        <input type="text" id="img_input" name="img_input_link" placeholder="https://example.com/image.png"><br>
+                        <input type="file" id="img_input" name="img_input_img" accept="image/*"><br>
                     </div>
 
                     <div id="strength">
