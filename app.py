@@ -4,7 +4,7 @@ install_requirements()
 
 import utils
 from flask import Flask, render_template, request, send_file, jsonify
-import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging, cv2
+import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging, cv2, json
 from PIL import PngImagePlugin, Image
 import numpy as np
 from config import Config
@@ -39,6 +39,50 @@ config = Config()
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
+
+#return True if a is a file directory string else False
+def isDirectory(a):
+    return os.path.isdir(a)
+
+def checkModelsAvailability():
+    print("Checking Models Availability...")
+    try:
+        with open('./static/json/models.json', 'r', encoding='utf-8') as f:
+            models = json.load(f)
+    except:
+        print("Models file not found.")
+        return
+    
+    for model in models:
+        print(model)
+
+        if "link" in models[model]:
+            
+            #! if path
+            if isDirectory(models[model]["link"]):
+                #TODO: if model exist but file not exist
+                try:
+                    if not os.path.exists(models[model]["link"]):
+                        models.remove(model)
+                except:
+                    pass
+
+            #! if civitai
+            elif "civitai" in models[model]["link"]:
+                #TODO: if model exist but file not exist
+                try:
+                    if not os.path.exists(models[model]["path"]):
+                        downloadModelFromCivitai(models[model]["link"])
+                except:
+                    pass
+
+            #! if huggingface
+            elif models[model]["path"].count('/') == 1:
+                #TODO: if model exist but file not exist
+                #? not supported yet
+                pass
+
+checkModelsAvailability()
 
 #TODO: function to load the selected scheduler from name
 def load_scheduler(pipe, scheduler_name):
@@ -331,7 +375,7 @@ def generate():
         except Exception as e:
             config.generating = False
             config.imgprogress = f"Error Loading Model...{e}"
-            print(f"Error Loading Model...{e}")
+            print("Error Loading Model...{e}")
             config.model_cache = {}
             config.allPercentage = 0
             return

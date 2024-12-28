@@ -31,7 +31,7 @@ def downloadModelFromCivitai(modelUrl):
 
         def update_models_json(file_name, file_path):
             models_data = (json.load(open('./static/json/models.json', 'r', encoding='utf-8')) if os.path.exists('./static/json/models.json') else {})
-            models_data[file_name] = [file_path, "7"]
+            models_data[file_name] = {"path":file_path, "cfg":"7", "disabled": False, "type":"SDXL", "link":modelUrl}
             json.dump(models_data, open('./static/json/models.json', 'w', encoding='utf-8'), indent=4)
 
         def fix_path_slashes(path):

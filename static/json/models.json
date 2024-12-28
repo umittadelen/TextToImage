@@ -1,143 +1,254 @@
 {
-    "Animagine XL 3.0": [
-        "https://huggingface.co/Linaqruf/animagine-xl-3.0/blob/main/animagine-xl-3.0.safetensors",
-        "7"
-    ],
-    "FLUX.1-dev": [
-        "black-forest-labs/FLUX.1-dev",
-        "7",
-        "disabled"
-    ],
-    "SeaArt Furry XL 1.0": [
-        "https://huggingface.co/SeaArtLab/SeaArt-Furry-XL-1.0/blob/main/furry-xl-4.0.safetensors",
-        "7"
-    ],
-    "KiwiMix XL V3 SDXL": [
-        "John6666/kiwimix-xl-v3-sdxl",
-        "2"
-    ],
-    "NoobAI XL 1.0": [
-        "Laxhar/noobai-XL-1.0",
-        "2"
-    ],
-    "NoobAI XL 1.1": [
-        "Laxhar/noobai-XL-1.1",
-        "5.5"
-    ],
-    "Illustrious XL early release V0": [
-        "OnomaAIResearch/Illustrious-xl-early-release-v0",
-        "2"
-    ],
-    "SDXL base 1.0": [
-        "stabilityai/stable-diffusion-xl-base-1.0",
-        "7"
-    ],
-    "Anything XL XLyper SDXL": [
-        "John6666/anything-xl-xlhyper-sdxl",
-        "7"
-    ],
-    "WAI Cute V8 SDXL": [
-        "John6666/wai-cute-v8-sdxl",
-        "7"
-    ],
-    "Davinci V8 SDXL": [
-        "John6666/davinci-v8-sdxl",
-        "3"
-    ],
-    "KayWaii XL V12 SDXL": [
-        "John6666/kaywaii-xl-v12-sdxl",
-        "7"
-    ],
-    "Bad Apple XL V1 SDXL": [
-        "John6666/bad-apple-xl-v1-sdxl",
-        "5"
-    ],
-    "Cute Core V3 SDXL": [
-        "John6666/cute-core-v3-sdxl",
-        "7"
-    ],
-    "Autismmix SDXL": [
-        "John6666/autismmix-sdxl-autismmix-pony-sdxl",
-        "7"
-    ],
-    "WAI Real MIX V11 SDXL": [
-        "John6666/wai-real-mix-v11-sdxl",
-        "7"
-    ],
-    "WAI Plastic Doll SDXL": [
-        "John6666/wai-plastic-doll-v1-sdxl",
-        "7"
-    ],
-    "Cashmoney Anime V50 SDXL": [
-        "John6666/cashmoney-anime-v50-sdxl",
-        "7"
-    ],
-    "Toon E PONY V1 SDXL": [
-        "John6666/toon-e-pony-v1-sdxl",
-        "7"
-    ],
-    "WAI Ani NSFW Pony XL SDXL": [
-        "John6666/wai-ani-nsfw-ponyxl-v5-sdxl",
-        "7"
-    ],
-    "Ebara Pony V1 SDXL": [
-        "John6666/ebara-pony-v1-sdxl",
-        "7"
-    ],
-    "Pero Pero Sitai V1 SDXL": [
-        "John6666/peroperositai-v1-sdxl",
-        ""
-    ],
-    "Pony Diffusion V6 XL": [
-        "https://huggingface.co/LyliaEngine/Pony_Diffusion_V6_XL/blob/main/ponyDiffusionV6XL_v6StartWithThisOne.safetensors",
-        "7"
-    ],
-    "Furry Diffusion": [
-        "https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt",
-        ""
-    ],
-    "Dream Anything": [
-        "Yntec/DreamAnything",
-        ""
-    ],
-    "counterfeitxl v25": [
-        "./models/counterfeitxl_v25.safetensors",
-        "7"
-    ],
-    "cuteyukimixAdorable kemiaomiao": [
-        "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
-        "7"
-    ],
-    "matatabi v10": [
-        "./models/matatabi_v10.safetensors",
-        "7"
-    ],
-    "fluffyTartXL v17": [
-        "./models/fluffyTartXL_v17.safetensors",
-        "7"
-    ],
-    "fluffyTart v70": [
-        "./models/fluffyTart_v70.safetensors",
-        "7"
-    ],
-    "vxpXLHyper v22": [
-        "./models/vxpXLHyper_v22.safetensors",
-        "7"
-    ],
-    "kiwimixXL v3": [
-        "./models/kiwimixXL_v3.safetensors",
-        "7"
-    ],
-    "madlyMixVerNightnoob v3": [
-        "./models/madlyMixVerNightnoob_v3.safetensors",
-        "7"
-    ],
-    "molKeunMix molkeunMixNoobaiXL": [
-        "./models/molKeunMix_molkeunMixNoobaiXL.safetensors",
-        "7"
-    ],
-    "molKeunMix molKeunnoobXLILXL": [
-        "./models/molKeunMix_molKeunnoobXLILXL.safetensors",
-        "7"
-    ]
+    "Animagine XL 3.1": {
+        "path": "https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors"
+    },
+    "Animagine XL 3.0": {
+        "path": "https://huggingface.co/Linaqruf/animagine-xl-3.0/blob/main/animagine-xl-3.0.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/Linaqruf/animagine-xl-3.0/blob/main/animagine-xl-3.0.safetensors"
+    },
+    "FLUX.1-dev": {
+        "path": "black-forest-labs/FLUX.1-dev",
+        "cfg": "7",
+        "disabled": true,
+        "type": "FLUX",
+        "link": "black-forest-labs/FLUX.1-dev"
+    },
+    "SeaArt Furry XL 1.0": {
+        "path": "https://huggingface.co/SeaArtLab/SeaArt-Furry-XL-1.0/blob/main/furry-xl-4.0.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/SeaArtLab/SeaArt-Furry-XL-1.0/blob/main/furry-xl-4.0.safetensors"
+    },
+    "KiwiMix XL V3 SDXL": {
+        "path": "John6666/kiwimix-xl-v3-sdxl",
+        "cfg": "2",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/kiwimix-xl-v3-sdxl"
+    },
+    "NoobAI XL 1.0": {
+        "path": "Laxhar/noobai-XL-1.0",
+        "cfg": "2",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "Laxhar/noobai-XL-1.0"
+    },
+    "NoobAI XL 1.1": {
+        "path": "Laxhar/noobai-XL-1.1",
+        "cfg": "5.5",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "Laxhar/noobai-XL-1.1"
+    },
+    "Illustrious XL early release V0": {
+        "path": "OnomaAIResearch/Illustrious-xl-early-release-v0",
+        "cfg": "2",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "OnomaAIResearch/Illustrious-xl-early-release-v0"
+    },
+    "SDXL base 1.0": {
+        "path": "stabilityai/stable-diffusion-xl-base-1.0",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "stabilityai/stable-diffusion-xl-base-1.0"
+    },
+    "Anything XL XLyper SDXL": {
+        "path": "John6666/anything-xl-xlhyper-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/anything-xl-xlhyper-sdxl"
+    },
+    "WAI Cute V8 SDXL": {
+        "path": "John6666/wai-cute-v8-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/wai-cute-v8-sdxl"
+    },
+    "Davinci V8 SDXL": {
+        "path": "John6666/davinci-v8-sdxl",
+        "cfg": "3",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/davinci-v8-sdxl"
+    },
+    "KayWaii XL V12 SDXL": {
+        "path": "John6666/kaywaii-xl-v12-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/kaywaii-xl-v12-sdxl"
+    },
+    "Bad Apple XL V1 SDXL": {
+        "path": "John6666/bad-apple-xl-v1-sdxl",
+        "cfg": "5",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/bad-apple-xl-v1-sdxl"
+    },
+    "Cute Core V3 SDXL": {
+        "path": "John6666/cute-core-v3-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/cute-core-v3-sdxl"
+    },
+    "Autismmix SDXL": {
+        "path": "John6666/autismmix-sdxl-autismmix-pony-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/autismmix-sdxl-autismmix-pony-sdxl"
+    },
+    "WAI Real MIX V11 SDXL": {
+        "path": "John6666/wai-real-mix-v11-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/wai-real-mix-v11-sdxl"
+    },
+    "WAI Plastic Doll SDXL": {
+        "path": "John6666/wai-plastic-doll-v1-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/wai-plastic-doll-v1-sdxl"
+    },
+    "Cashmoney Anime V50 SDXL": {
+        "path": "John6666/cashmoney-anime-v50-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/cashmoney-anime-v50-sdxl"
+    },
+    "Toon E PONY V1 SDXL": {
+        "path": "John6666/toon-e-pony-v1-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/toon-e-pony-v1-sdxl"
+    },
+    "WAI Ani NSFW Pony XL SDXL": {
+        "path": "John6666/wai-ani-nsfw-ponyxl-v5-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/wai-ani-nsfw-ponyxl-v5-sdxl"
+    },
+    "Ebara Pony V1 SDXL": {
+        "path": "John6666/ebara-pony-v1-sdxl",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/ebara-pony-v1-sdxl"
+    },
+    "Pero Pero Sitai V1 SDXL": {
+        "path": "John6666/peroperositai-v1-sdxl",
+        "cfg": "",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "John6666/peroperositai-v1-sdxl"
+    },
+    "Pony Diffusion V6 XL": {
+        "path": "https://huggingface.co/LyliaEngine/Pony_Diffusion_V6_XL/blob/main/ponyDiffusionV6XL_v6StartWithThisOne.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/LyliaEngine/Pony_Diffusion_V6_XL/blob/main/ponyDiffusionV6XL_v6StartWithThisOne.safetensors"
+    },
+    "Furry Diffusion": {
+        "path": "https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt",
+        "cfg": "",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt"
+    },
+    "Dream Anything": {
+        "path": "Yntec/DreamAnything",
+        "cfg": "",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://huggingface.co/lunarfish/furrydiffusion/blob/main/furrydiffusion.ckpt"
+    },
+    "counterfeitxl v25": {
+        "path": "./models/counterfeitxl_v25.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/265012?token=eec8a1d8773b26d45e846f09d06de2e1"
+    },
+    "cuteyukimixAdorable kemiaomiao": {
+        "path": "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/265102"
+    },
+    "matatabi v10": {
+        "path": "./models/matatabi_v10.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SD1.5",
+        "link": "https://civitai.com/api/download/models/373421"
+    },
+    "fluffyTartXL v17": {
+        "path": "./models/fluffyTartXL_v17.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/823251?token=eec8a1d8773b26d45e846f09d06de2e1"
+    },
+    "fluffyTart v70": {
+        "path": "./models/fluffyTart_v70.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/323921"
+    },
+    "vxpXLHyper v22": {
+        "path": "./models/vxpXLHyper_v22.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/716274"
+    },
+    "kiwimixXL v3": {
+        "path": "./models/kiwimixXL_v3.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/1075361"
+    },
+    "madlyMixVerNightnoob v3": {
+        "path": "./models/madlyMixVerNightnoob_v3.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.green/api/download/models/1202045"
+    },
+    "molKeunMix molkeunMixNoobaiXL": {
+        "path": "./models/molKeunMix_molkeunMixNoobaiXL.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/1144368"
+    },
+    "molKeunMix molKeunnoobXLILXL": {
+        "path": "./models/molKeunMix_molKeunnoobXLILXL.safetensors",
+        "cfg": "7",
+        "disabled": false,
+        "type": "SDXL",
+        "link": "https://civitai.com/api/download/models/1039311"
+    }
 }

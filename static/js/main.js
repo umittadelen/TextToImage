@@ -390,10 +390,12 @@ promptTextareaElement.value = promptSelectElement.value;
 
 const modelSelectElement = document.getElementById('model');
 const cfgInputElement = document.getElementById('cfg_scale');
+const modelTypeInputElement = document.getElementById('model_type');
 
 // Add an event listener for the 'change' event on the select element
 modelSelectElement.addEventListener('change', function() {
     cfgInputElement.value = modelSelectElement.options[modelSelectElement.selectedIndex].dataset.cfg || 7;
+    modelTypeInputElement.value = modelSelectElement.options[modelSelectElement.selectedIndex].dataset.type || "SDXL";
 });
 
 // Set the initial value of the textarea to the first option's value

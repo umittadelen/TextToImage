@@ -13,17 +13,19 @@ function loadJsonAndPopulateSelect(location, selectId, dataHandler) {
 
 // Handler to populate the model select element
 function populateModels(data, select) {
-    Object.entries(data).forEach(([modelName, modelUrl]) => {
+    Object.entries(data).forEach(([modelName, modelData]) => {
         const option = document.createElement('option');
-        option.value = modelUrl[0];
-        option.dataset.cfg = modelUrl[1] || 7;
+        option.value = modelData.path;
+        option.dataset.cfg = modelData.cfg || 7;
+        option.dataset.type = modelData.type || "SDXL";
         option.textContent = modelName;
-        if (modelUrl[2] === "disabled") {
+        if (modelData.disabled) {
             option.disabled = true;
         }
         select.appendChild(option);
     });
 }
+
 
 // Handler to populate the example prompts select element
 function populateExamplePrompts(data, select) {
