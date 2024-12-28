@@ -35,7 +35,7 @@ function loadJson() {
         })
         .catch(error => {
             console.error('Error:', error);
-            document.getElementById('json-status').textContent = `Error loading JSON: ${error.message}`;
+            document.getElementById('json-status').innerHTML = `Error loading JSON: ${error.message}`;
         });
 }
 
@@ -58,11 +58,11 @@ function saveJson() {
     })
     .then((data) => {
         console.log('Success:', data);
-        document.getElementById('json-status').textContent = 'JSON saved successfully!';
+        document.getElementById('json-status').innerHTML = 'JSON saved successfully!';
     })
     .catch((error) => {
         console.error('Error:', error);
-        document.getElementById('json-status').textContent = `Error saving JSON: ${error.message}`;
+        document.getElementById('json-status').innerHTML = `Error saving JSON: ${error.message}`;
     });
 }
 
@@ -72,9 +72,9 @@ function validateJson() {
     const jsonContent = document.getElementById('json-editor').value;
     try {
         JSON.parse(jsonContent);
-        document.getElementById('json-status').textContent = 'Valid JSON';
+        document.getElementById('json-status').innerHTML = 'Valid JSON';
     } catch {
-        document.getElementById('json-status').textContent = 'Invalid JSON';
+        document.getElementById('json-status').innerHTML = 'Invalid JSON';
     }
 }
 

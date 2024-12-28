@@ -112,20 +112,8 @@
         "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
         "7"
     ],
-    "madlyMixVerNightnoob v2": [
-        "./models/madlyMixVerNightnoob_v2.safetensors",
-        "7"
-    ],
     "matatabi v10": [
         "./models/matatabi_v10.safetensors",
-        "7"
-    ],
-    "ntrMIXIllustriousXL xiii": [
-        "./models/ntrMIXIllustriousXL_xiii.safetensors",
-        "7"
-    ],
-    "obsessionIllustrious v31": [
-        "./models/obsessionIllustrious_v31.safetensors",
         "7"
     ],
     "fluffyTartXL v17": [
@@ -142,6 +130,18 @@
     ],
     "kiwimixXL v3": [
         "./models/kiwimixXL_v3.safetensors",
+        "7"
+    ],
+    "obsessionIllustrious vPredV10": [
+        "./models/obsessionIllustrious_vPredV10.safetensors",
+        "7"
+    ],
+    "madlyMixVerNightnoob v3": [
+        "./models/madlyMixVerNightnoob_v3.safetensors",
+        "7"
+    ],
+    "molKeunMix molkeunMixNoobaiXL": [
+        "./models/molKeunMix_molkeunMixNoobaiXL.safetensors",
         "7"
     ]
 }
