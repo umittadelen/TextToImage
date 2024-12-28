@@ -108,10 +108,6 @@
         "./models/counterfeitxl_v25.safetensors",
         "7"
     ],
-    "kiwimixXL v3": [
-        "./models/kiwimixXL_v3.safetensors",
-        "7"
-    ],
     "cuteyukimixAdorable kemiaomiao": [
         "./models/cuteyukimixAdorable_kemiaomiao.safetensors",
         "7"
@@ -142,6 +138,10 @@
     ],
     "vxpXLHyper v22": [
         "./models/vxpXLHyper_v22.safetensors",
+        "7"
+    ],
+    "kiwimixXL v3": [
+        "./models/kiwimixXL_v3.safetensors",
         "7"
     ]
 }

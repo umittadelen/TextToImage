@@ -331,6 +331,7 @@ def generate():
         except Exception as e:
             config.generating = False
             config.imgprogress = f"Error Loading Model...{e}"
+            print(f"Error Loading Model...{e}")
             config.model_cache = {}
             config.allPercentage = 0
             return

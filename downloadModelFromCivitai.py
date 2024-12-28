@@ -5,11 +5,17 @@ import json
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qs
 from config import Config
 
+def askForAPIKey():
+    key = input("Enter API key: ").strip()
+    with open("civitai-api.key", "w") as f:
+        f.write(key)
+    return key
+
 def downloadModelFromCivitai(modelUrl):
     config = Config()
     config.downloading = True
     try:
-        api_key = open("civitai-api.key", "r").read().strip() if os.path.exists("civitai-api.key") else input("Enter API key: ").strip()
+        api_key = open("civitai-api.key", "r").read().strip() if os.path.exists("civitai-api.key") else askForAPIKey()
 
         temp_directory = "./models/temp"
         os.makedirs(temp_directory, exist_ok=True)

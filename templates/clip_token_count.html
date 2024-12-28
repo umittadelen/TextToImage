@@ -49,5 +49,6 @@
             document.getElementById('clip-tokens').innerHTML = result['Tokens'].map(token => `<span class="token">${token}</span>`).join('');
         });
     </script>
+    <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
 </body>
 </html>
