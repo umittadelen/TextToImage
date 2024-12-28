@@ -44,6 +44,18 @@ function populateExampleSizes(data, select) {
     });
 }
 
+function populateThemes(data, select) {
+    Object.entries(data).forEach(([themeName, themeTones]) => {
+        const option = document.createElement('option');
+        // Convert the theme tones object to a JSON string for the option value
+        option.value = JSON.stringify(themeTones);
+        option.textContent = themeName;
+        select.appendChild(option);
+    });
+
+    loadTheme();
+}
+
 function populateSchedulers(data, select) {
     data.schedulers.forEach(scheduler => {
         const option = document.createElement('option');
@@ -59,3 +71,4 @@ loadJsonAndPopulateSelect('/static/json/models.json', 'model', populateModels);
 loadJsonAndPopulateSelect('/static/json/examplePrompts.json', 'example_prompt', populateExamplePrompts);
 loadJsonAndPopulateSelect('/static/json/dimensions.json', 'example_size', populateExampleSizes);
 loadJsonAndPopulateSelect('/static/json/schedulers.json', 'scheduler', populateSchedulers);
+loadJsonAndPopulateSelect('/static/json/themes.json', 'theme_select', populateThemes);

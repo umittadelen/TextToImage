@@ -1,6 +1,8 @@
 # import the required libraries
+from auto_installer import check_and_install
+check_and_install()
+
 import utils
-utils.check_and_install()
 from flask import Flask, render_template, request, send_file, jsonify
 import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging, cv2
 from PIL import PngImagePlugin, Image

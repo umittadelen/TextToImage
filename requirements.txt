@@ -6,3 +6,4 @@ transformers
 accelerate
 scipy
 sentencepiece
+opencv-python

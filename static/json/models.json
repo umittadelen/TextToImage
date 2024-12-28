@@ -139,5 +139,9 @@
     "fluffyTart v70": [
         "./models/fluffyTart_v70.safetensors",
         "7"
+    ],
+    "vxpXLHyper v22": [
+        "./models/vxpXLHyper_v22.safetensors",
+        "7"
     ]
 }

@@ -23,6 +23,11 @@
             <h1>Text to Image Generator</h1>
 
             <div class="form">
+
+                <label for="theme" title="Color theme">Page Theme:</label>
+                <select id="theme_select" name="theme" required>
+                </select><br>
+
                 <form id="generateForm">
 
                     <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
@@ -64,7 +69,7 @@
                 
                     <div id="negative-div">
                         <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
-                        <textarea id="negative_prompt" name="negative_prompt">(nsfw, lowres, (bad), text, error, fewer, extra, missing, (worst quality), (low quality),jpeg artifacts, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, abstract, bad anatomy, bad hands, bad feet, bad hand, bad hands, bad finger, bad fingers, extra finger, extra fingers, split finger, split fingers, extra digits, fused arms, fused hands:1.6)</textarea><br>
+                        <textarea id="negative_prompt" name="negative_prompt">lowres, (bad), text, error, fewer, extra, missing, worst quality, jpeg artifacts, low quality, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract], extra ears, nsfw</textarea><br>
                     </div>
 
                     <div id="form-separator"></div>

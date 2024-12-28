@@ -4,21 +4,19 @@
 
     --tone1: 240, 240, 240;
     --tone2: 240, 218, 218;
-    --tone3: 240, 196, 196;
-    --tone4: 240, 163, 163;
+    --tone3: 240, 163, 163;
 
-    --progress-bar-color: rgba(var(--tone4), 0.75);
+    --progress-bar-color: rgba(var(--tone3), 0.75);
 
     --primary-color: rgb(var(--tone1));
     --mid-color: rgb(var(--tone2));
-    --accent-color: rgb(var(--tone3));
-    --highlight-color: rgb(var(--tone4));
-    --button-color: rgb(var(--tone4));
+    --highlight-color: rgb(var(--tone3));
+    --button-color: rgb(var(--tone3));
     --background-color: rgb(var(--tone1));
     --light-text-color: rgb(var(--tone1));
-    --dark-text-color: rgb(var(--tone4));
+    --dark-text-color: rgb(var(--tone3));
 
-    --transition: all 0.2s ease-in-out;
+    --transition: all 0.3s ease-in-out;
     --border: 2px solid var(--highlight-color);
 }
 
@@ -134,7 +132,7 @@ input[type="file"] {
     border-radius: 10px;
     cursor: pointer;
     box-sizing: border-box;
-    transition: all 0.2s ease-in-out;
+    transition: var(--transition);
 }
 
 ::-webkit-file-upload-button:hover {
@@ -171,7 +169,7 @@ button {
     text-transform: uppercase;
     align-items: center;
     text-align: center;
-    transition: all 0.2s ease-in-out;
+    transition: var(--transition);
 }
 
 button .btn-container {
@@ -195,7 +193,7 @@ button .btn-container svg {
 
 button:hover > svg {
     color: var(--dark-text-color);
-    transition: all 0.2s ease-in-out;
+    transition: var(--transition);
 }
 
 /* Form separators */
@@ -240,7 +238,7 @@ button:hover > svg {
     display: block;
     height: 100%;
     background-color: var(--progress-bar-color);
-    transition: width 0.5s ease;
+    transition: var(--transition);
 }
 
 .all-progress-bar {
@@ -308,7 +306,7 @@ button:hover > svg {
     justify-content: center;
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: var(--transition);
 }
 
 .custom-confirm-overlay.show {
@@ -330,7 +328,6 @@ button:hover > svg {
     text-wrap: wrap;
     opacity: 0;
     transform: scale(0);
-    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .custom-confirm-box.show {
