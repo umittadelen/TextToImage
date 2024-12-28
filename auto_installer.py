@@ -1,35 +1,35 @@
 import subprocess
 import sys
-import os
 
-def check_and_install():
-    # Check if requirements.txt exists
-    if not os.path.exists("requirements.txt"):
-        print("No requirements.txt found.")
-        return
-
+def install_requirements(requirements_file='requirements.txt'):
     try:
-        import pkg_resources
-        # Read packages from requirements.txt
-        with open("requirements.txt", "r") as file:
-            required_packages = {line.strip().lower() for line in file if line.strip()}
+        # Read the requirements.txt file
+        with open(requirements_file, 'r') as file:
+            lines = file.readlines()
 
-        # Get installed packages
-        installed_packages = {pkg.key for pkg in pkg_resources.working_set}
+        # Loop through each line in the requirements.txt file
+        for line in lines:
+            # Skip empty lines or comments
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
 
-        # Determine missing packages
-        missing_packages = required_packages - installed_packages
+            # Check if the line contains `--extra-index-url`
+            if '--extra-index-url' in line:
+                # Extract the package and the extra index URL
+                parts = line.split(' --extra-index-url ')
+                package = parts[0]
+                extra_index_url = parts[1]
+                # Install the package with the extra index URL
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', package, '--extra-index-url', extra_index_url])
+            else:
+                # Install the package normally
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', line])
+        
+        print("All required packages installed successfully!")
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-    except ImportError:
-        print("pkg_resources not installed. Installing all packages from requirements.txt.")
-        missing_packages = required_packages
-
-    if missing_packages:
-        print(f"Missing packages: {', '.join(missing_packages)}")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-            print("All required packages installed.")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to install packages: {e}")
-    else:
-        print("All packages are already installed.")
+# Run the function to install requirements
+install_requirements()

@@ -1,6 +1,6 @@
 # import the required libraries
-from auto_installer import check_and_install
-check_and_install()
+from auto_installer import install_requirements
+install_requirements()
 
 import utils
 from flask import Flask, render_template, request, send_file, jsonify
