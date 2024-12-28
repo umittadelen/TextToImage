@@ -128,10 +128,6 @@
         "./models/kiwimixXL_v3.safetensors",
         "7"
     ],
-    "obsessionIllustrious vPredV10": [
-        "./models/obsessionIllustrious_vPredV10.safetensors",
-        "7"
-    ],
     "madlyMixVerNightnoob v3": [
         "./models/madlyMixVerNightnoob_v3.safetensors",
         "7"
