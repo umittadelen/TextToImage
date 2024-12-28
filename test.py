@@ -1,5 +1,7 @@
+import PIL.Image
 import torch
 from diffusers import StableDiffusionXLPipeline
+import PIL
 
 # Test function to inspect pipeline output
 def test_pipeline():
@@ -30,6 +32,7 @@ def test_pipeline():
     # Check if the result has 'images' attribute and access it
     if hasattr(result, 'images'):
         image = result.images[0]
+        PIL.Image._show(image=image)
         print("Image successfully generated!")
     else:
         print("No images in the pipeline result.")
