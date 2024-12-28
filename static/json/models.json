@@ -100,10 +100,6 @@
         "Yntec/DreamAnything",
         ""
     ],
-    "molKeunFurryMix molKeunnoobXLILXL": [
-        "./models/molKeunFurryMix_molKeunnoobXLILXL.safetensors",
-        "7"
-    ],
     "counterfeitxl v25": [
         "./models/counterfeitxl_v25.safetensors",
         "7"
@@ -142,6 +138,10 @@
     ],
     "molKeunMix molkeunMixNoobaiXL": [
         "./models/molKeunMix_molkeunMixNoobaiXL.safetensors",
+        "7"
+    ],
+    "molKeunMix molKeunnoobXLILXL": [
+        "./models/molKeunMix_molKeunnoobXLILXL.safetensors",
         "7"
     ]
 }
