@@ -1,6 +1,6 @@
 # import the required libraries
-from auto_installer import install_requirements
-install_requirements()
+#from auto_installer import install_requirements
+#install_requirements()
 
 import utils
 from flask import Flask, render_template, request, send_file, jsonify
@@ -37,8 +37,6 @@ from downloadModelFromHuggingFace import downloadModelFromHuggingFace
 
 config = Config()
 app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
 
 #TODO: function to load the selected scheduler from name
 def load_scheduler(pipe, scheduler_name):
@@ -63,12 +61,15 @@ def load_scheduler(pipe, scheduler_name):
 def load_pipeline(model_name, model_type, scheduler_name):
 
     config.imgprogress = "Loading Pipeline..."
+    print("Loading Pipeline...")
 
     if model_name not in config.model_cache:
         config.imgprogress = "Loading New Pipeline..."
+        print("Loading New Pipeline...")
         config.model_cache = {}
 
         config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
+        print("Loading New Pipeline... (loading Pipeline)")
         #TODO: Set the pipeline
 
         kwargs = {}
@@ -132,8 +133,10 @@ def load_pipeline(model_name, model_type, scheduler_name):
             )
 
         config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
+        print("Loading New Pipeline... (Pipeline loaded)")
 
         config.imgprogress = "Loading New Pipeline... (pipe)"
+        print("Loading New Pipeline... (pipe)")
         #TODO: Load the pipeline
 
         pipe = pipeline(
@@ -146,27 +149,33 @@ def load_pipeline(model_name, model_type, scheduler_name):
         )
 
         config.imgprogress = "Loading New Pipeline... (loading VAE)"
+        print("Loading New Pipeline... (loading VAE)")
         #TODO: Load the VAE model
         if not hasattr(pipe, "vae") or pipe.vae is None:
             config.imgprogress = "Model does not include a VAE. Loading external VAE..."
+            print("Model does not include a VAE. Loading external VAE...")
             vae = AutoencoderKL.from_pretrained(
                 "madebyollin/sdxl-vae-fp16-fix",
                 torch_dtype=torch.float16,
             )
             pipe.vae = vae
             config.imgprogress = "External VAE loaded."
+            print("External VAE loaded.")
 
         config.imgprogress = "Loading New Pipeline... (VAE loaded)"
+        print("Loading New Pipeline... (VAE loaded)")
 
         if scheduler_name != "None":
             pipe = load_scheduler(pipe, scheduler_name)
         config.imgprogress = "Loading New Pipeline... (pipe loaded)"
+        print("Loading New Pipeline... (pipe loaded)")
 
         if torch.cuda.is_available():
             pipe.to('cuda')
         else:
             pipe.to('cpu')
             config.imgprogress = "Using CPU..."
+            print("Using CPU...")
         
         if config.enable_attention_slicing:
             pipe.enable_attention_slicing()
@@ -175,9 +184,11 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
         config.model_cache[model_name] = pipe
         config.imgprogress = "Pipeline Loaded..."
+        print("Pipeline Loaded...")
         return pipe
     else:
         config.imgprogress = "Using Cached Pipeline..."
+        print("Using Cached Pipeline...")
         return config.model_cache[model_name]
 
 def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps):
@@ -250,9 +261,19 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             kwargs["width"] = width
             kwargs["height"] = height
 
-        image = pipe(
+        result = pipe(
             **kwargs
-        ).images[0]
+        )
+
+        print(f"Pipeline result: {result}")
+
+        # Check if 'result' has the expected attribute 'images'
+        if hasattr(result, 'images'):
+            image = result.images[0]
+        else:
+            config.imgprogress = "No images returned"
+            logging.log(logging.ERROR, msg="Pipeline output did not contain images.")
+            return False
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -293,6 +314,7 @@ def generate():
     config.generating = True
     config.generated_image = {}
     config.imgprogress = "Starting Image Generation..."
+    print("Starting Image Generation...")
 
     #TODO: Get parameters from the request
     model_name = request.form.get('model', 'https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors')
@@ -331,6 +353,7 @@ def generate():
         except Exception as e:
             config.generating = False
             config.imgprogress = f"Error Loading Model...{e}"
+            print(f"Error Loading Model...{e}")
             config.model_cache = {}
             config.allPercentage = 0
             return
@@ -340,6 +363,7 @@ def generate():
                 if config.generation_stopped:
                     config.allPercentage = 0
                     config.imgprogress = "Generation Stopped"
+                    print("Generation Stopped")
                     config.generating = False
                     config.generation_stopped = False
                     break
@@ -347,6 +371,7 @@ def generate():
                 #TODO: Update the progress message
                 config.remainingImages = config.IMAGE_COUNT - i
                 config.imgprogress = f"Generating {config.remainingImages} Images..."
+                print(f"Generating {config.remainingImages} Images...")
                 config.allPercentage = 0
 
                 #TODO: Generate a new seed for each image
@@ -363,6 +388,7 @@ def generate():
         except Exception as e:
             config.generating = False
             config.imgprogress = f"Error Generating Images...<br>{e}"
+            print(f"Error Generating Images...{e}")
             config.model_cache = {}
             config.allPercentage = 0
 
@@ -373,6 +399,7 @@ def generate():
             gc.collect()
             torch.cuda.empty_cache()
             config.imgprogress = "Generation Complete"
+            print("Generation Complete")
 
         config.allPercentage = 0
         config.generating = False
@@ -388,6 +415,7 @@ def addmodel():
     model_url = request.form['model-name']
 
     config.imgprogress = "Downloading Model..."
+    print("Downloading Model...")
 
     if config.generating:
         return jsonify(status='Image generation in progress. Please wait'), 400
@@ -509,6 +537,7 @@ def clear_images():
         except Exception as e:
             config.allPercentage = 0
             config.imgprogress = f"Error Deleteing File... {e}"
+            print(f"Error Deleteing File... {e}")
     return jsonify(status='Images cleared')
 
 @app.route('/restart', methods=['POST'])
@@ -565,3 +594,4 @@ def metadata():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=False)
     config.imgprogress = "Server Started"
+    print("Server Started")
