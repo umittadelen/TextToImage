@@ -83,4 +83,9 @@ This project is licensed under the MIT License. See the [LICENSE.txt](http://_vs
 
 ---
 
-Thanks to [@John6666cat](https://github.com/John6666cat) for the models at [huggingface](https://huggingface.co/John6666).
+Thanks to [@John6666cat](https://github.com/John6666cat) for the models at [huggingface](https://huggingface.co/John6666) and helping me to fix issues.
+
+---
+
+### More About Me
+[www.umittadelen.net](https://umittadelen.net)
