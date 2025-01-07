@@ -2,6 +2,3 @@
 /generated
 /models
 /Civitai-api.key
-/.venv
-/huggingface-hub-token.key
-/civitai-api.py
