@@ -16,7 +16,6 @@ def getModeldata(model_id, version_id):
 def shortenModelData(modelData):
     tmp = {
         "id": modelData["id"] if "id" in modelData else None,
-        "baseModel": modelData["baseModel"] if "baseModel" in modelData else None,
         "files": {
             "name": modelData["files"][0]["name"] if "files" in modelData else None,
             "downloadUrl": modelData["files"][0]["downloadUrl"] if "files" in modelData else None
@@ -25,16 +24,15 @@ def shortenModelData(modelData):
             "url": modelData["images"][0]["url"] if "images" in modelData else None,
             "width": modelData["images"][0]["width"] if "images" in modelData else None,
             "height": modelData["images"][0]["height"] if "images" in modelData else None
-        }
+        },
+        "base_id": modelData["base_id"] if "base_id" in modelData else None
     }
     return tmp
 
-# Token for authentication
 with open("civitai-api.key", "r") as file:
     token = file.read().strip()
 
-# Example: Fetch a model's metadata
 model_id = 4468
 version_id = 7425
 
-print(shortenModelData(getModeldata(model_id, version_id)))
+print(getModeldata(model_id, version_id))
