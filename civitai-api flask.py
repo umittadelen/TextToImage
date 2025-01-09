@@ -49,14 +49,16 @@ def getModeldata(model_id, version_id):
 
 def shortenModelData(modelData):
     tmp = {
-        "id": modelData["id"] if "id" in modelData else None,
+        "name": modelData["files"][0]["name"].split(".")[0].replace("_", " ") if "files" in modelData else None,
         "baseModel": modelData["baseModel"] if "baseModel" in modelData else None,
         "files": {
+            "path": f"./{modelData["files"][0]["name"].split(".")[0]}/{modelData["files"][0]["name"]}" if "files" in modelData else None,
             "name": modelData["files"][0]["name"] if "files" in modelData else None,
             "downloadUrl": modelData["files"][0]["downloadUrl"] if "files" in modelData else None
 
         },
         "images": {
+            "path": f"./{modelData["files"][0]["name"].split(".")[0]}/{modelData["images"][0]["url"].split("/")[-1]}" if "images" in modelData else None,
             "url": modelData["images"][0]["url"] if "images" in modelData else None,
             "width": modelData["images"][0]["width"] if "images" in modelData else None,
             "height": modelData["images"][0]["height"] if "images" in modelData else None

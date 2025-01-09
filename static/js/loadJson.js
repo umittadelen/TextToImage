@@ -1,3 +1,30 @@
+function loadFormData() {
+    const savedData = JSON.parse(localStorage.getItem('formData'));
+    const expiryTime = localStorage.getItem('formExpiry');
+
+    if (savedData && expiryTime && Date.now() < expiryTime) {
+        const form = document.getElementById('generateForm');
+        for (const [key, value] of Object.entries(savedData)) {
+            const field = form.elements[key];
+            if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+                if (field.tagName === 'SELECT') {
+                    // Set the selected option for <select>
+                    Array.from(field.options).forEach(option => {
+                        option.selected = option.value === value;
+                    });
+                } else {
+                    // Set the value for <textarea> and <input>
+                    field.value = value;
+                }
+            }
+        }
+    } else {
+        // Clear expired data
+        localStorage.removeItem('formData');
+        localStorage.removeItem('formExpiry');
+    }
+}
+
 // Reusable function to load JSON and populate a select element
 function loadJsonAndPopulateSelect(location, selectId, dataHandler) {
     fetch(location)
