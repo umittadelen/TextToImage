@@ -81,6 +81,8 @@ def downloadModel(modelData, token, folderPath="./civitaiModels"):
         if not os.path.exists(f"{folderPath}/{modelData['files']['name'].replace(".safetensors","")}/{modelData['files']['name']}"):
             downloadWithTool(modelData["files"]["downloadUrl"]+f"?token={token}", folderPath, f"/{modelData['files']['name'].replace('.safetensors', '')}/")
         downloadWithTool(modelData["images"]["url"], folderPath, f"/{modelData['files']['name'].replace('.safetensors', '')}/")
+        with open(f"{folderPath}/{modelData["files"]["path"]}.json", "w") as file:
+            json.dump(modelData, file, indent=4)
     else:
         return False
 
@@ -116,7 +118,7 @@ def add_model():
             data = []  # Reinitialize as an empty list if not a list
         
         # Check if the model is already in the data
-        model_exists = any(existing_model['id'] == modelData['id'] for existing_model in data)
+        model_exists = any(existing_model['name'] == modelData['name'] for existing_model in data)
         
         if model_exists:
             if checkForModelFiles(modelData):
