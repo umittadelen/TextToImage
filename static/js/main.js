@@ -204,14 +204,8 @@ function updateProgressBars(data) {
         progressText.innerHTML = `Progress: ${data.imgprogress}% Remaining: ${data.remainingimages}`;
         statusDiv.style.display = 'block';
     }
-    else if (data.imgprogress === 'Done' || data.imgprogress === 'Generation Complete') {
-        statusDiv.style.display = 'none';
-    }
     else if (data.imgprogress === '') {
         statusDiv.style.display = 'none';
-    }
-    else if (data.imgprogress === 'Starting') {
-        statusDiv.style.display = 'block';
     }
     else {
         dynamicProgressBar.style.width = `0%`;

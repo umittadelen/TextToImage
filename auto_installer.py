@@ -39,7 +39,6 @@ def install_requirements(requirements_file='requirements.txt'):
 
             # Skip installation if the package is already installed
             if is_package_installed(package):
-                print(f"{package} is already installed, skipping.")
                 continue
 
             # Install the package with the respective index URL if present
@@ -57,6 +56,3 @@ def install_requirements(requirements_file='requirements.txt'):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-
-# Run the function to install requirements
-install_requirements()

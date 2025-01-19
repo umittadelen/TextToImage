@@ -7,9 +7,8 @@ from flask import Flask, render_template, request, send_file, jsonify
 import torch, random, os, math, time, threading, sys, subprocess, glob, gc, logging, cv2, json
 from PIL import PngImagePlugin, Image
 import numpy as np
-from config import Config
 from io import BytesIO
-
+import traceback
 from diffusers import (
     DPMSolverMultistepScheduler,
     DPMSolverSinglestepScheduler,
@@ -30,12 +29,12 @@ from diffusers import (
     ControlNetModel,
     AutoencoderKL
 )
-from transformers import CLIPTokenizer
+from transformers import CLIPTokenizer, CLIPModel, CLIPProcessor
+from compel import Compel, ReturnedEmbeddingsType
 from diffusers.utils import load_image
 from downloadModelFromCivitai import downloadModelFromCivitai
 from downloadModelFromHuggingFace import downloadModelFromHuggingFace
 
-config = Config()
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -43,6 +42,30 @@ log.setLevel(logging.ERROR)
 #return True if a is a file directory string else False
 def isDirectory(a):
     return os.path.isdir(a)
+
+gconfig = {
+    "HF_TOKEN": open(f'C:/Users/{os.getlogin()}/.cache/huggingface/token', 'r').read().strip() 
+    if os.path.exists(f'C:/Users/{os.getlogin()}/.cache/huggingface/token') 
+    else open(f'./civitai-api.key', 'r').read().strip() 
+    if os.path.exists(f'./civitai-api.key') and open(f'./civitai-api.key', 'r').read().strip() != "" 
+    else None,
+
+    "generation_stopped":False,
+    "generating": False,
+    "generated_dir": './generated/',
+    "status": "",
+    "progress": 0,
+    "image_count": 0,
+    "custom_seed": 0,
+    "remainingImages": 0,
+    "image_cache": {},
+    "downloading": False,
+
+    "enable_attention_slicing": True,
+    "enable_xformers_memory_efficient_attention": False,
+    "enable_model_cpu_offload": True,
+    "use_long_clip": True
+}
 
 def checkModelsAvailability():
     print("Checking Models Availability...")
@@ -54,8 +77,6 @@ def checkModelsAvailability():
         return
     
     for model in models:
-        print(model)
-
         if "link" in models[model]:
             
             #! if path
@@ -106,145 +127,151 @@ def load_scheduler(pipe, scheduler_name):
 #TODO:  function to load pipeline from given huggingface repo and scheduler
 def load_pipeline(model_name, model_type, scheduler_name):
 
-    config.imgprogress = "Loading Pipeline..."
+    gconfig["status"] = "Loading Pipeline..."
 
-    if model_name not in config.model_cache:
-        config.imgprogress = "Loading New Pipeline..."
-        config.model_cache = {}
+    gconfig["status"] = "Loading New Pipeline... (loading Pipeline)"
+    #TODO: Set the pipeline
 
-        config.imgprogress = "Loading New Pipeline... (loading Pipeline)"
-        #TODO: Set the pipeline
+    kwargs = {}
 
-        kwargs = {}
+    if "controlnet" in model_type and "SDXL" in model_type:
+        controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
+        kwargs["controlnet"] = controlnet
 
-        if "controlnet" in model_type and "SDXL" in model_type:
-            controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
-            kwargs["controlnet"] = controlnet
+    if "SD 1.5" in model_type and "txt2img" in model_type:
+        kwargs["custom_pipeline"] = "lpw_stable_diffusion"
+    elif "SDXL" in model_type and "txt2img" in model_type:
+        kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
+        kwargs["clip_skip"] = 2
+        tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+        kwargs["tokenizer"] = tokenizer
 
-        if "sd 1.5" in model_type and "txt2img" in model_type:
-            kwargs["custom_pipeline"] = "lpw_stable_diffusion"
-        elif "SDXL" in model_type and "txt2img" in model_type:
-            kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
-            kwargs["clip_skip"] = 2
+    if "img2img" in model_type:
+        pipeline = (
+            StableDiffusionXLImg2ImgPipeline.from_single_file
+            if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
-        if "img2img" in model_type:
-            pipeline = (
-                StableDiffusionXLImg2ImgPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
+            StableDiffusionXLImg2ImgPipeline.from_pretrained
+            if "SDXL" in model_type else
 
-                StableDiffusionXLImg2ImgPipeline.from_pretrained
-                if "SDXL" in model_type else
+            StableDiffusionImg2ImgPipeline.from_single_file
+            if "SD 1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
-                StableDiffusionImg2ImgPipeline.from_single_file
-                if "sd 1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
+            StableDiffusionImg2ImgPipeline.from_pretrained
+            if "SD 1.5" in model_type else
 
-                StableDiffusionImg2ImgPipeline.from_pretrained
-                if "sd 1.5" in model_type else
+            DiffusionPipeline.from_pretrained
+        )
+    elif "controlnet" in model_type:
+        pipeline = (
+            StableDiffusionXLControlNetPipeline.from_single_file
+            if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
-                DiffusionPipeline.from_pretrained
-            )
-        elif "controlnet" in model_type:
-            pipeline = (
-                StableDiffusionXLControlNetPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
+            StableDiffusionXLControlNetPipeline.from_pretrained
+            if "SDXL" in model_type else
 
-                StableDiffusionXLControlNetPipeline.from_pretrained
-                if "SDXL" in model_type else
+            StableDiffusionControlNetPipeline.from_pretrained
+            if "SD 1.5" in model_type else
 
-                StableDiffusionControlNetPipeline.from_pretrained
-                if "sd 1.5" in model_type else
+            DiffusionPipeline.from_pretrained
+        )
+    elif "FLUX" in model_type:
+        pipeline = FluxPipeline.from_pretrained
+    else:
+        pipeline = (
+            StableDiffusionXLPipeline.from_single_file
+            if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
-                DiffusionPipeline.from_pretrained
-            )
-        elif "FLUX" in model_type:
-            pipeline = FluxPipeline.from_pretrained
-        else:
-            pipeline = (
-                StableDiffusionXLPipeline.from_single_file
-                if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
+            StableDiffusionXLPipeline.from_pretrained
+            if "SDXL" in model_type else
 
-                StableDiffusionXLPipeline.from_pretrained
-                if "SDXL" in model_type else
+            StableDiffusionPipeline.from_single_file
+            if "SD 1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
 
-                StableDiffusionPipeline.from_single_file
-                if "sd 1.5" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
+            StableDiffusionPipeline.from_pretrained
+            if "SD 1.5" in model_type else
 
-                StableDiffusionPipeline.from_pretrained
-                if "sd 1.5" in model_type else
-
-                DiffusionPipeline.from_pretrained
-            )
-
-        config.imgprogress = "Loading New Pipeline... (Pipeline loaded)"
-
-        config.imgprogress = "Loading New Pipeline... (pipe)"
-        #TODO: Load the pipeline
-
-        pipe = pipeline(
-            model_name,
-            torch_dtype=torch.float16,
-            use_safetensors=True,
-            add_watermarker=False,
-            use_auth_token=config.HF_TOKEN,
-            **kwargs
+            DiffusionPipeline.from_pretrained
         )
 
-        config.imgprogress = "Loading New Pipeline... (loading VAE)"
-        #TODO: Load the VAE model
-        if not hasattr(pipe, "vae") or pipe.vae is None:
-            config.imgprogress = "Model does not include a VAE. Loading external VAE..."
-            vae = AutoencoderKL.from_pretrained(
-                "madebyollin/sdxl-vae-fp16-fix",
-                torch_dtype=torch.float16,
-            )
-            pipe.vae = vae
-            config.imgprogress = "External VAE loaded."
+    gconfig["status"] = "Loading New Pipeline... (Pipeline loaded)"
 
-        config.imgprogress = "Loading New Pipeline... (VAE loaded)"
+    gconfig["status"] = "Loading New Pipeline... (pipe)"
+    #TODO: Load the pipeline
 
-        if scheduler_name != "None":
-            pipe = load_scheduler(pipe, scheduler_name)
-        config.imgprogress = "Loading New Pipeline... (pipe loaded)"
+    pipe = pipeline(
+        model_name,
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+        add_watermarker=False,
+        use_auth_token=gconfig["HF_TOKEN"],
+        safety_checker=None,
+        do_classifier_free_guidance=False,
+        **kwargs
+    )
 
-        if torch.cuda.is_available():
-            pipe.to('cuda')
-        else:
-            pipe.to('cpu')
-            config.imgprogress = "Using CPU..."
-        
-        if config.enable_attention_slicing:
-            pipe.enable_attention_slicing()
-        if config.enable_xformers_memory_efficient_attention:
-            pipe.enable_xformers_memory_efficient_attention()
-
-        config.model_cache[model_name] = pipe
-        config.imgprogress = "Pipeline Loaded..."
-        return pipe
+    gconfig["status"] = "Loading New Pipeline... (loading VAE)"
+    if gconfig["use_long_clip"]:
+        clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14", torch_dtype=torch.float16)
+        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
     else:
-        config.imgprogress = "Using Cached Pipeline..."
-        return config.model_cache[model_name]
+        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch16", torch_dtype=torch.float16)
+        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
 
-def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps):
+    pipe.clip_model = clip_model
+    pipe.clip_processor = clip_processor
+
+    #TODO: Load the VAE model
+    if not hasattr(pipe, "vae") or pipe.vae is None:
+        gconfig["status"] = "Model does not include a VAE. Loading external VAE..."
+        vae = AutoencoderKL.from_pretrained(
+            "madebyollin/sdxl-vae-fp16-fix",
+            torch_dtype=torch.float16,
+        )
+        pipe.vae = vae
+        gconfig["status"] = "External VAE loaded."
+
+    gconfig["status"] = "Loading New Pipeline... (VAE loaded)"
+
+    if scheduler_name != "None":
+        pipe = load_scheduler(pipe, scheduler_name)
+    gconfig["status"] = "Loading New Pipeline... (pipe loaded)"
+
+    if torch.cuda.is_available():
+        pipe.to('cuda')
+    else:
+        pipe.to('cpu')
+        gconfig["status"] = "Using CPU..."
+    
+    if gconfig["enable_attention_slicing"]:
+        pipe.enable_attention_slicing()
+    if gconfig["enable_xformers_memory_efficient_attention"]:
+        pipe.enable_xformers_memory_efficient_attention()
+    if gconfig["enable_model_cpu_offload"]:
+        pipe.enable_model_cpu_offload()
+
+    gconfig["status"] = "Pipeline Loaded..."
+    return pipe
+
+def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count):
     #TODO: Generate image with progress tracking
 
     def progress(pipe, step_index, timestep, callback_kwargs):
-        config.imgprogress = int(math.floor(step_index / samplingSteps * 100))
-        config.allPercentage = int(math.floor((config.IMAGE_COUNT - config.remainingImages + (step_index / samplingSteps)) / config.IMAGE_COUNT * 100))
+        gconfig["status"] = int(math.floor(step_index / samplingSteps * 100))
+        gconfig["progress"] = int(math.floor((image_count - gconfig["remainingImages"] + (step_index / samplingSteps)) / image_count * 100))
 
-        if config.generation_stopped:
-            config.imgprogress = "Generation Stopped"
-            config.allPercentage = 0
+        if gconfig["generation_stopped"]:
+            gconfig["status"] = "Generation Stopped"
+            gconfig["progress"] = 0
             raise Exception("Generation Stopped")
 
         return callback_kwargs
 
-    config.imgprogress = "Generating Image..."
+    gconfig["status"] = "Generating Image..."
     kwargs = {}
 
     try:
         #! Pass the parameters to the pipeline - (default kwargs for all pipelines)
-        kwargs["prompt"] = prompt
-        kwargs["negative_prompt"] = negative_prompt
         kwargs["generator"] = torch.manual_seed(seed)
         kwargs["guidance_scale"] = cfg_scale
         kwargs["num_inference_steps"] = samplingSteps
@@ -258,11 +285,11 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
                     if image_size == "resize":
                         image = utils.resize_image(image, width, height)
 
-                except Exception as e:
+                except Exception:
                     #TODO: If the image is not valid, return False
-                    config.imgprogress = "Image Invalid"
-                    logging.log(logging.ERROR, msg=f"Cannot acces to image:{e}")
-                    config.model_cache = {}
+                    gconfig["status"] = "Image Invalid"
+                    traceback_details = traceback.format_exc()
+                    print(f"Cannot acces to image:{traceback_details}")
                     return False
                 image = np.array(image)
 
@@ -294,9 +321,13 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
             kwargs["width"] = width
             kwargs["height"] = height
 
-        image = pipe(
-            **kwargs
-        ).images[0]
+        kwargs["prompt"] = prompt
+        kwargs["negative_prompt"] = negative_prompt
+
+        with torch.no_grad():
+            image = pipe(
+                **kwargs
+            ).images[0]
 
         metadata = PngImagePlugin.PngInfo()
         metadata.add_text("Prompt", prompt)
@@ -309,39 +340,39 @@ def generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, h
         metadata.add_text("Strength", str(strength) if "img2img" in model_type else "N/A")
         metadata.add_text("Seed", str(seed))
         metadata.add_text("SamplingSteps", str(samplingSteps))
-        metadata.add_text("Model", str(list(config.model_cache.keys())[0]))
-        metadata.add_text("Scheduler", config.scheduler_name)
+        metadata.add_text("Model", str(model))
+        metadata.add_text("Scheduler", str(scheduler_name))
 
         #TODO: Save the image to the temporary directory
-        image_path = os.path.join(config.generated_dir, f'image{time.time()}_{seed}.png')
+        image_path = os.path.join(gconfig["generated_dir"], f'image{time.time()}_{seed}.png')
         image.save(image_path, 'PNG', pnginfo=metadata)
 
-        config.imgprogress = "DONE"
-        config.allPercentage = 0
+        gconfig["status"] = "DONE"
+        gconfig["progress"] = 0
 
         return image_path
 
-    except Exception as e:
-        #TODO: If generation was stopped, handle it gracefully
-        config.imgprogress = "Generation Stopped"
-        logging.log(logging.ERROR, msg=f"Generation Stopped with reason:{e}")
-        config.model_cache = {}
+    except Exception:
+        traceback_details = traceback.format_exc()
+        gconfig["status"] = f"Generation Stopped with reason:<br>{traceback_details}"
+        print(f"Generation Stopped with reason:\n{traceback_details}")
         return False
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
     #TODO: Check if generation is already in progress
-    if config.generating or config.downloading:
+    if gconfig["generating"] or gconfig["downloading"]:
         return jsonify(status='Image generation already in progress'), 400
 
-    config.generating = True
-    config.generated_image = {}
-    config.imgprogress = "Starting Image Generation..."
+    gconfig["generating"] = True
+    gconfig["image_cache"] = {}
+    gconfig["status"] = "Starting Image Generation..."
 
     #TODO: Get parameters from the request
     model_name = request.form.get('model', 'https://huggingface.co/cagliostrolab/animagine-xl-3.1/blob/main/animagine-xl-3.1.safetensors')
     model_type = request.form.get('model_type', 'SDXL')
-    config.scheduler_name = request.form.get('scheduler', 'Euler a')
+    scheduler_name = request.form.get('scheduler', 'Euler a')
     original_prompt = request.form.get('prompt', '1girl, cute, kawaii, full body')
     prompt = utils.preprocess_prompt(request.form.get('prompt', '1girl, cute, kawaii, full body')) if int(request.form.get("prompt_helper", 0)) == 1 else request.form.get('prompt', '1girl, cute, kawaii, full body')
     negative_prompt = request.form.get('negative_prompt', 'default_negative_prompt')
@@ -353,15 +384,16 @@ def generate():
     generation_type = request.form.get('generation_type', 'txt2img')
     image_size = request.form.get('image_size', 'original')
     cfg_scale = float(request.form.get('cfg_scale', 7))
-    config.IMAGE_COUNT = int(request.form.get('image_count', 4))
-    config.CUSTOM_SEED = int(request.form.get('custom_seed', 0))
+    image_count = int(request.form.get('image_count', 4))
+    custom_seed = int(request.form.get('custom_seed', 0))
     samplingSteps = int(request.form.get('sampling_steps', 28))
 
-    if config.CUSTOM_SEED != 0:
-        config.IMAGE_COUNT = 1
+    if custom_seed != 0:
+        image_count = 1
     
     model_type = model_type+generation_type
 
+    #save the temp image if provided and if not txt2img
     if img_input_img and generation_type != "txt2img":
         temp_image = Image.open(img_input_img).convert("RGB")
         temp_image.save("./generated/temp_image.png")
@@ -371,90 +403,87 @@ def generate():
     #TODO: Function to generate images
     def generate_images():
         try:
-            pipe = load_pipeline(model_name, model_type, config.scheduler_name)
-        except Exception as e:
-            config.generating = False
-            config.imgprogress = f"Error Loading Model...{e}"
-            print("Error Loading Model...{e}")
-            config.model_cache = {}
-            config.allPercentage = 0
+            pipe = load_pipeline(model_name, model_type, scheduler_name)
+        except Exception:
+            traceback_details = traceback.format_exc()
+            gconfig["generating"] = False
+            gconfig["status"] = f"Error Loading Model...<br>{traceback_details}"
+            print(f"Error Loading Model...\n{traceback_details}")
+            gconfig["progress"] = 0
             return
 
         try:
-            for i in range(config.IMAGE_COUNT):
-                if config.generation_stopped:
-                    config.allPercentage = 0
-                    config.imgprogress = "Generation Stopped"
-                    config.generating = False
-                    config.generation_stopped = False
+            for i in range(image_count):
+                if gconfig["generation_stopped"]:
+                    gconfig["progress"] = 0
+                    gconfig["status"] = "Generation Stopped"
+                    gconfig["generating"] = False
+                    gconfig["generation_stopped"] = False
                     break
 
                 #TODO: Update the progress message
-                config.remainingImages = config.IMAGE_COUNT - i
-                config.imgprogress = f"Generating {config.remainingImages} Images..."
-                config.allPercentage = 0
+                gconfig["remainingImages"] = image_count - i
+                gconfig["status"] = f"Generating {gconfig["remainingImages"]} Images..."
+                gconfig["progress"] = 0
 
                 #TODO: Generate a new seed for each image
-                if config.CUSTOM_SEED == 0:
+                if gconfig["custom_seed"] == 0:
                     seed = random.randint(0, 100000000000)
                 else:
-                    seed = config.CUSTOM_SEED
+                    seed = gconfig["custom_seed"]
 
-                image_path = generateImage(pipe, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps)
+                image_path = generateImage(pipe, model_name, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count)
 
                 #TODO: Store the generated image path
                 if image_path:
-                    config.generated_image[seed] = [image_path]
-        except Exception as e:
-            config.generating = False
-            config.imgprogress = f"Error Generating Images...<br>{e}"
-            config.model_cache = {}
-            config.allPercentage = 0
+                    gconfig["image_cache"][seed] = [image_path]
+        except Exception:
+            traceback_details = traceback.format_exc()
+            gconfig["generating"] = False
+            gconfig["status"] = f"Error Generating Images...<br>{traceback_details}"
+            print(f"Error Generating Images...\n{traceback_details}")
+            gconfig["progress"] = 0
 
         finally:
             del pipe
-            config.model_cache = {}
             torch.cuda.ipc_collect()
             gc.collect()
             torch.cuda.empty_cache()
-            config.imgprogress = "Generation Complete"
+            gconfig["status"] = "Generation Complete"
 
-        config.allPercentage = 0
-        config.generating = False
-        config.generation_stopped = False
+        gconfig["progress"] = 0
+        gconfig["generating"] = False
+        gconfig["generation_stopped"] = False
 
     #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
-    return jsonify(status='Image generation started', count=config.IMAGE_COUNT)
+    return jsonify(status='Image generation started', count=image_count)
 
 @app.route('/addmodel', methods=['POST'])
 def addmodel():
     #TODO: Download the model
     model_url = request.form['model-name']
 
-    config.imgprogress = "Downloading Model..."
+    gconfig["status"] = "Downloading Model..."
 
-    if config.generating:
+    if gconfig["generating"]:
         return jsonify(status='Image generation in progress. Please wait'), 400
 
     #! civitai.com
     if "civitai" in model_url:
-        if not config.generating:
+        gconfig["downloading"] = True
+        downloadModelFromCivitai(model_url)
+        gconfig["downloading"] = False
 
-            config.downloading = True
-            downloadModelFromCivitai(model_url)
-            config.downloading = False
-
-            return jsonify(status='Model Downloaded')
+        return jsonify(status='Model Downloaded')
 
     #! handle huggingface "{}/{}" format
     elif model_url.count('/') == 1:
-        if not config.generating:
-            config.downloading = True
-            downloadModelFromHuggingFace(model_url)
-            config.downloading = False
+        gconfig["downloading"] = True
+        downloadModelFromHuggingFace(model_url)
+        gconfig["downloading"] = False
 
-            return jsonify(status='Model Downloaded')
+        return jsonify(status='Model Downloaded')
     else:
         return jsonify(status='Invalid or Unsupported Model URL')
     
@@ -469,8 +498,9 @@ def changejson():
             json.dump(json_data, json_file, indent=4, ensure_ascii=False)  # Ensure proper encoding
 
         return jsonify({"message": "JSON saved successfully!"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    except Exception:
+        traceback_details = traceback.format_exc()
+        return jsonify({"error": str(traceback_details)}), 400
 
 @app.route('/serve_canny', methods=['POST'])
 def serve_canny():
@@ -508,19 +538,19 @@ def status():
     images =[{
             'img': path[0],
             'seed': seed
-        } for seed, path in config.generated_image.items()]
+        } for seed, path in gconfig["image_cache"].items()]
 
     return jsonify(
         images=images,
-        imgprogress=config.imgprogress,
-        allpercentage=config.allPercentage,
-        remainingimages=config.remainingImages-1 if config.remainingImages > 0 else config.remainingImages
+        imgprogress=gconfig["status"],
+        allpercentage=gconfig["progress"],
+        remainingimages=gconfig["remainingImages"]-1 if gconfig["remainingImages"] > 0 else gconfig["remainingImages"]
     )
 
 @app.route('/generated/<filename>', methods=['GET'])
 def serve_temp_image(filename):
     size = request.args.get('size')
-    image_path = os.path.join(config.generated_dir, filename)
+    image_path = os.path.join(gconfig["generated_dir"], filename)
     size_map = {'mini': 4, 'small': 3, 'medium': 2}
 
     if size in size_map:
@@ -540,25 +570,27 @@ def image(filename):
 
 @app.route('/stop', methods=['POST'])
 def stop_generation():
-    config.generation_stopped = True
+    gconfig["generation_stopped"] = True
     return jsonify(status='Image generation stopped')
 
 @app.route('/clear', methods=['POST'])
 def clear_images():
-    config.generated_image = {}
-    files = glob.glob(os.path.join(config.generated_dir, '*'))
+    gconfig["image_cache"] = {}
+    files = glob.glob(os.path.join(gconfig["generated_dir"], '*'))
     
     for file in files:
         try:
             os.remove(file)
-        except Exception as e:
-            config.allPercentage = 0
-            config.imgprogress = f"Error Deleteing File... {e}"
+        except Exception:
+            traceback_details = traceback.format_exc()
+            gconfig["progress"] = 0
+            gconfig["status"] = f"Error Deleteing File... {traceback_details}"
+            print(f"Error Deleteing File... {traceback_details}")
     return jsonify(status='Images cleared')
 
 @app.route('/restart', methods=['POST'])
 def restart_app():
-    config.allPercentage = 0
+    gconfig["progress"] = 0
     subprocess.Popen([sys.executable] + sys.argv)
     os._exit(0)
 
@@ -609,4 +641,4 @@ def metadata():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=False)
-    config.imgprogress = "Server Started"
+    gconfig["status"] = "Server Started"

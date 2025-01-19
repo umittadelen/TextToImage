@@ -1,41 +1,30 @@
-import PIL.Image
-import torch
-from diffusers import StableDiffusionXLPipeline
-import PIL
+import os
+from diffusers import StableDiffusionPipeline
+from pathlib import Path
 
-# Test function to inspect pipeline output
-def test_pipeline():
-    # Sample test kwargs
-    kwargs = {
-        "prompt": "A test image",
-        "negative_prompt": "None",
-        "generator": torch.manual_seed(42),
-        "guidance_scale": 7.0,
-        "num_inference_steps": 28,
-        "num_images_per_prompt": 1,
-        "width": 512,
-        "height": 512
-    }
+# Path to your model
+model_path = './models/fluffyTart_v70.safetensors'
 
-    # Create a dummy pipeline instance
-    pipe = StableDiffusionXLPipeline.from_single_file(
-        "./models/kiwimixXL_v3.safetensors",
-        torch_dtype=torch.float16,
-        use_safetensors=True,
-        add_watermarker=False,
-    ).to("cuda")
+# Check if the model file exists
+if not Path(model_path).exists():
+    print(f"Error: Model file does not exist at the specified path: {model_path}")
+else:
+    print(f"Model file found at: {model_path}")
 
-    # Call the pipeline and print the result
-    result = pipe(**kwargs)
-    print(f"Pipeline result: {result}")
+    # Attempt to load the model
+    try:
+        # If your model is a safetensors file, you may need to use the correct loading method.
+        # For example, using Diffusers with safetensors requires safetensors support.
+        pipe = StableDiffusionPipeline.from_pretrained(model_path, local_files_only=True)
+        
+        # If the model is loaded successfully, print its configuration
+        print("Model loaded successfully!")
+        print(f"Model config: {pipe.config}")
+        
+        # Optionally, generate an image to further test the pipeline
+        prompt = "A futuristic cityscape"
+        image = pipe(prompt).images[0]
+        image.show()  # Display the image
 
-    # Check if the result has 'images' attribute and access it
-    if hasattr(result, 'images'):
-        image = result.images[0]
-        PIL.Image._show(image=image)
-        print("Image successfully generated!")
-    else:
-        print("No images in the pipeline result.")
-
-# Run the test
-test_pipeline()
+    except Exception as e:
+        print(f"Error loading model: {e}")

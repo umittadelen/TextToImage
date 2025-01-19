@@ -199,7 +199,7 @@
         "path": "./models/matatabi_v10.safetensors",
         "cfg": "7",
         "disabled": false,
-        "type": "SD1.5",
+        "type": "SD 1.5",
         "link": "https://civitai.com/api/download/models/373421"
     },
     "fluffyTartXL v17": {
@@ -213,7 +213,7 @@
         "path": "./models/fluffyTart_v70.safetensors",
         "cfg": "7",
         "disabled": false,
-        "type": "SDXL",
+        "type": "SD 1.5",
         "link": "https://civitai.com/api/download/models/323921"
     },
     "vxpXLHyper v22": {
