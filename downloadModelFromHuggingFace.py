@@ -1,5 +1,4 @@
-from config import Config
-config = Config()
+gconfig = {}
 
 # just load the model from huggingface to make it save to default directory
 def downloadModelFromHuggingFace(model_name):

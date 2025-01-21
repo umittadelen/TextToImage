@@ -76,6 +76,7 @@ class CustomConfirm {
 const existingImages = new Map(); // Store existing images with their seeds as keys
 let isGeneratingNewImages = false;
 let pendingUpdates = false;
+let isCleared = false;
 const customConfirm = new CustomConfirm();
 
 document.getElementById('generateForm').addEventListener('submit', function (event) {
@@ -152,7 +153,7 @@ document.getElementById('resetCacheButton').addEventListener('click', function (
 });
 
 setInterval(() => {
-    if (document.visibilityState === 'visible' && !pendingUpdates) {
+    if (document.visibilityState === 'visible' && !pendingUpdates && !isCleared) {
         pendingUpdates = true; // Prevent overlapping updates
 
         fetch('/status', { cache: 'no-store' })
@@ -176,7 +177,8 @@ setInterval(() => {
                 document.getElementById('all').style.display = 'none';
             })
             .finally(() => {
-                pendingUpdates = false; // Allow the next update
+                pendingUpdates = false;
+                isCleared = false;
             });
     }
 }, 2500);
@@ -257,7 +259,7 @@ if (navigator.connection || navigator.mozConnection || navigator.webkitConnectio
 function processImageUpdates(images) {
     const imagesDiv = document.getElementById('images');
 
-    images.forEach((imgData) => {
+    images.forEach((imgData, index) => {
         const key = imgData.seed;
         const sizeSuffix = getSizeSuffix();
 
@@ -279,6 +281,12 @@ function processImageUpdates(images) {
             imagesDiv.appendChild(wrapper);
             existingImages.set(key, wrapper);
             updateImageSizes();
+        }
+        if (index === images.length - 1) {
+            const lastImg = existingImages.get(key)?.querySelector('img');
+            if (lastImg) {
+                lastImg.src = `${imgData.img + sizeSuffix}?timestamp=${Date.now()}`; // Force refresh
+            }
         }
     });
 }
@@ -317,6 +325,7 @@ document.getElementById('restartButton').addEventListener('click', async functio
     );
 
     if (isConfirmed) {
+        isCleared = true;
         fetch('/restart', {
             method: 'POST'
         })

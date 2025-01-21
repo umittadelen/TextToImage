@@ -80,7 +80,6 @@ def downloadModel(modelData, token, folderPath="./civitaiModels"):
     if not os.path.exists(f"{folderPath}/{modelData['files']['name'].replace(".safetensors","")}"):
         if not os.path.exists(f"{folderPath}/{modelData['files']['name'].replace(".safetensors","")}/{modelData['files']['name']}"):
             downloadWithTool(modelData["files"]["downloadUrl"]+f"?token={token}", folderPath, f"/{modelData['files']['name'].replace('.safetensors', '')}/")
-        downloadWithTool(modelData["images"]["url"], folderPath, f"/{modelData['files']['name'].replace('.safetensors', '')}/")
         with open(f"{folderPath}/{modelData["files"]["path"]}.json", "w") as file:
             json.dump(modelData, file, indent=4)
     else:

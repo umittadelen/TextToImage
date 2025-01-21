@@ -3,7 +3,10 @@ import subprocess
 import shutil
 import json
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qs
-from config import Config
+
+gconfig = {
+
+}
 
 def askForAPIKey():
     key = input("Enter API key: ").strip()
@@ -12,8 +15,7 @@ def askForAPIKey():
     return key
 
 def downloadModelFromCivitai(modelUrl):
-    config = Config()
-    config.downloading = True
+    gconfig["downloading"] = True
     try:
         api_key = open("civitai-api.key", "r").read().strip() if os.path.exists("civitai-api.key") else askForAPIKey()
 
@@ -75,7 +77,7 @@ def downloadModelFromCivitai(modelUrl):
         else:
             print("No files were downloaded.")
     finally:
-        config.downloading = False
+        gconfig["downloading"] = False
 
 if __name__ == "__main__":
     modelUrl = input("Enter model URL: ")

@@ -253,12 +253,33 @@ def load_pipeline(model_name, model_type, scheduler_name):
     gconfig["status"] = "Pipeline Loaded..."
     return pipe
 
+def latents_to_rgb(latents):
+    weights = (
+        (60, -60, 25, -70),
+        (60,  -5, 15, -50),
+        (60,  10, -5, -35),
+    )
+
+    weights_tensor = torch.t(torch.tensor(weights, dtype=latents.dtype).to(latents.device))
+    biases_tensor = torch.tensor((150, 140, 130), dtype=latents.dtype).to(latents.device)
+    rgb_tensor = torch.einsum("...lxy,lr -> ...rxy", latents, weights_tensor) + biases_tensor.unsqueeze(-1).unsqueeze(-1)
+    image_array = rgb_tensor.clamp(0, 255).byte().cpu().numpy().transpose(1, 2, 0)
+
+    return Image.fromarray(image_array)
+
 def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count):
     #TODO: Generate image with progress tracking
+    current_time = time.time()
 
     def progress(pipe, step_index, timestep, callback_kwargs):
         gconfig["status"] = int(math.floor(step_index / samplingSteps * 100))
         gconfig["progress"] = int(math.floor((image_count - gconfig["remainingImages"] + (step_index / samplingSteps)) / image_count * 100))
+
+        image_path = os.path.join(gconfig["generated_dir"], f'image{current_time}_{seed}.png')
+        image = latents_to_rgb(callback_kwargs["latents"][0])
+        image.save(image_path, 'PNG')
+
+        gconfig["image_cache"][seed] = [image_path]
 
         if gconfig["generation_stopped"]:
             gconfig["status"] = "Generation Stopped"
@@ -344,7 +365,7 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
         metadata.add_text("Scheduler", str(scheduler_name))
 
         #TODO: Save the image to the temporary directory
-        image_path = os.path.join(gconfig["generated_dir"], f'image{time.time()}_{seed}.png')
+        image_path = os.path.join(gconfig["generated_dir"], f'image{current_time}_{seed}.png')
         image.save(image_path, 'PNG', pnginfo=metadata)
 
         gconfig["status"] = "DONE"
@@ -357,7 +378,6 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
         gconfig["status"] = f"Generation Stopped with reason:<br>{traceback_details}"
         print(f"Generation Stopped with reason:\n{traceback_details}")
         return False
-
 
 @app.route('/generate', methods=['POST'])
 def generate():
