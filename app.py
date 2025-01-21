@@ -64,7 +64,9 @@ gconfig = {
     "enable_attention_slicing": True,
     "enable_xformers_memory_efficient_attention": False,
     "enable_model_cpu_offload": True,
-    "use_long_clip": True
+    "enable_sequential_cpu_offload": True,
+    "use_long_clip": True,
+    "show_latents": True
 }
 
 def checkModelsAvailability():
@@ -126,9 +128,6 @@ def load_scheduler(pipe, scheduler_name):
 
 #TODO:  function to load pipeline from given huggingface repo and scheduler
 def load_pipeline(model_name, model_type, scheduler_name):
-
-    gconfig["status"] = "Loading Pipeline..."
-
     gconfig["status"] = "Loading New Pipeline... (loading Pipeline)"
     #TODO: Set the pipeline
 
@@ -249,6 +248,8 @@ def load_pipeline(model_name, model_type, scheduler_name):
         pipe.enable_xformers_memory_efficient_attention()
     if gconfig["enable_model_cpu_offload"]:
         pipe.enable_model_cpu_offload()
+    if gconfig["enable_sequential_cpu_offload"]:
+        pipe.enable_sequential_cpu_offload()
 
     gconfig["status"] = "Pipeline Loaded..."
     return pipe
@@ -275,11 +276,12 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
         gconfig["status"] = int(math.floor(step_index / samplingSteps * 100))
         gconfig["progress"] = int(math.floor((image_count - gconfig["remainingImages"] + (step_index / samplingSteps)) / image_count * 100))
 
-        image_path = os.path.join(gconfig["generated_dir"], f'image{current_time}_{seed}.png')
-        image = latents_to_rgb(callback_kwargs["latents"][0])
-        image.save(image_path, 'PNG')
+        if gconfig["show_latents"]:
+            image_path = os.path.join(gconfig["generated_dir"], f'image{current_time}_{seed}.png')
+            image = latents_to_rgb(callback_kwargs["latents"][0])
+            image.save(image_path, 'PNG')
 
-        gconfig["image_cache"][seed] = [image_path]
+            gconfig["image_cache"][seed] = [image_path]
 
         if gconfig["generation_stopped"]:
             gconfig["status"] = "Generation Stopped"
