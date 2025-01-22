@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <title>Image Preview</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
     <style>
@@ -48,9 +48,6 @@
             </div>
         </div>
     </div>
-    
-    
-    
     <script>
         function openMetadata(){
             window.location.href = "{{ url_for('metadata') }}";

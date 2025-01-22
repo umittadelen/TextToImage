@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <title>Settings Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch("{{ url_for('static', filename='json/settings.json') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        document.getElementById("hf-token").value = data.HF_TOKEN || "";
+                        document.getElementById("generated-dir").value = data.generated_dir || "";
+                        document.getElementById("attention-slicing").value = data.enable_attention_slicing ? "True" : "False";
+                        document.getElementById("xformers").value = data.enable_xformers_memory_efficient_attention ? "True" : "False";
+                        document.getElementById("cpu-offload").value = data.enable_model_cpu_offload ? "True" : "False";
+                        document.getElementById("sequential-cpu").value = data.enable_sequential_cpu_offload ? "True" : "False";
+                        document.getElementById("long-clip").value = data.use_long_clip ? "True" : "False";
+                        document.getElementById("show-latents").value = data.show_latents ? "True" : "False";
+                    }
+                })
+                .catch(error => console.error('Error loading settings:', error));
+        });
+
+        function saveSettings(event) {
+            event.preventDefault();
+
+            const settings = {
+                "HF_TOKEN": document.getElementById("hf-token").value,
+                "generated_dir": document.getElementById("generated-dir").value,
+                "enable_attention_slicing": document.getElementById("attention-slicing").value === "True",
+                "enable_xformers_memory_efficient_attention": document.getElementById("xformers").value === "True",
+                "enable_model_cpu_offload": document.getElementById("cpu-offload").value === "True",
+                "enable_sequential_cpu_offload": document.getElementById("sequential-cpu").value === "True",
+                "use_long_clip": document.getElementById("long-clip").value === "True",
+                "show_latents": document.getElementById("show-latents").value === "True"
+            };
+
+            fetch('/save_settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.status);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <div id="all">
+        <h1>Settings Editor</h1>
+
+        <form id="settings-form" class="form" onsubmit="saveSettings(event)">
+            <label for="hf-token">HF Token:</label>
+            <input type="password" id="hf-token" name="hf-token" placeholder="Enter your HF token">
+
+            <label for="generated-dir">Generated Directory:</label>
+            <input type="text" id="generated-dir" name="generated-dir" placeholder="Enter the generated directory" required>
+
+            <label for="attention-slicing">Enable Attention Slicing:</label>
+            <select id="attention-slicing" name="attention-slicing">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <label for="xformers">Enable xformers Memory Efficient Attention:</label>
+            <select id="xformers" name="xformers">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <label for="cpu-offload">Enable Model CPU Offload:</label>
+            <select id="cpu-offload" name="cpu-offload">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <label for="sequential-cpu">Enable Sequential CPU Offload:</label>
+            <select id="sequential-cpu" name="sequential-cpu">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <label for="long-clip">Use Long Clip:</label>
+            <select id="long-clip" name="long-clip">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <label for="show-latents">Show Latents:</label>
+            <select id="show-latents" name="show-latents">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
+            <button type="submit">Save Settings</button>
+        </form>
+        <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
+    </div>
+</body>
+</html>

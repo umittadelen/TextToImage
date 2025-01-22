@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <title>Add Model</title>
     <style>
         body {
@@ -68,34 +69,35 @@
     </div>
     <script>
         document.getElementById("submitButton").onclick = function () {
-    const form = document.getElementById("addModelForm");
-    const formData = new FormData(form);
+        const form = document.getElementById("addModelForm");
+        const formData = new FormData(form);
 
-    fetch('/add_model', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => {
-            // Check if the response is JSON
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                return response.json();
-            } else {
-                return response.text().then(text => {
-                    throw new Error(`Unexpected response: ${text}`);
-                });
-            }
+        fetch('/add_model', {
+            method: 'POST',
+            body: formData
         })
-        .then(data => {
-            console.log('Server response:', data);
-            alert(data.message || "Model added successfully!");
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("An error occurred: " + error.message);
-        });
-};
+            .then(response => {
+                // Check if the response is JSON
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(`Unexpected response: ${text}`);
+                    });
+                }
+            })
+            .then(data => {
+                console.log('Server response:', data);
+                alert(data.message || "Model added successfully!");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred: " + error.message);
+            });
+        };
 
     </script>
+    <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
 </body>
 </html>

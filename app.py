@@ -44,12 +44,6 @@ def isDirectory(a):
     return os.path.isdir(a)
 
 gconfig = {
-    "HF_TOKEN": open(f'C:/Users/{os.getlogin()}/.cache/huggingface/token', 'r').read().strip() 
-    if os.path.exists(f'C:/Users/{os.getlogin()}/.cache/huggingface/token') 
-    else open(f'./civitai-api.key', 'r').read().strip() 
-    if os.path.exists(f'./civitai-api.key') and open(f'./civitai-api.key', 'r').read().strip() != "" 
-    else None,
-
     "generation_stopped":False,
     "generating": False,
     "generated_dir": './generated/',
@@ -68,6 +62,14 @@ gconfig = {
     "use_long_clip": True,
     "show_latents": True
 }
+
+gconfig["HF_TOKEN"] = (open(f'C:/Users/{os.getlogin()}/.cache/huggingface/token', 'r').read().strip() 
+    if os.path.exists(f'C:/Users/{os.getlogin()}/.cache/huggingface/token') 
+    else open(f'./civitai-api.key', 'r').read().strip() 
+    if os.path.exists(f'./civitai-api.key') and open(f'./civitai-api.key', 'r').read().strip() != "" 
+    else json.load(open('./static/json/settings.json', 'r', encoding='utf-8'))["HF_TOKEN"]
+    if isDirectory("./static/json/settings.json")
+    else "")
 
 def checkModelsAvailability():
     print("Checking Models Availability...")
@@ -671,6 +673,18 @@ def clip_token():
 @app.route('/models')
 def models():
     return render_template('models.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
+@app.route('/save_settings', methods=['POST'])
+def save_settings():
+    settings = request.get_json()
+    with open('./static/json/settings.json', 'w', encoding='utf-8') as f:
+        json.dump(settings, f, indent=4)
+    gconfig.update(settings)
+    return jsonify(status='Settings saved')
 
 @app.route('/metadata')
 def metadata():

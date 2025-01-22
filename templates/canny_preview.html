@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <title>Canny Edge Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
     <style>
         body, html {
             margin: 0;
@@ -19,104 +20,25 @@
         }
 
         input[type="file"] {
-            margin-top: 20px;
-            z-index: 1;
+            margin: 20px 0;
             position: absolute;
+            top: 10px;
+            width: min-content;
         }
 
-        .img-container {
-            position: relative;
-            width: 100%;
+        img {
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        canvas {
-            cursor: grab;
-            display: block;
-            width: 100%;
-            height: 100%;
+            max-width: 200%;
+            max-height: 200%;
+            image-rendering: pixelated;
         }
     </style>
 </head>
 <body>
     <input type="file" id="imageUpload" accept="image/*">
-    <div class="img-container">
-        <canvas id="imageCanvas"></canvas>
-    </div>
+    <img id="displayImage" alt="Processed Image">
 
     <script>
-        const canvas = document.getElementById('imageCanvas');
-        const ctx = canvas.getContext('2d');
-        let scale = 1, originX = 0, originY = 0, isDragging = false, startX, startY;
-        let image = null;
-
-        // Disable image smoothing for pixelated effect
-        ctx.imageSmoothingEnabled = false;
-
-        // Resize canvas to fit the window
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            if (image) drawImageOnCanvas(image);
-        }
-
-        // Function to draw the image with pixelated effect
-        function drawImageOnCanvas(img) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous image
-
-            // Ensure scale doesn't go below a certain value
-            if (scale < 0.1) scale = 0.1;
-
-            // Calculate the new width and height of the image
-            const imgWidth = Math.floor(img.width * scale);
-            const imgHeight = Math.floor(img.height * scale);
-            const offsetX = Math.floor((canvas.width - imgWidth) / 2 + originX);
-            const offsetY = Math.floor((canvas.height - imgHeight) / 2 + originY);
-
-            ctx.imageSmoothingEnabled = false; // Disable image smoothing for pixelated effect
-            ctx.drawImage(img, offsetX, offsetY, imgWidth, imgHeight);
-        }
-
-        // Dragging functionality (mouse and touch events)
-        function startDrag(e) {
-            isDragging = true;
-            const clientX = e.touches ? e.touches[0].clientX : e.offsetX;
-            const clientY = e.touches ? e.touches[0].clientY : e.offsetY;
-            startX = clientX - originX;
-            startY = clientY - originY;
-            canvas.style.cursor = 'grabbing';
-        }
-
-        function moveDrag(e) {
-            if (isDragging) {
-                const clientX = e.touches ? e.touches[0].clientX : e.offsetX;
-                const clientY = e.touches ? e.touches[0].clientY : e.offsetY;
-                originX = clientX - startX;
-                originY = clientY - startY;
-                drawImageOnCanvas(image); // Redraw image at new position
-            }
-        }
-
-        function endDrag() {
-            isDragging = false;
-            canvas.style.cursor = 'grab';
-        }
-
-        // Zoom functionality (mouse wheel)
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const scaleAmount = e.deltaY > 0 ? 0.9 : 1.1;
-            scale *= scaleAmount;
-
-            if (scale < 0.1) scale = 0.1;
-            drawImageOnCanvas(image);
-        });
-
-        // Image upload event handler
         document.getElementById('imageUpload').addEventListener('change', async function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -131,29 +53,16 @@
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
 
-                image = new Image();
-                image.src = url;
-                image.onload = () => drawImageOnCanvas(image);
+                //document.getElementById('imageUpload').style.display = 'none';
+
+                const imgElement = document.getElementById('displayImage');
+                imgElement.src = url;
             } catch (error) {
                 console.error(error);
                 alert('Failed to process the image. Please try again.');
             }
         });
-
-        // Set initial canvas size and cursor style
-        canvas.style.cursor = 'grab';
-        resizeCanvas();
-
-        // Event listeners for dragging (mouse and touch)
-        canvas.addEventListener('mousedown', startDrag);
-        canvas.addEventListener('mousemove', moveDrag);
-        canvas.addEventListener('mouseup', endDrag);
-        canvas.addEventListener('touchstart', startDrag);
-        canvas.addEventListener('touchmove', moveDrag);
-        canvas.addEventListener('touchend', endDrag);
-
-        // Resize canvas when window size changes
-        window.addEventListener('resize', resizeCanvas);
     </script>
+    <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
 </body>
 </html>
