@@ -39,9 +39,10 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-#return True if a is a file directory string else False
 def isDirectory(a):
     return os.path.isdir(a)
+def isFile(a):
+    return os.path.isfile(a)
 
 gconfig = {
     "generation_stopped":False,
@@ -68,7 +69,7 @@ gconfig["HF_TOKEN"] = (open(f'C:/Users/{os.getlogin()}/.cache/huggingface/token'
     else open(f'./civitai-api.key', 'r').read().strip() 
     if os.path.exists(f'./civitai-api.key') and open(f'./civitai-api.key', 'r').read().strip() != "" 
     else json.load(open('./static/json/settings.json', 'r', encoding='utf-8'))["HF_TOKEN"]
-    if isDirectory("./static/json/settings.json")
+    if isFile("./static/json/settings.json")
     else "")
 
 def checkModelsAvailability():
@@ -495,6 +496,23 @@ def generate():
     #TODO: Start image generation in a separate thread to avoid blocking
     threading.Thread(target=generate_images).start()
     return jsonify(status='Image generation started', count=image_count)
+
+@app.route('/save_prompt', methods=['POST'])
+def save_prompt():
+    prompt = request.form['prompt']
+    if isFile('./static/json/saved_prompts.json'):
+        prompts = json.load(open('./static/json/saved_prompts.json'))
+    else:
+        prompts = []
+
+    if prompt in prompts:
+        return jsonify(status='Prompt already exists')
+
+    prompts.append(prompt)
+    with open('./static/json/saved_prompts.json', 'w') as f:
+        json.dump(prompts, f, indent=4)
+
+    return jsonify(status='Prompt saved')
 
 @app.route('/addmodel', methods=['POST'])
 def addmodel():

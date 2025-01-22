@@ -295,6 +295,22 @@ function openLink(link) {
     window.open(link.split('?')[0]);
 }
 
+function savePrompt() {
+    const prompt = document.getElementById('prompt').value;
+    fetch('/save_prompt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `prompt=${encodeURIComponent(prompt)}`
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.status);
+        })
+        .catch(error => console.error('Error saving prompt:', error));
+}
+
 document.addEventListener('visibilitychange', function () {
     const state =
         document.visibilityState === 'visible'

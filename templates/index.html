@@ -63,6 +63,10 @@
                         <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt:</label>
                         <textarea id="prompt" name="prompt" required></textarea><br>
                     </div>
+
+                    <div id="buttons">
+                        <button type="button" id="promptSaveButton" onclick="savePrompt()"><span>Save Prompt</span></button>
+                    </div>
                 
                     <div id="negative-div">
                         <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
