@@ -503,7 +503,7 @@ def save_prompt():
     if isFile('./static/json/saved_prompts.json'):
         prompts = json.load(open('./static/json/saved_prompts.json'))
     else:
-        prompts = []
+        prompts = {}
 
     if prompt in prompts:
         return jsonify(status='Prompt already exists')
