@@ -64,7 +64,7 @@ gconfig = {
     "enable_attention_slicing": True,
     "enable_xformers_memory_efficient_attention": False,
     "enable_model_cpu_offload": True,
-    "enable_sequential_cpu_offload": True,
+    "enable_sequential_cpu_offload": False,
     "use_long_clip": True,
     "show_latents": True
 }
@@ -286,7 +286,7 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
         if gconfig["generation_stopped"]:
             gconfig["status"] = "Generation Stopped"
             gconfig["progress"] = 0
-            raise Exception("Generation Stopped")
+            pipe._interrupt = True
 
         return callback_kwargs
 
@@ -343,9 +343,24 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
             #! Pass the parameters to the pipeline - (kwargs for txt2img)
             kwargs["width"] = width
             kwargs["height"] = height
-
-        kwargs["prompt"] = prompt
-        kwargs["negative_prompt"] = negative_prompt
+        
+        if not gconfig["enable_sequential_cpu_offload"]:
+            if hasattr(pipe, "tokenizer_2"):
+                compel = Compel(
+                    tokenizer=[pipe.tokenizer, pipe.tokenizer_2] ,
+                    text_encoder=[pipe.text_encoder, pipe.text_encoder_2],
+                    returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+                    requires_pooled=[False, True]
+                )
+                kwargs["prompt_embeds"], kwargs["pooled_prompt_embeds"] = compel(prompt)
+                kwargs["negative_prompt_embeds"], kwargs["negative_pooled_prompt_embeds"] = compel(negative_prompt)
+            else:
+                compel = Compel(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder)
+                kwargs["prompt_embeds"] = compel(prompt)
+                kwargs["negative_prompt_embeds"] = compel(negative_prompt)
+        else:
+            kwargs["prompt"] = prompt
+            kwargs["negative_prompt"] = negative_prompt
 
         with torch.no_grad():
             image = pipe(

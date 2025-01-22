@@ -253,7 +253,7 @@
     },
     "shiitakeMix v10": {
         "path": "./models/shiitakeMix_v10.safetensors",
-        "cfg": "7",
+        "cfg": "5",
         "disabled": false,
         "type": "SDXL",
         "link": "https://civitai.com/api/download/models/1196701?token=eec8a1d8773b26d45e846f09d06de2e1"
