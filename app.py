@@ -109,7 +109,7 @@ def checkModelsAvailability():
 
 checkModelsAvailability()
 
-#TODO: function to load the selected scheduler from name
+#TODO:  function to load the selected scheduler from name
 def load_scheduler(pipe, scheduler_name):
     if   scheduler_name == "DPM++ 2M": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     elif scheduler_name == "DPM++ 2M Karras": pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
@@ -658,14 +658,12 @@ def get_clip_token_info(text):
         "Tokens": clip_decoded
     }
 
-#TODO: route to calculate the clip token count
 @app.route('/clip_token_count', methods=['POST'])
 def clip_token_count():
     text = request.form['text']
     result = get_clip_token_info(text)
     return jsonify(result)
 
-#TODO: route to serve the clip token count page
 @app.route('/clip_token')
 def clip_token():
     return render_template('clip_token_count.html')
