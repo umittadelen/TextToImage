@@ -129,25 +129,25 @@ def load_scheduler(pipe, scheduler_name):
     return pipe
 
 #TODO:  function to load pipeline from given huggingface repo and scheduler
-def load_pipeline(model_name, model_type, scheduler_name):
+def load_pipeline(model_name, model_type, generation_type, scheduler_name):
     gconfig["status"] = "Loading New Pipeline... (loading Pipeline)"
     #TODO: Set the pipeline
 
     kwargs = {}
 
-    if "controlnet" in model_type and "SDXL" in model_type:
+    if "controlnet" in generation_type and "SDXL" in model_type:
         controlnet = ControlNetModel.from_pretrained("diffusers/controlnet-canny-sdxl-1.0", torch_dtype=torch.float16)
         kwargs["controlnet"] = controlnet
 
-    if "SD 1.5" in model_type and "txt2img" in model_type:
+    if "SD 1.5" in model_type and "txt2img" in generation_type:
         kwargs["custom_pipeline"] = "lpw_stable_diffusion"
-    elif "SDXL" in model_type and "txt2img" in model_type:
+    elif "SDXL" in model_type and "txt2img" in generation_type:
         kwargs["custom_pipeline"] = "lpw_stable_diffusion_xl"
         kwargs["clip_skip"] = 2
         tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
         kwargs["tokenizer"] = tokenizer
 
-    if "img2img" in model_type:
+    if "img2img" in generation_type:
         pipeline = (
             StableDiffusionXLImg2ImgPipeline.from_single_file
             if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
@@ -163,7 +163,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
             DiffusionPipeline.from_pretrained
         )
-    elif "controlnet" in model_type:
+    elif "controlnet" in generation_type:
         pipeline = (
             StableDiffusionXLControlNetPipeline.from_single_file
             if "SDXL" in model_type and model_name.endswith((".ckpt", ".safetensors")) else
@@ -176,7 +176,7 @@ def load_pipeline(model_name, model_type, scheduler_name):
 
             DiffusionPipeline.from_pretrained
         )
-    elif "FLUX" in model_type:
+    elif "FLUX" in generation_type:
         pipeline = FluxPipeline.from_pretrained
     else:
         pipeline = (
@@ -270,7 +270,7 @@ def latents_to_rgb(latents):
 
     return Image.fromarray(image_array)
 
-def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count):
+def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, generation_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count):
     #TODO: Generate image with progress tracking
     current_time = time.time()
 
@@ -303,7 +303,7 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
         kwargs["callback_on_step_end"] = progress
         kwargs["num_images_per_prompt"] = 1
 
-        if "controlnet" in model_type:
+        if "controlnet" in generation_type:
             if img_input != "":
                 try:
                     image = load_image(img_input).convert("RGB")
@@ -329,7 +329,7 @@ def generateImage(pipe, model, prompt, original_prompt, negative_prompt, seed, w
                 kwargs["strength"] = strength
             else:
                 return False
-        elif "img2img" in model_type and "SDXL" not in model_type:
+        elif "img2img" in generation_type and "SDXL" not in model_type:
             if img_input != "":
                 # Load and preprocess the image for img2img
                 image = load_image(img_input).convert("RGB")
@@ -429,8 +429,6 @@ def generate():
 
     if custom_seed != 0:
         image_count = 1
-    
-    model_type = model_type+generation_type
 
     #save the temp image if provided and if not txt2img
     if img_input_img and generation_type != "txt2img":
@@ -442,7 +440,7 @@ def generate():
     #TODO: Function to generate images
     def generate_images():
         try:
-            pipe = load_pipeline(model_name, model_type, scheduler_name)
+            pipe = load_pipeline(model_name, model_type, generation_type, scheduler_name)
         except Exception:
             traceback_details = traceback.format_exc()
             gconfig["generating"] = False
@@ -471,7 +469,7 @@ def generate():
                 else:
                     seed = gconfig["custom_seed"]
 
-                image_path = generateImage(pipe, model_name, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count)
+                image_path = generateImage(pipe, model_name, prompt, original_prompt, negative_prompt, seed, width, height, img_input, strength, model_type, generation_type, image_size, cfg_scale, samplingSteps, scheduler_name, image_count)
 
                 #TODO: Store the generated image path
                 if image_path:
