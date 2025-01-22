@@ -499,17 +499,19 @@ def generate():
 
 @app.route('/save_prompt', methods=['POST'])
 def save_prompt():
-    prompt = request.form['prompt']
-    if isFile('./static/json/saved_prompts.json'):
-        prompts = json.load(open('./static/json/saved_prompts.json'))
+    file_path = './static/json/saved_prompts.json'
+    if isFile(file_path):
+        try:
+            with open(file_path, 'r') as f:
+                prompts = json.load(f)
+        except json.JSONDecodeError:
+            prompts = {}
     else:
         prompts = {}
 
-    if prompt in prompts:
-        return jsonify(status='Prompt already exists')
+    prompts[time.time()] = {'prompt': request.form['prompt'], 'negative_prompt': request.form['negative_prompt']}
 
-    prompts.append(prompt)
-    with open('./static/json/saved_prompts.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(prompts, f, indent=4)
 
     return jsonify(status='Prompt saved')

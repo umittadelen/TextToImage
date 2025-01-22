@@ -297,12 +297,14 @@ function openLink(link) {
 
 function savePrompt() {
     const prompt = document.getElementById('prompt').value;
+    const negativePrompt = document.getElementById('negative_prompt').value;
+
     fetch('/save_prompt', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `prompt=${encodeURIComponent(prompt)}`
+        body: `prompt=${encodeURIComponent(prompt)}&negative_prompt=${encodeURIComponent(negativePrompt)}`
     })
         .then(response => response.json())
         .then(data => {
