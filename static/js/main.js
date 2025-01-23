@@ -2,10 +2,19 @@ class CustomConfirm {
     constructor() {
         this.overlay = null;
         this.box = null;
+        this.isActive = false; // Tracks if a dialog is currently active
+        this.escKeyListener = null; // Store reference to the keydown listener
     }
 
     createConfirm(message, buttons, overlayReturnValue) {
         return new Promise((resolve) => {
+            // Prevent creating multiple dialogs
+            if (this.isActive) {
+                console.warn("A confirm dialog is already active.");
+                return;
+            }
+            this.isActive = true;
+
             // Create overlay
             this.overlay = document.createElement('div');
             this.overlay.className = 'custom-confirm-overlay';
@@ -30,6 +39,10 @@ class CustomConfirm {
                 button.textContent = buttonConfig.text;
                 button.addEventListener('click', () => {
                     this.closeConfirm();
+                    // Execute the button's value (function) and resolve
+                    if (typeof buttonConfig.value === 'function') {
+                        buttonConfig.value();
+                    }
                     resolve(buttonConfig.value);
                 });
                 buttonContainer.appendChild(button);
@@ -57,6 +70,15 @@ class CustomConfirm {
                     resolve(overlayReturnValue);
                 }
             });
+
+            // Add Esc key listener
+            this.escKeyListener = (e) => {
+                if (e.key === 'Escape') {
+                    this.closeConfirm();
+                    resolve(overlayReturnValue);
+                }
+            };
+            document.addEventListener('keydown', this.escKeyListener);
         });
     }
 
@@ -67,8 +89,15 @@ class CustomConfirm {
             this.overlay.addEventListener('transitionend', () => {
                 if (this.overlay && this.overlay.parentNode) {
                     document.body.removeChild(this.overlay);
+                    this.isActive = false; // Allow new dialogs to be created
                 }
             });
+        }
+
+        // Remove Esc key listener
+        if (this.escKeyListener) {
+            document.removeEventListener('keydown', this.escKeyListener);
+            this.escKeyListener = null;
         }
     }
 }
@@ -79,7 +108,7 @@ let pendingUpdates = false;
 let isCleared = false;
 const customConfirm = new CustomConfirm();
 
-document.getElementById('generateForm').addEventListener('submit', function (event) {
+function submitButtonOnClick(event) {
     event.preventDefault();
 
     // Save form data to localStorage
@@ -89,8 +118,7 @@ document.getElementById('generateForm').addEventListener('submit', function (eve
             formDataToSave[field.name] = field.value;
         }
     });
-    localStorage.setItem('formData', JSON.stringify(formDataToSave));
-    localStorage.setItem('formExpiry', Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 week expiry
+    localStorage.setItem('TextToImageFormData', JSON.stringify(formDataToSave));
 
     // Clear existing images for new generation
     isGeneratingNewImages = true;
@@ -112,36 +140,31 @@ document.getElementById('generateForm').addEventListener('submit', function (eve
             console.error('Error:', error);
             isGeneratingNewImages = false;
         });
-});
+};
 
 function loadFormData() {
-    const savedData = JSON.parse(localStorage.getItem('formData'));
-    const expiryTime = localStorage.getItem('formExpiry');
-
-    if (savedData && expiryTime && Date.now() < expiryTime) {
-        const form = document.getElementById('generateForm');
-        for (const [key, value] of Object.entries(savedData)) {
-            const field = form.elements[key];
-            if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
-                if (field.tagName === 'SELECT') {
-                    // Set the selected option for <select>
-                    Array.from(field.options).forEach(option => {
-                        option.selected = option.value === value;
-                    });
-                } else {
-                    // Set the value for <textarea> and <input>
-                    field.value = value;
-                }
+    const savedData = JSON.parse(localStorage.getItem('TexTToImageFormData')) || {};
+    if (Object.keys(savedData).length === 0) {
+        return;
+    }
+    const form = document.getElementById('generateForm');
+    for (const [key, value] of Object.entries(savedData)) {
+        const field = form.elements[key];
+        if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+            if (field.tagName === 'SELECT') {
+                // Set the selected option for <select>
+                Array.from(field.options).forEach(option => {
+                    option.selected = option.value === value;
+                });
+            } else {
+                // Set the value for <textarea> and <input>
+                field.value = value;
             }
         }
-    } else {
-        // Clear expired data
-        localStorage.removeItem('formData');
-        localStorage.removeItem('formExpiry');
     }
 }
 
-document.getElementById('resetCacheButton').addEventListener('click', function () {
+function resetCacheButtonOnClick(event) {
     // Remove form data and expiry from localStorage
     localStorage.removeItem('formData');
     localStorage.removeItem('formExpiry');
@@ -150,7 +173,7 @@ document.getElementById('resetCacheButton').addEventListener('click', function (
     location.reload(); // This reloads the page, effectively resetting the form and clearing cache
 
     console.log('Form cache has been reset.');
-});
+};
 
 setInterval(() => {
     if (document.visibilityState === 'visible' && !pendingUpdates && !isCleared) {
@@ -192,7 +215,14 @@ function updateImageScales() {
     });
 }
 
-document.getElementById('img_display_input').addEventListener('change', updateImageScales);
+document.addEventListener('contextmenu', function (event) {
+    event.preventDefault();
+    customConfirm.createConfirm('Quick Actions', [
+        { text: 'Clear Images', value: () => clearButtonOnClick(event) },
+        { text: 'Stop Generation', value: () => stopButtonOnClick(event) },
+        { text: 'Get Metadata', value: () => window.open(`metadata`) }
+    ], true);
+});
 
 function updateProgressBars(data) {
     const progressText = document.getElementById('progress');
@@ -212,7 +242,7 @@ function updateProgressBars(data) {
     else {
         dynamicProgressBar.style.width = `0%`;
         alldynamicProgressBar.style.width = `0%`;
-        progressText.innerHTML = `Progress: ${data.imgprogress}`;
+        progressText.innerHTML = `Progress: ${data.imgprogress.substring(0, 200)}`;
     }
 
     if (Number.isInteger(data.allpercentage)) {
@@ -325,15 +355,15 @@ document.addEventListener('visibilitychange', function () {
     document.title = `Image Generator (${state})`;
 });
 
-document.getElementById('stopButton').addEventListener('click', function() {
+function stopButtonOnClick(event) {
     fetch('/stop', {
         method: 'POST'
     })
     .catch(error => console.error('Error stopping generation:', error));
-});
+};
 
-document.getElementById('restartButton').addEventListener('click', async function() {
-    const isConfirmed = await customConfirm.createConfirm(
+function restartButtonOnClick(event) {
+    const isConfirmed = customConfirm.createConfirm(
         'Are you sure you want to restart the server?\nIt will reset all variables and has a chance to fail restarting.',
         [
             { text: 'Restart', value: true },
@@ -353,9 +383,9 @@ document.getElementById('restartButton').addEventListener('click', async functio
         })
         .catch(error => console.error('Error stopping generation:', error));
     }
-});
+};
 
-document.getElementById('clearButton').addEventListener('click', function() {
+function clearButtonOnClick(event) {
     const isConfirmed = customConfirm.createConfirm(
         'Are you sure you want to clear all images?',
         [
@@ -376,7 +406,7 @@ document.getElementById('clearButton').addEventListener('click', function() {
         })
         .catch(error => console.error('Error Clearing Images:', error));
     }
-});
+};
 
 document.getElementById('theme_select').addEventListener('change', function () {
     try {

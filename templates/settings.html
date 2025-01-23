@@ -14,7 +14,6 @@
                 .then(data => {
                     if (data) {
                         document.getElementById("hf-token").value = data.HF_TOKEN || "";
-                        document.getElementById("generated-dir").value = data.generated_dir || "";
                         document.getElementById("attention-slicing").value = data.enable_attention_slicing ? "True" : "False";
                         document.getElementById("xformers").value = data.enable_xformers_memory_efficient_attention ? "True" : "False";
                         document.getElementById("cpu-offload").value = data.enable_model_cpu_offload ? "True" : "False";
@@ -31,7 +30,6 @@
 
             const settings = {
                 "HF_TOKEN": document.getElementById("hf-token").value,
-                "generated_dir": document.getElementById("generated-dir").value,
                 "enable_attention_slicing": document.getElementById("attention-slicing").value === "True",
                 "enable_xformers_memory_efficient_attention": document.getElementById("xformers").value === "True",
                 "enable_model_cpu_offload": document.getElementById("cpu-offload").value === "True",
@@ -62,9 +60,6 @@
         <form id="settings-form" class="form" onsubmit="saveSettings(event)">
             <label for="hf-token">HF Token:</label>
             <input type="password" id="hf-token" name="hf-token" placeholder="Enter your HF token">
-
-            <label for="generated-dir">Generated Directory:</label>
-            <input type="text" id="generated-dir" name="generated-dir" placeholder="Enter the generated directory" required>
 
             <label for="attention-slicing">Enable Attention Slicing:</label>
             <select id="attention-slicing" name="attention-slicing">

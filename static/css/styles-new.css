@@ -115,7 +115,12 @@ button {
 
 input::placeholder {
     font-weight: normal;
-    color: var(--dark-text-color);
+    color: var(--progress-bar-color);
+}
+
+textarea::placeholder {
+    font-weight: normal;
+    color: var(--progress-bar-color);
 }
 
 input[type="file"] {
