@@ -253,6 +253,21 @@ function updateProgressBars(data) {
     }
 }
 
+async function getTokenCount() {
+    const textarea = document.getElementById('prompt');
+    const text = textarea.value;
+    const response = await fetch('/clip_token_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ text })
+    });
+    const result = await response.json();
+    document.getElementById('prompt-token-counter').innerHTML = result['CLIP Token Count']
+    console.log(result['Tokens']);
+}
+
 function getSizeSuffix() {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     const sizeMap = {

@@ -60,8 +60,8 @@
                     </select><br>
 
                     <div id="prompt-div" class="input-div">
-                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt:</label>
-                        <textarea id="prompt" name="prompt" required></textarea><br>
+                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt: (<span id="prompt-token-counter"></span>)</label>
+                        <textarea id="prompt" name="prompt" required oninput="getTokenCount()"></textarea><br>
                     </div>
 
                     <div id="negative-div">
