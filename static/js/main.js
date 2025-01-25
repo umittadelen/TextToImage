@@ -108,23 +108,91 @@ let pendingUpdates = false;
 let isCleared = false;
 const customConfirm = new CustomConfirm();
 
+function loadFormData() {
+    fetch('/load_form_data')
+    .then(response => response.json())
+    .then(data => {
+        savedData = data;
+        const form = document.getElementById('generateForm');
+        for (const [key, value] of Object.entries(data)) {
+            const field = form.elements[key];
+            if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+                if (field.tagName === 'SELECT') {
+                    // Set the selected option for <select>
+                    Array.from(field.options).forEach(option => {
+                        option.selected = option.value === value;
+                    });
+                } else {
+                    // Set the value for <textarea> and <input>
+                    field.value = value;
+                }
+            }
+        }
+    })
+}
+
+function populateModels(data, select) {
+    Object.entries(data).forEach(([modelName, modelData]) => {
+        const option = document.createElement('option');
+        option.value = modelData.path;
+        option.dataset.cfg = modelData.cfg || 7;
+        option.dataset.type = modelData.type || "SDXL";
+        option.textContent = modelName;
+        if (modelData.disabled) {
+            option.disabled = true;
+        }
+        select.appendChild(option);
+    });
+}
+
+function populateExamplePrompts(data, select) {
+    data.examples.forEach(prompt => {
+        const option = document.createElement('option');
+        option.value = prompt;
+        option.textContent = prompt;
+        select.appendChild(option);
+    });
+}
+
+function populateExampleSizes(data, select) {
+    Object.entries(data).forEach(([sizeName, sizeDimensions]) => {
+        const option = document.createElement('option');
+        option.value = sizeDimensions.join('x'); // Format as "width x height"
+        option.textContent = sizeName; // Display the size name
+        select.appendChild(option);
+    });
+}
+
+function populateSchedulers(data, select) {
+    data.schedulers.forEach(scheduler => {
+        const option = document.createElement('option');
+        option.value = scheduler;
+        option.textContent = scheduler;
+        select.appendChild(option);
+    });
+}
+
+loadJsonAndPopulateSelect('/static/json/models.json', 'model', populateModels);
+loadJsonAndPopulateSelect('/static/json/examplePrompts.json', 'example_prompt', populateExamplePrompts);
+loadJsonAndPopulateSelect('/static/json/dimensions.json', 'example_size', populateExampleSizes);
+loadJsonAndPopulateSelect('/static/json/schedulers.json', 'scheduler', populateSchedulers);
+
+loadFormData();
+
+(async () => {
+    await getTokenCount('negative_prompt', 'negative-prompt-token-counter');
+    await getTokenCount('prompt', 'prompt-token-counter');
+})();
+
 function submitButtonOnClick(event) {
     event.preventDefault();
-
-    // Save form data to localStorage
-    const formDataToSave = {};
-    const formElement = document.getElementById("generateForm"); // Explicitly get the form element
-    Array.from(formElement.elements).forEach(field => {
-        if (field.name && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
-            formDataToSave[field.name] = field.value;
-        }
-    });
-    localStorage.setItem('TextToImageFormData', JSON.stringify(formDataToSave));
 
     // Clear existing images for new generation
     isGeneratingNewImages = true;
     existingImages.clear();
     document.getElementById('images').innerHTML = '';
+    const formElement = document.getElementById('generateForm');
+    saveFormData();
 
     // Prepare data for the server
     const formData = new FormData(formElement); // Use the form element here
@@ -132,48 +200,67 @@ function submitButtonOnClick(event) {
         method: 'POST',
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            isGeneratingNewImages = false;
-            console.log('Server response:', data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            isGeneratingNewImages = false;
-        });
+    .then(response => response.json())
+    .then(data => {
+        isGeneratingNewImages = false;
+        console.log('Server response:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        isGeneratingNewImages = false;
+    });
 }
 
-function loadFormData() {
-    const savedData = JSON.parse(localStorage.getItem('TexTToImageFormData')) || {};
-    if (Object.keys(savedData).length === 0) {
-        return;
-    }
-    const form = document.getElementById('generateForm');
-    for (const [key, value] of Object.entries(savedData)) {
-        const field = form.elements[key];
-        if (field && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
-            if (field.tagName === 'SELECT') {
-                // Set the selected option for <select>
-                Array.from(field.options).forEach(option => {
-                    option.selected = option.value === value;
-                });
-            } else {
-                // Set the value for <textarea> and <input>
-                field.value = value;
-            }
+function saveFormData() {
+    const formDataToSave = {};
+    const formElement = document.getElementById("generateForm"); // Explicitly get the form element
+    Array.from(formElement.elements).forEach(field => {
+        if (field.name && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
+            formDataToSave[field.name] = field.value;
         }
-    }
+    });
+    fetch('/save_form_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formDataToSave)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Form data saved:', data);
+    })
+    .catch(error => {
+        console.error('Error saving form data:', error);
+    });
 }
 
 function resetCacheButtonOnClick(event) {
-    // Remove form data and expiry from localStorage
-    localStorage.removeItem('formData');
-    localStorage.removeItem('formExpiry');
+    const isConfirmed = customConfirm.createConfirm('Are you sure you want to reset the form cache?<br>this cannot be undone!',
+        [
+            { text: 'Reset', value: true },
+            { text: 'Cancel', value: false }
+        ],
+        false
+    );
     
-    // Refresh the page
-    location.reload(); // This reloads the page, effectively resetting the form and clearing cache
+    if (isConfirmed) {
+        fetch('/reset_form_data', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Form cache has been reset:', data);
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error resetting form cache:', error);
+        });
 
-    console.log('Form cache has been reset.');
+        location.reload();
+
+        console.log('Form cache has been reset.');
+    }
 };
 
 setInterval(() => {
@@ -212,7 +299,6 @@ function updateImageScales() {
     const value = Number(document.getElementById('img_display_input').value); // Convert value to a number
     images.forEach(img => {
         img.style.width = `${100 / value - 4}vw`;
-        console.log(100 / value - 2);
     });
 }
 
@@ -253,8 +339,8 @@ function updateProgressBars(data) {
     }
 }
 
-async function getTokenCount() {
-    const textarea = document.getElementById('prompt');
+async function getTokenCount(inElementID, outElementId) {
+    const textarea = document.getElementById(inElementID);
     const text = textarea.value;
     const response = await fetch('/clip_token_count', {
         method: 'POST',
@@ -264,8 +350,7 @@ async function getTokenCount() {
         body: new URLSearchParams({ text })
     });
     const result = await response.json();
-    document.getElementById('prompt-token-counter').innerHTML = result['CLIP Token Count']
-    console.log(result['Tokens']);
+    document.getElementById(outElementId).innerHTML = result['CLIP Token Count']
 }
 
 function getSizeSuffix() {
@@ -424,22 +509,6 @@ function clearButtonOnClick(event) {
     }
 };
 
-document.getElementById('theme_select').addEventListener('change', function () {
-    try {
-        const theme = JSON.parse(this.value);
-
-        // Set CSS variables
-        document.documentElement.style.setProperty('--tone1', theme.tone_1);
-        document.documentElement.style.setProperty('--tone2', theme.tone_2);
-        document.documentElement.style.setProperty('--tone3', theme.tone_3);
-
-        // Save the theme to localStorage
-        localStorage.setItem('theme', JSON.stringify(theme));
-    } catch (error) {
-        console.error('Error applying theme:', error);
-    }
-});
-
 //TODO handle prompt example change
 
 const promptSelectElement = document.getElementById('example_prompt');
@@ -449,9 +518,6 @@ const promptTextareaElement = document.getElementById('prompt');
 promptSelectElement.addEventListener('change', function() {
     promptTextareaElement.value = promptSelectElement.value; // Update textarea with the selected prompt
 });
-
-// Set the initial value of the textarea to the first option's value
-promptTextareaElement.value = promptSelectElement.value;
 
 //TODO handle model change
 
@@ -464,9 +530,6 @@ modelSelectElement.addEventListener('change', function() {
     cfgInputElement.value = modelSelectElement.options[modelSelectElement.selectedIndex].dataset.cfg || 7;
     modelTypeInputElement.value = modelSelectElement.options[modelSelectElement.selectedIndex].dataset.type || "SDXL";
 });
-
-// Set the initial value of the textarea to the first option's value
-promptTextareaElement.value = promptSelectElement.value;
 
 //TODO handle pre dimension change
 

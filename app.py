@@ -56,12 +56,14 @@ gconfig = {
     "image_cache": {},
     "downloading": False,
 
+    "theme": False,
     "enable_attention_slicing": True,
     "enable_xformers_memory_efficient_attention": False,
     "enable_model_cpu_offload": True,
     "enable_sequential_cpu_offload": False,
     "use_long_clip": True,
-    "show_latents": True
+    "show_latents": True,
+    "load_previous_data": True,
 }
 
 gconfig["HF_TOKEN"] = (open(f'C:/Users/{os.getlogin()}/.cache/huggingface/token', 'r').read().strip() 
@@ -682,6 +684,33 @@ def clip_token_count():
     result = get_clip_token_info(text)
     return jsonify(result)
 
+@app.route('/save_form_data', methods=['POST'])
+def save_form_data():
+    form_data = request.get_json()
+    with open('./static/json/form_data.json', 'w', encoding='utf-8') as f:
+        json.dump(form_data, f, indent=4)
+    print(form_data)
+    return jsonify(status='Form data saved')
+
+@app.route('/load_form_data', methods=['GET'])
+def load_form_data():
+    if gconfig["load_previous_data"]:
+        if not isFile('./static/json/form_data.json'):
+            with open('./static/json/form_data.json', 'w', encoding='utf-8') as f:
+                json.dump({}, f, indent=4)
+            return jsonify({})
+        with open('./static/json/form_data.json', 'r', encoding='utf-8') as f:
+            form_data = json.load(f)
+        return jsonify(form_data)
+    else:
+        return jsonify({})
+
+@app.route('/reset_form_data', methods=['GET'])
+def reset_form_data():
+    with open('./static/json/form_data.json', 'w', encoding='utf-8') as f:
+        json.dump({}, f, indent=4)
+    return jsonify(status='Form data reset')
+
 @app.route('/clip_token')
 def clip_token():
     return render_template('clip_token_count.html')
@@ -701,6 +730,13 @@ def save_settings():
         json.dump(settings, f, indent=4)
     gconfig.update(settings)
     return jsonify(status='Settings saved')
+
+@app.route('/load_settings', methods=['GET'])
+def load_settings():
+    with open('./static/json/settings.json', 'r', encoding='utf-8') as f:
+        settings = json.load(f)
+    gconfig.update(settings)
+    return jsonify(settings)
 
 @app.route('/metadata')
 def metadata():

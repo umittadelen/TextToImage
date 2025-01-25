@@ -23,11 +23,6 @@
             <h1>Text to Image Generator</h1>
 
             <div class="form">
-
-                <label for="theme" title="Color theme">Page Theme:</label>
-                <select id="theme_select" name="theme" required>
-                </select><br>
-
                 <form id="generateForm">
 
                     <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
@@ -60,13 +55,13 @@
                     </select><br>
 
                     <div id="prompt-div" class="input-div">
-                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt: (<span id="prompt-token-counter"></span>)</label>
-                        <textarea id="prompt" name="prompt" required oninput="getTokenCount()"></textarea><br>
+                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt: (<span id="prompt-token-counter">2</span>)</label>
+                        <textarea id="prompt" name="prompt" required oninput="getTokenCount('prompt', 'prompt-token-counter')"></textarea><br>
                     </div>
 
                     <div id="negative-div">
-                        <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
-                        <textarea id="negative_prompt" name="negative_prompt">lowres, (bad), text, error, fewer, extra, missing, worst quality, jpeg artifacts, low quality, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract], extra ears, nsfw, explicit</textarea><br>
+                        <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt: (<span id="negative-prompt-token-counter">2</span>)</label>
+                        <textarea id="negative_prompt" name="negative_prompt" oninput="getTokenCount('negative_prompt', 'negative-prompt-token-counter')">lowres, (bad), text, error, fewer, extra, missing, worst quality, jpeg artifacts, low quality, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract], extra ears, nsfw, explicit</textarea><br>
                     </div>
 
                     <div id="buttons">

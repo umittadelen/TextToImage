@@ -1,41 +1,37 @@
-function loadTheme() {
-    const savedData = localStorage.getItem('theme');
-    if (savedData) {
-        try {
-            const theme = JSON.parse(savedData);
+async function loadTheme() {
+    let savedData = "";
 
-            // Apply the saved theme to the document
-            document.documentElement.style.setProperty('--tone1', theme.tone_1);
-            document.documentElement.style.setProperty('--tone2', theme.tone_2);
-            document.documentElement.style.setProperty('--tone3', theme.tone_3);
+    try {
+        const response = await fetch("/load_settings");
+        const data = await response.json();
 
-            // Select the matching option in the dropdown
-            try{
-                const themeSelect = document.getElementById('theme_select');
-                let matchedOption = Array.from(themeSelect.options).find(option => {
-                    const decodedValue = JSON.parse(option.value.replace(/&quot;/g, '"')); // Decode HTML-encoded value
-                    return JSON.stringify(decodedValue) === JSON.stringify(theme);
-                });
+        // Fallback to default theme if no theme is found
+        savedData = data.theme || {
+            "tone_1": "240, 240, 240",
+            "tone_2": "240, 218, 218",
+            "tone_3": "240, 163, 163"
+        };
 
-                if (matchedOption) {
-                    themeSelect.value = matchedOption.value; // Set the active option
-                    themeSelect.dispatchEvent(new Event('change')); // Trigger 'change' event
-                    console.log('Theme loaded and active option selected:', theme);
-                } else {
-                    console.warn('No matching option found in the dropdown for the saved theme.');
-                }
-            } catch (error) {
-                console.error('Error applying theme:', error);
-            }
-        } catch (error) {
-            console.error('Error applying theme:', error);
-            localStorage.removeItem('theme'); // Remove invalid data to avoid future errors
-        }
-    } else {
-        console.log('No theme found in localStorage.');
+        // Apply the saved theme to the document
+        document.documentElement.style.setProperty('--tone1', savedData.tone_1);
+        document.documentElement.style.setProperty('--tone2', savedData.tone_2);
+        document.documentElement.style.setProperty('--tone3', savedData.tone_3);
+    } catch (error) {
+        console.error('Error loading settings:', error);
+
+        // Use default theme in case of error
+        const defaultTheme = {
+            "tone_1": "240, 240, 240",
+            "tone_2": "240, 218, 218",
+            "tone_3": "240, 163, 163"
+        };
+
+        document.documentElement.style.setProperty('--tone1', defaultTheme.tone_1);
+        document.documentElement.style.setProperty('--tone2', defaultTheme.tone_2);
+        document.documentElement.style.setProperty('--tone3', defaultTheme.tone_3);
     }
 }
 
-window.onload = function() {
+window.onload = function () {
     loadTheme();
 };

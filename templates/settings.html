@@ -6,58 +6,16 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <title>Settings Editor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch("{{ url_for('static', filename='json/settings.json') }}")
-                .then(response => response.json())
-                .then(data => {
-                    if (data) {
-                        document.getElementById("hf-token").value = data.HF_TOKEN || "";
-                        document.getElementById("attention-slicing").value = data.enable_attention_slicing ? "True" : "False";
-                        document.getElementById("xformers").value = data.enable_xformers_memory_efficient_attention ? "True" : "False";
-                        document.getElementById("cpu-offload").value = data.enable_model_cpu_offload ? "True" : "False";
-                        document.getElementById("sequential-cpu").value = data.enable_sequential_cpu_offload ? "True" : "False";
-                        document.getElementById("long-clip").value = data.use_long_clip ? "True" : "False";
-                        document.getElementById("show-latents").value = data.show_latents ? "True" : "False";
-                    }
-                })
-                .catch(error => console.error('Error loading settings:', error));
-        });
-
-        function saveSettings(event) {
-            event.preventDefault();
-
-            const settings = {
-                "HF_TOKEN": document.getElementById("hf-token").value,
-                "enable_attention_slicing": document.getElementById("attention-slicing").value === "True",
-                "enable_xformers_memory_efficient_attention": document.getElementById("xformers").value === "True",
-                "enable_model_cpu_offload": document.getElementById("cpu-offload").value === "True",
-                "enable_sequential_cpu_offload": document.getElementById("sequential-cpu").value === "True",
-                "use_long_clip": document.getElementById("long-clip").value === "True",
-                "show_latents": document.getElementById("show-latents").value === "True"
-            };
-
-            fetch('/save_settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(settings)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.status);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
 </head>
 <body>
     <div id="all">
         <h1>Settings Editor</h1>
 
         <form id="settings-form" class="form" onsubmit="saveSettings(event)">
+            <label for="theme-select">Theme:</label>
+            <select id="theme" name="theme-select">
+            </select>
+
             <label for="hf-token">HF Token:</label>
             <input type="password" id="hf-token" name="hf-token" placeholder="Enter your HF token">
 
@@ -97,8 +55,16 @@
                 <option value="False">False</option>
             </select>
 
+            <label for="load-previous-data">Load Previous Form Data:</label>
+            <select id="load-previous-data" name="load-previous-data">
+                <option value="True">True</option>
+                <option value="False">False</option>
+            </select>
+
             <button type="submit">Save Settings</button>
         </form>
+        <script src="{{url_for('static', filename='js/loadJson.js')}}" defer></script>
+        <script src="{{url_for('static', filename='js/settings.js')}}" defer></script>
         <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
     </div>
 </body>
