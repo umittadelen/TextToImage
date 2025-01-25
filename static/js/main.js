@@ -113,7 +113,8 @@ function submitButtonOnClick(event) {
 
     // Save form data to localStorage
     const formDataToSave = {};
-    Array.from(this.elements).forEach(field => {
+    const formElement = document.getElementById("generateForm"); // Explicitly get the form element
+    Array.from(formElement.elements).forEach(field => {
         if (field.name && ['TEXTAREA', 'SELECT', 'INPUT'].includes(field.tagName)) {
             formDataToSave[field.name] = field.value;
         }
@@ -126,7 +127,7 @@ function submitButtonOnClick(event) {
     document.getElementById('images').innerHTML = '';
 
     // Prepare data for the server
-    const formData = new FormData(this);
+    const formData = new FormData(formElement); // Use the form element here
     fetch('/generate', {
         method: 'POST',
         body: formData
@@ -140,7 +141,7 @@ function submitButtonOnClick(event) {
             console.error('Error:', error);
             isGeneratingNewImages = false;
         });
-};
+}
 
 function loadFormData() {
     const savedData = JSON.parse(localStorage.getItem('TexTToImageFormData')) || {};
