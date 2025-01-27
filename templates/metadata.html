@@ -96,23 +96,7 @@
                 // Parse PNG and look for tEXt chunks
                 const metadata = extractPngTextChunks(uint8Array);
                 if (metadata) {
-                    const extractedData = {
-                        Prompt: metadata.Prompt || "N/A",
-                        OriginalPrompt: metadata.OriginalPrompt || "N/A",
-                        NegativePrompt: metadata.NegativePrompt || "N/A",
-                        Width: metadata.Width || "N/A",
-                        Height: metadata.Height || "N/A",
-                        CFGScale: metadata.CFGScale || "N/A",
-                        ImgInput: metadata.ImgInput || "N/A",
-                        Strength: metadata.Strength || "N/A",
-                        Seed: metadata.Seed || "N/A",
-                        SamplingSteps: metadata.SamplingSteps || "N/A",
-                        Model: metadata.Model || "N/A",
-                        Scheduler: metadata.Scheduler || "N/A",
-                    };
-
-                    // Display metadata in a formatted way
-                    displayMetadata(extractedData);
+                    displayMetadata(metadata); // Dynamically display all metadata
                 } else {
                     alert("No metadata found in this PNG image.");
                 }
@@ -155,12 +139,12 @@
             return (buffer[offset] << 24) | (buffer[offset + 1] << 16) | (buffer[offset + 2] << 8) | (buffer[offset + 3]);
         }
 
-        // Function to display metadata with titles and values
+        // Function to display metadata dynamically
         function displayMetadata(metadata) {
             const metadataDisplay = document.getElementById('metadataDisplay');
             metadataDisplay.innerHTML = ''; // Clear previous metadata
 
-            Object.keys(metadata).forEach(key => {
+            Object.entries(metadata).forEach(([key, value]) => {
                 const item = document.createElement('div');
                 item.classList.add('metadata-item');
 
@@ -168,12 +152,12 @@
                 title.classList.add('metadata-title');
                 title.textContent = key;
 
-                const value = document.createElement('div');
-                value.classList.add('metadata-value');
-                value.textContent = metadata[key];
+                const valueElement = document.createElement('div');
+                valueElement.classList.add('metadata-value');
+                valueElement.textContent = value;
 
                 item.appendChild(title);
-                item.appendChild(value);
+                item.appendChild(valueElement);
                 metadataDisplay.appendChild(item);
             });
         }

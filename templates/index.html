@@ -4,152 +4,90 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-        
-        <script src="https://cdn.jsdelivr.net/gh/seikichi/tiff.js@master/tiff.min.js"></script>
-        
+
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-new.css') }}">
 
     </head>
-    <body>
-        <div id="status">
-            <p id="progress">Nothing Generating Yet</p>
-            <div id="progress-bar-container">
-                <span class="progress-bar" id="dynamic-progress-bar"></span>
-                <span class="all-progress-bar" id="all-dynamic-progress-bar"></span>
-            </div>
-        </div>
-        
+    <body>        
         <div id="all">
             <h1>Text to Image Generator</h1>
 
             <div class="form">
                 <form id="generateForm">
 
-                    <label for="model" title="Select the model you want to use for image generation.">Choose a model:</label>
-                    <select id="model" name="model" required>
-                    </select><br>
+                    <div class="input-div">
+                        <label for="model_select" title="Select the model you want to use for image generation.">Choose a model:</label>
+                        <select id="model_select" name="model" required onchange="changeModelvalues()">
+                        </select>
+                    </div>
 
-                    <label for="model_type" title="The type of the model (change this if you know what are you doing or if the model is not working)">Choose a model type:</label>
-                    <select id="model_type" name="model_type" required>
-                        <option value="SDXL" selected>SDXL</option>
-                        <option value="SD 1.5">SD 1.5</option>
-                        <option value="FLUX">FLUX</option>
-                    </select><br>
-
-                    <label for="scheduler" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
-                    <select id="scheduler" name="scheduler" required>
-                        <option value="Euler a" selected>Euler a</option>
-                    </select><br>
+                    <div class="input-div">
+                        <label for="scheduler_select" title="Select the scheduler model to control the image generation process, affecting sampling techniques and quality.">Choose a scheduler model:</label>
+                        <select id="scheduler_select" name="scheduler" required>
+                        </select>
+                    </div>
 
                     <div id="form-separator"></div>
                 
-                    <label for="example_prompt" title="Choose from a list of example prompts.">Example Prompts:</label>
-                    <select id="example_prompt" name="example_prompt">
-                        <option value=""></option>
-                    </select><br>
-
-                    <label for="prompt_helper" title="Chose (ON) if you want to use Prompt Helper">Prompt Helper:</label>
-                    <select id="prompt_helper" name="prompt_helper">
-                        <option value="0" selected>OFF</option>
-                        <option value="1">ON</option>
-                    </select><br>
-
-                    <div id="prompt-div" class="input-div">
-                        <label for="prompt" title="Enter the main prompt that describes the image you want to generate.">Prompt: (<span id="prompt-token-counter">2</span>)</label>
-                        <textarea id="prompt" name="prompt" required oninput="getTokenCount('prompt', 'prompt-token-counter')"></textarea><br>
+                    <div class="input-div">
+                        <label for="prompt_textarea" title="Enter the main prompt that describes the image you want to generate.">Prompt:</label>
+                        <textarea id="prompt_textarea" name="prompt" required>1girl, solo, kawaii, cute, kemono, furry body, head tuft, lavender and teal fur, fuzzy, fang, shoulder-length wavy hair, pastel purple and green hair, turquoise eyes, eyeliner, eyelashes, narrowed eyes, v, off-shoulder blouse with floral embroidery, pleated pastel skirt, leaning on the edge of a harbor dock, sunset painting the ocean in warm hues, seagulls flying in the distance, smug face, full body</textarea>
                     </div>
 
-                    <div id="negative-div">
-                        <label for="negative_prompt" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt: (<span id="negative-prompt-token-counter">2</span>)</label>
-                        <textarea id="negative_prompt" name="negative_prompt" oninput="getTokenCount('negative_prompt', 'negative-prompt-token-counter')">lowres, (bad), text, error, fewer, extra, missing, worst quality, jpeg artifacts, low quality, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract], extra ears, nsfw, explicit</textarea><br>
+                    <div class="input-div">
+                        <label for="negative_prompt_textarea" title="Enter negative prompts to specify what you want to avoid in the generated image.">Negative Prompt:</label>
+                        <textarea id="negative_prompt_textarea" name="negative_prompt">(bad quality,worst quality,low quality,bad anatomy,bad hand:1.3), nsfw, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name</textarea>
                     </div>
 
-                    <div id="buttons">
-                        <button type="button" id="promptSaveButton" onclick="savePrompt()"><span>Save Prompt</span></button>
-                    </div>
-                
                     <div id="form-separator"></div>
                 
-                    <div id="size-select">
-                        <label for="example_size" title="Choose from a list of sizes.">Size Examples:</label>
-                        <select id="example_size" name="example_size">
-                            <option value="832x1216">13:19 - 832x1216 - Vertical</option>
-                        </select><br>
-
-                        <label for="width" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
-                        <input type="number" id="width" name="width" value="832"><br>
+                    <div class="input-div">
+                        <label for="width_input" title="Set the width of the generated image. Minimum value is 800.">Width:</label>
+                        <input type="number" id="width_input" name="width" value="832" min="800" required>
+                    </div>
                 
-                        <label for="height" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
-                        <input type="number" id="height" name="height" value="1216"><br>
+                    <div class="input-div">
+                        <label for="height_input" title="Set the height of the generated image. Minimum value is 800.">Height:</label>
+                        <input type="number" id="height_input" name="height" value="1216" min="800" required>
                     </div>
 
                     <div id="form-separator"></div>
 
-                    <label for="generation_type" title="Chose generation type (Text to Image is default)">Generation Type:</label>
-                    <select id="generation_type" name="generation_type">
-                        <option value="txt2img" selected>Text To Image</option>
-                        <option value="img2img">Image To Image</option>
-                        <option value="controlnet">ControlNet</option>
-                    </select><br>
-
-                    <label for="image_size" title="">Image Size:</label>
-                    <select id="image_size" name="image_size" required>
-                        <option value="original" selected>Original</option>
-                        <option value="resize">Resize</option>
-                    </select><br>
-
-                    <div id="img_input">
-                        <label for="img_input_link" title="Paste a valid image url to generate image from image">image url:</label>
-                        <input type="text" id="img_input" name="img_input_link" placeholder="https://example.com/image.png"><br>
-                        <input type="file" id="img_input" name="img_input_img" accept="image/*"><br>
+                    <div class="input-div">
+                        <label for="cfg_scale_input" title="The scale value decides how closely the AI follows your prompts. When the scale is low, AI tends to produce softer, painterly pictures. We recommend keeping the scale below 7.">CFG Scale:</label>
+                        <input type="number" id="cfg_scale_input" name="cfg_scale" value="7" min="1" max="20" step="0.1" required>
                     </div>
 
-                    <div id="strength">
-                        <label for="strength" title="enter value between 0.0-1.0.   Higher value = closer to prompt">Strength:</label>
-                        <input type="number" min="0.0" max="1.0" step="0.01" id="strength" name="strength" placeholder="0.5" value="0.5"><br>
+                    <div class="input-div">
+                        <label for="clip_skip_input" title="Set the number of clip skip steps.">Clip Skip:</label>
+                        <input type="number" id="clip_skip_input" name="clip_skip" value="2" min="0" required>
                     </div>
 
-                    <div id="form-separator"></div>
-
-                    <div id="custom-seed">
-                        <label for="custom_seed" title="Enter a custom seed. If you want it to be random enter 0">Custom Seed:</label>
-                        <input type="number" id="custom_seed" name="custom_seed" value="0" min="0" required><br>
+                    <div class="input-div">
+                        <label for="custom_seed_input" title="Enter a custom seed. If you want it to be random enter -1">Custom Seed:</label>
+                        <input type="number" id="custom_seed_input" name="custom_seed" value="-1" required>
                     </div>
 
-                    <div id="sampling_steps">
-                        <label for="sampling_steps" title="Enter the number of sampling steps. Higher values may improve image quality but take longer to generate.">Sampling Steps:</label>
-                        <input type="number" id="sampling_steps" name="sampling_steps" value="28" min="1" required><br>
-                    </div>
-                
-                    <div id="image-count">
-                        <label for="image_count" title="Specify the number of images you want to generate. Minimum is 1.">Number of Images:</label>
-                        <input type="number" id="image_count" name="image_count" value="4" min="1" required><br>
-                    </div>
-                
-                    <div id="cfg-scale">
-                        <label for="cfg_scale" title="The scale value decides how closely the AI follows your prompts. When the scale is low, AI tends to produce softer, painterly pictures. We recommend keeping the scale below 7.">CFG Scale:</label>
-                        <input type="number" id="cfg_scale" name="cfg_scale" value="7" min="1" max="20" step="0.1" required><br>
+                    <div class="input-div">
+                        <label for="sampling_steps_input" title="Enter the number of sampling steps. Higher values may improve image quality but take longer to generate.">Sampling Steps:</label>
+                        <input type="number" id="sampling_steps_input" name="sampling_steps" value="28" min="1" required>
                     </div>
 
-                    <div id="img_display">
-                        <label for="img_display" title="The number of images displayed on the page">Images Displayed:</label>
-                        <input type="number" id="img_display_input" name="img_display" value="4" min="1" max="4" step="1" onchange="updateImageScales()"><br>
+                    <div class="input-div">
+                        <label for="image_count_input" title="Specify the number of images you want to generate. Minimum is 1.">Number of Images:</label>
+                        <input type="number" id="image_count_input" name="image_count" value="4" min="1" required>
                     </div>
 
                     <div id="form-separator"></div>
                 
                     <div id="buttons">
-                        <button type="submit" id="submitButton"  onclick="submitButtonOnClick(event)"  ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM323.8 202.5c-4.5-6.6-11.9-10.5-19.8-10.5s-15.4 3.9-19.8 10.5l-87 127.6L170.7 297c-4.6-5.7-11.5-9-18.7-9s-14.2 3.3-18.7 9l-64 80c-5.8 7.2-6.9 17.1-2.9 25.4s12.4 13.6 21.6 13.6l96 0 32 0 208 0c8.9 0 17.1-4.9 21.2-12.8s3.6-17.4-1.4-24.7l-120-176zM112 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/></svg><span>Generate Images</span></div></button>
-                        <button type="button" id="stopButton"    onclick="stopButtonOnClick(event)"    ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM192 160l128 0c17.7 0 32 14.3 32 32l0 128c0 17.7-14.3 32-32 32l-128 0c-17.7 0-32-14.3-32-32l0-128c0-17.7 14.3-32 32-32z"/></svg><span>Stop Generation</span></div></button>
-                        <button type="button" id="restartButton" onclick="restartButtonOnClick(event)" ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M463.5 224l8.5 0c13.3 0 24-10.7 24-24l0-128c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8l119.5 0z"/></svg><span>Restart Server</span></div></button>
-                        <button type="button" id="clearButton"   onclick="clearButtonOnClick(event)"   ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor"><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg><span>Clear Images</span></div></button>
-                        <button type="button" id="cannyButton" onclick="window.open(`{{ url_for('canny') }}`)"          ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M64 64C46.3 64 32 78.3 32 96l0 233.4 67.7-67.7c15.6-15.6 40.9-15.6 56.6 0L224 329.4 355.7 197.7c15.6-15.6 40.9-15.6 56.6 0L480 265.4 480 96c0-17.7-14.3-32-32-32L64 64zM32 374.6L32 416c0 17.7 14.3 32 32 32l41.4 0 96-96-67.7-67.7c-3.1-3.1-8.2-3.1-11.3 0L32 374.6zM389.7 220.3c-3.1-3.1-8.2-3.1-11.3 0L150.6 448 448 448c17.7 0 32-14.3 32-32l0-105.4-90.3-90.3zM0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zm160 48a16 16 0 1 0 -32 0 16 16 0 1 0 32 0zm-64 0a48 48 0 1 1 96 0 48 48 0 1 1 -96 0z"/></svg><span>Preview ControlNet</span></div></button>
-                        <button type="button" id="metadataButton" onclick="window.open(`{{ url_for('metadata') }}`)"    ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg><span>Get Metadata</span></div></button>
-                        <button type="button" id="modelEditorButton" onclick="window.open(`{{ url_for('models') }}`)"   ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg><span>Model Editor</span></div></button>
-                        <button type="button" id="defaultsEditorButton" onclick="window.open(`{{ url_for('settings') }}`)"   ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg><span>Defaults Editor</span></div></button>
-                        <button type="button" id="clipTokenCounter" onclick="window.open(`{{ url_for('clip_token') }}`)"><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor"><path d="M0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zm144 4c-24.3 0-44 19.7-44 44l0 48c0 24.3 19.7 44 44 44l32 0c24.3 0 44-19.7 44-44l0-48c0-24.3-19.7-44-44-44l-32 0zm-4 44c0-2.2 1.8-4 4-4l32 0c2.2 0 4 1.8 4 4l0 48c0 2.2-1.8 4-4 4l-32 0c-2.2 0-4-1.8-4-4l0-48zm140-44c-11 0-20 9-20 20c0 9.7 6.9 17.7 16 19.6l0 76.4c0 11 9 20 20 20s20-9 20-20l0-96c0-11-9-20-20-20l-16 0zM132 296c0 9.7 6.9 17.7 16 19.6l0 76.4c0 11 9 20 20 20s20-9 20-20l0-96c0-11-9-20-20-20l-16 0c-11 0-20 9-20 20zm96 24l0 48c0 24.3 19.7 44 44 44l32 0c24.3 0 44-19.7 44-44l0-48c0-24.3-19.7-44-44-44l-32 0c-24.3 0-44 19.7-44 44zm44-4l32 0c2.2 0 4 1.8 4 4l0 48c0 2.2-1.8 4-4 4l-32 0c-2.2 0-4-1.8-4-4l0-48c0-2.2 1.8-4 4-4z"/></svg><span>CLIP Token Counter</span></div></button>
-                        <button type="button" id="promptBuilder" onclick="window.open(`https://umittadelen.github.io/PromptBuilder/`)"   ><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160L0 416c0 53 43 96 96 96l256 0c53 0 96-43 96-96l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7-14.3 32-32 32L96 448c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 64z"/></svg><span>Prompt Builder</span></div></button>
-                        <button type="button" id="resetCacheButton" onclick="resetCacheButtonOnClick(event)"><div class="btn-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor"><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg><span>Clear Saved Form</span></div></button>
+                        <button type="submit" id="submitButton" onclick="submitButtonOnClick(event)"><div class="btn-container"><span>Generate Images</span></div></button>
+                        <button type="button" id="stopButton" onclick="stopButtonOnClick(event)"><div class="btn-container"><span>Stop Generation</span></div></button>
+                        <button type="button" id="restartButton" onclick="restartButtonOnClick(event)"><div class="btn-container"><span>Restart Server</span></div></button>
+                        <button type="button" id="clearButton" onclick="clearButtonOnClick(event)"><div class="btn-container"><span>Clear Images</span></div></button>
+                        <button type="button" id="metadataButton" onclick="window.open(`{{ url_for('metadata') }}`)"><div class="btn-container"><span>Get Metadata</span></div></button>
+                        <button type="button" id="promptBuilder" onclick="window.open(`https://umittadelen.github.io/PromptBuilder/`)"><div class="btn-container"><span>Prompt Builder</span></div></button>
+                        <button type="button" id="resetFormButton" onclick="resetFormButtonOnClick(event)"><div class="btn-container"><span>Clear Saved Form</span></div></button>
                     </div>
                 </form>
             </div>
@@ -158,7 +96,6 @@
         <div id="images"></div>
 
         <script src="{{url_for('static', filename='js/theme.js')}}" defer></script>
-        <script src="{{url_for('static', filename='js/loadJson.js')}}" defer></script>
         <script src="{{url_for('static', filename='js/main.js')}}" defer></script>
     </body>
 </html>
