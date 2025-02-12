@@ -1,4 +1,4 @@
 ## This Is Beta
 
-Please go to Stable Version from this link:
-https://github.com/umittadelen/easyUI
+Please go to main working version from this link:
+https://github.com/umittadelen/stableDiffusionEasyUI
